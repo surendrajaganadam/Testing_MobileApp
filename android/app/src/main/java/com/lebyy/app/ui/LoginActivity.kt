@@ -50,16 +50,19 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        binding.buttonLongPress.setOnTouchListener { _, event ->
+        // Dedicated long-press target (2 seconds) — separate from double-tap to avoid conflicts.
+        binding.buttonLongPress.setOnTouchListener { view, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     longPressTriggered = false
+                    view.isPressed = true
                     handler.removeCallbacks(longPressRunnable)
                     handler.postDelayed(longPressRunnable, LONG_PRESS_MS)
                     true
                 }
 
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    view.isPressed = false
                     handler.removeCallbacks(longPressRunnable)
                     true
                 }
@@ -68,6 +71,7 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
+        // Dedicated double-tap target.
         val doubleTapDetector = GestureDetectorCompat(
             this,
             object : GestureDetector.SimpleOnGestureListener() {
@@ -81,6 +85,7 @@ class LoginActivity : AppCompatActivity() {
         )
         binding.buttonDoubleTap.setOnTouchListener { _, event ->
             doubleTapDetector.onTouchEvent(event)
+            true
         }
     }
 

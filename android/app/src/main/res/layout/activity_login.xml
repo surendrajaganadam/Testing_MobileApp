@@ -15,26 +15,26 @@
 
         <ImageView
             android:id="@+id/loginLogo"
-            android:layout_width="96dp"
-            android:layout_height="96dp"
-            android:layout_marginTop="40dp"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginTop="24dp"
             android:contentDescription="Lebyy logo"
             android:src="@drawable/logo_lebyy" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:text="@string/brand_name"
             android:textColor="@color/lebyy_primary"
-            android:textSize="34sp"
+            android:textSize="30sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="12dp"
             android:text="@string/brand_tagline"
             android:textColor="@color/lebyy_muted"
             android:textSize="14sp" />
@@ -42,7 +42,7 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="12dp"
             app:cardBackgroundColor="@color/lebyy_surface"
             app:cardCornerRadius="12dp"
             app:strokeColor="@color/lebyy_line"
@@ -60,6 +60,38 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
         </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonLongPress"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="10dp"
+            android:contentDescription="test-LoginLongPress"
+            android:text="@string/login_long_press_button"
+            android:textAllCaps="true"
+            android:textColor="@color/lebyy_primary"
+            app:backgroundTint="@color/lebyy_surface"
+            app:cornerRadius="12dp"
+            app:rippleColor="@color/lebyy_primary"
+            app:strokeColor="@color/lebyy_primary"
+            app:strokeWidth="2dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonDoubleTap"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="test-LoginDoubleTap"
+            android:text="@string/login_double_tap_button"
+            android:textAllCaps="true"
+            android:textColor="@color/lebyy_primary"
+            app:backgroundTint="@color/lebyy_surface"
+            app:cornerRadius="12dp"
+            app:rippleColor="@color/lebyy_primary"
+            app:strokeColor="@color/lebyy_primary"
+            app:strokeWidth="2dp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
@@ -117,50 +149,6 @@
             android:textColor="@color/lebyy_bg"
             app:backgroundTint="@color/lebyy_accent"
             app:cornerRadius="12dp" />
-
-        <FrameLayout
-            android:id="@+id/buttonLongPress"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_login_gesture_button"
-            android:clickable="true"
-            android:contentDescription="test-LoginLongPress"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/login_long_press_button"
-                android:textAllCaps="true"
-                android:textColor="@color/lebyy_primary"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/buttonDoubleTap"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_login_gesture_button"
-            android:clickable="true"
-            android:contentDescription="test-LoginDoubleTap"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/login_double_tap_button"
-                android:textAllCaps="true"
-                android:textColor="@color/lebyy_primary"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-        </FrameLayout>
 
         <TextView
             android:id="@+id/loginError"

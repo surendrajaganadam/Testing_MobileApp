@@ -11,15 +11,15 @@ struct LoginView: View {
     var body: some View {
         ZStack {
             ScrollView {
-                VStack(spacing: 16) {
+                VStack(spacing: 14) {
                     Image("logo_lebyy")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 96, height: 96)
-                        .padding(.top, 48)
+                        .frame(width: 72, height: 72)
+                        .padding(.top, 32)
 
                     Text("Lebyy")
-                        .font(.system(size: 34, weight: .bold))
+                        .font(.system(size: 30, weight: .bold))
                         .foregroundStyle(LebyyTheme.primary)
 
                     Text("Learn by yourself")
@@ -38,6 +38,16 @@ struct LoginView: View {
                     .background(LebyyTheme.surface)
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(LebyyTheme.line, lineWidth: 1))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                    gestureButton(title: "LONG PRESS ME", accessibilityId: "test-LoginLongPress")
+                        .onLongPressGesture(minimumDuration: 2) {
+                            showToast("Long press done")
+                        }
+
+                    gestureButton(title: "DOUBLE TAP ME", accessibilityId: "test-LoginDoubleTap")
+                        .onTapGesture(count: 2) {
+                            showToast("Double tap done")
+                        }
 
                     TextField("Username", text: $username)
                         .textInputAutocapitalization(.never)
@@ -71,16 +81,6 @@ struct LoginView: View {
                     .foregroundStyle(LebyyTheme.bg)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .accessibilityIdentifier("test-LOGIN")
-
-                    gestureButton(title: "LONG PRESS ME", accessibilityId: "test-LoginLongPress")
-                        .onLongPressGesture(minimumDuration: 2) {
-                            showToast("Long press done")
-                        }
-
-                    gestureButton(title: "DOUBLE TAP ME", accessibilityId: "test-LoginDoubleTap")
-                        .onTapGesture(count: 2) {
-                            showToast("Double tap done")
-                        }
 
                     if !error.isEmpty {
                         Text(error).foregroundStyle(.red).font(.footnote)

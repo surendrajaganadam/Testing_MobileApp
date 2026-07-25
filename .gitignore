@@ -1,18 +1,18 @@
 # Android
-android/.gradle/
-android/build/
-android/app/build/
-android/local.properties
-android/*.iml
-android/.idea/
+Lebyy-Android/.gradle/
+Lebyy-Android/build/
+Lebyy-Android/app/build/
+Lebyy-Android/local.properties
+Lebyy-Android/*.iml
+Lebyy-Android/.idea/
 *.apk
 !releases/*.apk
 
 # iOS
-ios/build/
-ios/build-device/
-ios/DerivedData/
-ios/**/xcuserdata/
+Lebyy-iOS/build/
+Lebyy-iOS/build-device/
+Lebyy-iOS/DerivedData/
+Lebyy-iOS/**/xcuserdata/
 *.xcuserstate
 *.xccheckout
 *.moved-aside

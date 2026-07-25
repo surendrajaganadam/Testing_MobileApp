@@ -20,8 +20,8 @@ Testing_MobileApp/
 ├── README.md                 ← you are here
 ├── releases/
 │   └── Lebyy-debug.apk       ← ready-to-install Android APK
-├── android/                  ← Android Studio / Gradle project
-└── ios/                      ← Xcode project (SwiftUI)
+├── Lebyy-Android/            ← Android Studio / Gradle project
+└── Lebyy-iOS/                ← Xcode project (SwiftUI)
     ├── Lebyy.xcodeproj
     ├── project.yml           ← XcodeGen (optional)
     └── Lebyy/                ← Swift source + assets
@@ -45,10 +45,10 @@ No source needed for testers who only want to install:
 Requirements: Android Studio (or JDK 17 + Android SDK).
 
 ```bash
-cd android
+cd Lebyy-Android
 ./gradlew assembleDebug
 # Output:
-# android/app/build/outputs/apk/debug/app-debug.apk
+# Lebyy-Android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
 Install with adb:
@@ -56,7 +56,7 @@ Install with adb:
 ```bash
 adb install -r releases/Lebyy-debug.apk
 # or
-adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+adb install -r Lebyy-Android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ---
@@ -81,7 +81,7 @@ Others should **clone this repo and run in Xcode**.
 
    ```bash
    git clone https://github.com/surendrajaganadam/Testing_MobileApp.git
-   cd Testing_MobileApp/ios
+   cd Testing_MobileApp/Lebyy-iOS
    ```
 
 2. Open the project in Xcode:
@@ -90,7 +90,7 @@ Others should **clone this repo and run in Xcode**.
    open Lebyy.xcodeproj
    ```
 
-   Or in Finder: open `ios/Lebyy.xcodeproj`.
+   Or in Finder: open `Lebyy-iOS/Lebyy.xcodeproj`.
 
 3. In Xcode top bar:
    - Scheme: **Lebyy**
@@ -130,7 +130,7 @@ These are the only common changes each person must do on their machine:
 If you use XcodeGen and need a unique Bundle ID:
 
 ```yaml
-# ios/project.yml
+# Lebyy-iOS/project.yml
 PRODUCT_BUNDLE_IDENTIFIER: com.lebyy.app.yourname
 ```
 
@@ -138,7 +138,7 @@ Then regenerate:
 
 ```bash
 brew install xcodegen   # once
-cd ios
+cd Lebyy-iOS
 xcodegen generate
 open Lebyy.xcodeproj
 ```
@@ -147,7 +147,7 @@ Most people can **skip XcodeGen** and just open the existing `Lebyy.xcodeproj`.
 
 ### What you usually do NOT need to change
 
-- Swift source under `ios/Lebyy/`
+- Swift source under `Lebyy-iOS/Lebyy/`
 - Login credentials (`demo_user` / `demo_pass`)
 - UI / feature code
 - App display name (**Lebyy**)
@@ -157,7 +157,7 @@ Most people can **skip XcodeGen** and just open the existing `Lebyy.xcodeproj`.
 Simulator:
 
 ```bash
-cd ios
+cd Lebyy-iOS
 xcodebuild -scheme Lebyy -configuration Debug \
   -destination 'platform=iOS Simulator,name=iPhone 16' \
   -derivedDataPath build \
@@ -167,7 +167,7 @@ xcodebuild -scheme Lebyy -configuration Debug \
 Real device (replace `YOUR_TEAM_ID`):
 
 ```bash
-cd ios
+cd Lebyy-iOS
 xcodebuild -scheme Lebyy -configuration Debug \
   -destination 'generic/platform=iOS' \
   DEVELOPMENT_TEAM=YOUR_TEAM_ID \
@@ -205,6 +205,7 @@ Side menu:
 - `test-Switch`, `test-SwitchStatus-ON` / `test-SwitchStatus-OFF`
 - `test-Alert`, `test-Confirm`, `test-Prompt`
 - `test-LongPress`, `test-DoubleTap`
+- `test-LoginLongPress`, `test-LoginDoubleTap`, `test-LoginGestureResult`
 
 ---
 

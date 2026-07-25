@@ -83,14 +83,26 @@ struct FormsView: View {
                     .accessibilityIdentifier("test-Input")
                     .accessibilityLabel("Type something")
 
-                Toggle("Enable notifications", isOn: $notifications)
-                    .foregroundStyle(LebyyTheme.text)
-                    .tint(LebyyTheme.primary)
-                    .accessibilityIdentifier("test-Switch")
-                    .accessibilityValue(notifications ? "1" : "0")
-                    .onChange(of: notifications) { _, on in
-                        result = "Result: Switch \(on ? "ON" : "OFF")"
-                    }
+                // Split label + switch so automation taps hit the knob (center of a
+                // full-width Toggle lands on the label and never flips the value).
+                HStack {
+                    Text("Enable notifications")
+                        .foregroundStyle(LebyyTheme.text)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                        .onTapGesture { notifications.toggle() }
+                        .accessibilityHidden(true)
+
+                    Toggle("Enable notifications", isOn: $notifications)
+                        .labelsHidden()
+                        .tint(LebyyTheme.primary)
+                        .accessibilityLabel("Enable notifications")
+                        .accessibilityIdentifier("test-Switch")
+                        .accessibilityValue(notifications ? "1" : "0")
+                }
+                .onChange(of: notifications) { _, on in
+                    result = "Result: Switch \(on ? "ON" : "OFF")"
+                }
 
                 Text("Switch status: \(notifications ? "ON" : "OFF")")
                     .font(.caption)

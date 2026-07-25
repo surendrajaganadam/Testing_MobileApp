@@ -42,7 +42,7 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="16dp"
             app:cardBackgroundColor="@color/lebyy_surface"
             app:cardCornerRadius="12dp"
             app:strokeColor="@color/lebyy_line"
@@ -60,38 +60,6 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
         </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonLongPress"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginBottom="10dp"
-            android:contentDescription="test-LoginLongPress"
-            android:text="@string/login_long_press_button"
-            android:textAllCaps="true"
-            android:textColor="@color/lebyy_primary"
-            app:backgroundTint="@color/lebyy_surface"
-            app:cornerRadius="12dp"
-            app:rippleColor="@color/lebyy_primary"
-            app:strokeColor="@color/lebyy_primary"
-            app:strokeWidth="2dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/buttonDoubleTap"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginBottom="16dp"
-            android:contentDescription="test-LoginDoubleTap"
-            android:text="@string/login_double_tap_button"
-            android:textAllCaps="true"
-            android:textColor="@color/lebyy_primary"
-            app:backgroundTint="@color/lebyy_surface"
-            app:cornerRadius="12dp"
-            app:rippleColor="@color/lebyy_primary"
-            app:strokeColor="@color/lebyy_primary"
-            app:strokeWidth="2dp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
@@ -157,5 +125,49 @@
             android:layout_marginTop="12dp"
             android:textColor="#FF8A80"
             android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/quickGesturesTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:layout_marginBottom="12dp"
+            android:contentDescription="test-QuickGestures"
+            android:text="@string/login_quick_gestures"
+            android:textColor="@color/lebyy_text"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonLongPress"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="10dp"
+            android:contentDescription="test-LoginLongPress"
+            android:text="@string/login_long_press_button"
+            android:textAllCaps="true"
+            android:textColor="@color/lebyy_primary"
+            app:backgroundTint="@color/lebyy_surface"
+            app:cornerRadius="12dp"
+            app:rippleColor="@color/lebyy_primary"
+            app:strokeColor="@color/lebyy_primary"
+            app:strokeWidth="2dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonDoubleTap"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="test-LoginDoubleTap"
+            android:text="@string/login_double_tap_button"
+            android:textAllCaps="true"
+            android:textColor="@color/lebyy_primary"
+            app:backgroundTint="@color/lebyy_surface"
+            app:cornerRadius="12dp"
+            app:rippleColor="@color/lebyy_primary"
+            app:strokeColor="@color/lebyy_primary"
+            app:strokeWidth="2dp" />
     </LinearLayout>
 </ScrollView>

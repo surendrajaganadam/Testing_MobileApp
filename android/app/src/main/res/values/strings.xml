@@ -9,6 +9,7 @@
     <string name="username_hint">Username</string>
     <string name="password_hint">Password</string>
     <string name="login_button">LOGIN</string>
+    <string name="login_quick_gestures">Quick Gestures</string>
     <string name="login_long_press_button">LONG PRESS ME</string>
     <string name="login_double_tap_button">DOUBLE TAP ME</string>
     <string name="login_long_press_done">Long press done</string>

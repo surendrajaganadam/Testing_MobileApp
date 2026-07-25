@@ -39,16 +39,6 @@ struct LoginView: View {
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(LebyyTheme.line, lineWidth: 1))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                    gestureButton(title: "LONG PRESS ME", accessibilityId: "test-LoginLongPress")
-                        .onLongPressGesture(minimumDuration: 2) {
-                            showToast("Long press done")
-                        }
-
-                    gestureButton(title: "DOUBLE TAP ME", accessibilityId: "test-LoginDoubleTap")
-                        .onTapGesture(count: 2) {
-                            showToast("Double tap done")
-                        }
-
                     TextField("Username", text: $username)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
@@ -85,6 +75,23 @@ struct LoginView: View {
                     if !error.isEmpty {
                         Text(error).foregroundStyle(.red).font(.footnote)
                     }
+
+                    Text("Quick Gestures")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(LebyyTheme.text)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 14)
+                        .accessibilityIdentifier("test-QuickGestures")
+
+                    gestureButton(title: "LONG PRESS ME", accessibilityId: "test-LoginLongPress")
+                        .onLongPressGesture(minimumDuration: 2) {
+                            showToast("Long press done")
+                        }
+
+                    gestureButton(title: "DOUBLE TAP ME", accessibilityId: "test-LoginDoubleTap")
+                        .onTapGesture(count: 2) {
+                            showToast("Double tap done")
+                        }
                 }
                 .padding(24)
             }

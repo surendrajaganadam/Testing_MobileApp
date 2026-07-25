@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Lebyy.com brand palette -->
+    <color name="lebyy_bg">#081426</color>
+    <color name="lebyy_bg_2">#0D1F3A</color>
+    <color name="lebyy_surface">#12284B</color>
+    <color name="lebyy_surface_2">#17335D</color>
+    <color name="lebyy_line">#35588D</color>
+    <color name="lebyy_text">#DBE7FF</color>
+    <color name="lebyy_muted">#90AAD6</color>
+    <color name="lebyy_primary">#42C6FF</color>
+    <color name="lebyy_primary_2">#6E8BFF</color>
+    <color name="lebyy_accent">#FFBF57</color>
+    <color name="lebyy_accent_dark">#F0A500</color>
+    <color name="lebyy_success">#2DD4BF</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <!-- Legacy aliases used across layouts -->
+    <color name="cartly_teal">@color/lebyy_primary</color>
+    <color name="cartly_teal_dark">@color/lebyy_bg_2</color>
+    <color name="cartly_orange">@color/lebyy_accent</color>
+    <color name="cartly_bg">@color/lebyy_bg</color>
+    <color name="cartly_text">@color/lebyy_text</color>
+</resources>

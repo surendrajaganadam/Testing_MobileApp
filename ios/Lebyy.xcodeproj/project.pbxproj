@@ -1,0 +1,361 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		20EC6E0D228C1201592D74F4 /* PracticeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B96A1FBAC26F96F6903B14BD /* PracticeViews.swift */; };
+		3AA0A33F8F2C42679515DC88 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E32738807BB67F23715F946 /* LoginView.swift */; };
+		43217A07C1A109513C85617F /* MainShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89EEB56EC384BC4BBA8F48A1 /* MainShellView.swift */; };
+		88CC2A3A6524FF9E5C7E4817 /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A62F1C11FC5E7846C6D8AC0 /* AppStore.swift */; };
+		9467528320E9F7A207CEBF6F /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC833B95292247CF24972399 /* RootView.swift */; };
+		9B4279E97D9D870AE4CC5EE2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4B10BF9EB589EB1BB0A7C31E /* Assets.xcassets */; };
+		A309E06ECDCAF6EF0A22B126 /* LebyyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 310A775A370973FDAFAD6329 /* LebyyApp.swift */; };
+		D48C0222473EB9BF1B397322 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07D6AD11DFB50DC88024020 /* Theme.swift */; };
+		F2E5742141BA83C0DFEE4F97 /* ShopViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7201755A9F8120B26BB61281 /* ShopViews.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		310A775A370973FDAFAD6329 /* LebyyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LebyyApp.swift; sourceTree = "<group>"; };
+		3E32738807BB67F23715F946 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		4A62F1C11FC5E7846C6D8AC0 /* AppStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
+		4B10BF9EB589EB1BB0A7C31E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7201755A9F8120B26BB61281 /* ShopViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopViews.swift; sourceTree = "<group>"; };
+		89EEB56EC384BC4BBA8F48A1 /* MainShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainShellView.swift; sourceTree = "<group>"; };
+		8C3746305994F2A46B984661 /* Lebyy.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Lebyy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A07D6AD11DFB50DC88024020 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		AC833B95292247CF24972399 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		B96A1FBAC26F96F6903B14BD /* PracticeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeViews.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		2938A048165D4D1356A73854 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8C3746305994F2A46B984661 /* Lebyy.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6192AB8237F982D9D32F4F11 /* Lebyy */ = {
+			isa = PBXGroup;
+			children = (
+				4B10BF9EB589EB1BB0A7C31E /* Assets.xcassets */,
+				310A775A370973FDAFAD6329 /* LebyyApp.swift */,
+				DBC39D74B7D16ADA466581CF /* Models */,
+				92E4F721827F9A3A112070FC /* Views */,
+			);
+			path = Lebyy;
+			sourceTree = "<group>";
+		};
+		92E4F721827F9A3A112070FC /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				3E32738807BB67F23715F946 /* LoginView.swift */,
+				89EEB56EC384BC4BBA8F48A1 /* MainShellView.swift */,
+				B96A1FBAC26F96F6903B14BD /* PracticeViews.swift */,
+				AC833B95292247CF24972399 /* RootView.swift */,
+				7201755A9F8120B26BB61281 /* ShopViews.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		DBC39D74B7D16ADA466581CF /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				4A62F1C11FC5E7846C6D8AC0 /* AppStore.swift */,
+				A07D6AD11DFB50DC88024020 /* Theme.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		F253272266B9D89E6BDFD39C = {
+			isa = PBXGroup;
+			children = (
+				6192AB8237F982D9D32F4F11 /* Lebyy */,
+				2938A048165D4D1356A73854 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		688A9F5F28CBE90EB5F275F8 /* Lebyy */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8CF0E0E3009DD1B9643F4618 /* Build configuration list for PBXNativeTarget "Lebyy" */;
+			buildPhases = (
+				C4EA0A729853702C8218D912 /* Sources */,
+				8F27CFB837BBDB587D5B1116 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Lebyy;
+			packageProductDependencies = (
+			);
+			productName = Lebyy;
+			productReference = 8C3746305994F2A46B984661 /* Lebyy.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A327FC9EE863054EC5F8AE1B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					688A9F5F28CBE90EB5F275F8 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 47BEB3F9E78658A4E4DC7830 /* Build configuration list for PBXProject "Lebyy" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = F253272266B9D89E6BDFD39C;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 2938A048165D4D1356A73854 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				688A9F5F28CBE90EB5F275F8 /* Lebyy */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8F27CFB837BBDB587D5B1116 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9B4279E97D9D870AE4CC5EE2 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C4EA0A729853702C8218D912 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				88CC2A3A6524FF9E5C7E4817 /* AppStore.swift in Sources */,
+				A309E06ECDCAF6EF0A22B126 /* LebyyApp.swift in Sources */,
+				3AA0A33F8F2C42679515DC88 /* LoginView.swift in Sources */,
+				43217A07C1A109513C85617F /* MainShellView.swift in Sources */,
+				20EC6E0D228C1201592D74F4 /* PracticeViews.swift in Sources */,
+				9467528320E9F7A207CEBF6F /* RootView.swift in Sources */,
+				F2E5742141BA83C0DFEE4F97 /* ShopViews.swift in Sources */,
+				D48C0222473EB9BF1B397322 /* Theme.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		49AE6253D971F9D18A9E4B83 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.demo.lebyy;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		5D305B78665413282EF47C4B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.demo.lebyy;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B90964C1F00595E7388BDD7A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Lebyy;
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F96DC78A95A4511C0A6AFE9B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Lebyy;
+				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		47BEB3F9E78658A4E4DC7830 /* Build configuration list for PBXProject "Lebyy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B90964C1F00595E7388BDD7A /* Debug */,
+				F96DC78A95A4511C0A6AFE9B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8CF0E0E3009DD1B9643F4618 /* Build configuration list for PBXNativeTarget "Lebyy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5D305B78665413282EF47C4B /* Debug */,
+				49AE6253D971F9D18A9E4B83 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A327FC9EE863054EC5F8AE1B /* Project object */;
+}

@@ -1,0 +1,25 @@
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/*.iml
+android/.idea/
+*.apk
+!releases/*.apk
+
+# iOS
+ios/build/
+ios/build-device/
+ios/DerivedData/
+ios/**/xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+
+# OS / editor
+.DS_Store
+.idea/
+*.swp

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:contentDescription="test-Cart">
+
+    <ImageView
+        android:id="@+id/cartIcon"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_cart"
+        android:contentDescription="test-Cart" />
+
+    <TextView
+        android:id="@+id/cartBadge"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_gravity="top|end"
+        android:background="@drawable/bg_cart_badge"
+        android:gravity="center"
+        android:text="0"
+        android:textColor="@color/lebyy_bg"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        android:contentDescription="test-CartCount" />
+</FrameLayout>

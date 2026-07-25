@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Cold-start splash: Lebyy logo (not the old gift icon) -->
+    <style name="Theme.Lebyy.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/lebyy_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="windowSplashScreenAnimationDuration">0</item>
+        <item name="postSplashScreenTheme">@style/Theme.Lebyy</item>
+        <item name="android:windowBackground">@drawable/splash_screen</item>
+        <item name="android:statusBarColor">@color/lebyy_bg</item>
+        <item name="android:navigationBarColor">@color/lebyy_bg</item>
+    </style>
+
+    <style name="Theme.Lebyy" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/lebyy_primary</item>
+        <item name="colorPrimaryVariant">@color/lebyy_bg_2</item>
+        <item name="colorSecondary">@color/lebyy_accent</item>
+        <item name="colorOnPrimary">@color/lebyy_bg</item>
+        <item name="colorOnSecondary">@color/lebyy_bg</item>
+        <item name="android:statusBarColor">@color/lebyy_bg</item>
+        <item name="android:navigationBarColor">@color/lebyy_bg</item>
+        <item name="android:windowBackground">@color/lebyy_bg</item>
+        <item name="android:textColorPrimary">@color/lebyy_text</item>
+        <item name="android:textColorSecondary">@color/lebyy_muted</item>
+        <item name="colorControlNormal">@color/lebyy_muted</item>
+        <item name="colorControlActivated">@color/lebyy_primary</item>
+        <item name="materialButtonStyle">@style/Widget.Lebyy.Button</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Lebyy.Dialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.Lebyy.Dialog</item>
+    </style>
+
+    <!-- Light dialog so alert title/message/buttons are always readable -->
+    <style name="ThemeOverlay.Lebyy.Dialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">@color/lebyy_primary</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">#0F2144</item>
+        <item name="android:background">@color/white</item>
+        <item name="materialAlertDialogTitleTextStyle">@style/Lebyy.Dialog.Title</item>
+        <item name="materialAlertDialogBodyTextStyle">@style/Lebyy.Dialog.Body</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Lebyy.Dialog.Button</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Lebyy.Dialog.Button</item>
+    </style>
+
+    <style name="Lebyy.Dialog.Title" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textColor">#0F2144</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Lebyy.Dialog.Body" parent="MaterialAlertDialog.MaterialComponents.Body.Text">
+        <item name="android:textColor">#1F3A5F</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="Lebyy.Dialog.Button" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/lebyy_primary_2</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.Lebyy.Button" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/lebyy_accent</item>
+        <item name="android:textColor">@color/lebyy_bg</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+</resources>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/lebyy_surface"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <ImageView
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:contentDescription="Lebyy logo"
+        android:src="@drawable/logo_lebyy" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/brand_name"
+        android:textColor="@color/lebyy_primary"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="@string/brand_tagline"
+        android:textColor="@color/lebyy_muted"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/drawerShop"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:contentDescription="test-Shop"
+        android:gravity="center_vertical"
+        android:text="@string/menu_shop"
+        android:textColor="@color/lebyy_text"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/drawerAlerts"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:contentDescription="test-Alerts"
+        android:gravity="center_vertical"
+        android:text="@string/menu_alerts"
+        android:textColor="@color/lebyy_text"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/drawerForms"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:contentDescription="test-Forms"
+        android:gravity="center_vertical"
+        android:text="@string/menu_forms"
+        android:textColor="@color/lebyy_text"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/drawerSwipeHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:contentDescription="test-SwipeHorizontal"
+        android:gravity="center_vertical"
+        android:text="@string/menu_swipe_horizontal"
+        android:textColor="@color/lebyy_text"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/drawerSwipeVertical"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:contentDescription="test-SwipeVertical"
+        android:gravity="center_vertical"
+        android:text="@string/menu_swipe_vertical"
+        android:textColor="@color/lebyy_text"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/drawerGestures"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:contentDescription="test-Gestures"
+        android:gravity="center_vertical"
+        android:text="@string/menu_gestures"
+        android:textColor="@color/lebyy_text"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/drawerWebView"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:contentDescription="test-WEBVIEW"
+        android:gravity="center_vertical"
+        android:text="@string/menu_webview"
+        android:textColor="@color/lebyy_text"
+        android:textSize="15sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="8dp"
+        android:background="@color/lebyy_line" />
+
+    <TextView
+        android:id="@+id/drawerLogout"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:contentDescription="test-LOGOUT"
+        android:gravity="center_vertical"
+        android:text="@string/logout"
+        android:textColor="@color/lebyy_accent"
+        android:textSize="15sp" />
+</LinearLayout>

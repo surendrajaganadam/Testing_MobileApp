@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:name=".LebyyApp"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Lebyy"
+        android:usesCleartextTraffic="true">
+
+        <activity
+            android:name=".ui.LoginActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Lebyy.Splash"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ui.CatalogActivity" android:exported="false" />
+        <activity android:name=".ui.ProductDetailActivity" android:exported="false" />
+        <activity android:name=".ui.CartActivity" android:exported="false" />
+        <activity
+            android:name=".ui.CheckoutInfoActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.CheckoutOverviewActivity" android:exported="false" />
+        <activity android:name=".ui.OrderCompleteActivity" android:exported="false" />
+        <activity
+            android:name=".ui.WebViewActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.AlertsActivity" android:exported="false" />
+        <activity
+            android:name=".ui.FormsActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.SwipeHorizontalActivity" android:exported="false" />
+        <activity android:name=".ui.SwipeVerticalActivity" android:exported="false" />
+        <activity android:name=".ui.GesturesActivity" android:exported="false" />
+    </application>
+</manifest>

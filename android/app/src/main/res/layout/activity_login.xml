@@ -159,7 +159,7 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="12dp"
             android:contentDescription="test-LoginDoubleTap"
             android:text="@string/login_double_tap_button"
             android:textAllCaps="true"
@@ -169,5 +169,18 @@
             app:rippleColor="@color/lebyy_primary"
             app:strokeColor="@color/lebyy_primary"
             app:strokeWidth="2dp" />
+
+        <TextView
+            android:id="@+id/gestureResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="test-LoginGestureResult"
+            android:gravity="center"
+            android:minHeight="24dp"
+            android:textColor="@color/lebyy_success"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
     </LinearLayout>
 </ScrollView>

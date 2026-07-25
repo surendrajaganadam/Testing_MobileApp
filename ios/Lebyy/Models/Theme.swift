@@ -10,4 +10,5 @@ enum LebyyTheme {
     static let muted = Color(red: 0.565, green: 0.667, blue: 0.839) // #90AAD6
     static let primary = Color(red: 0.259, green: 0.776, blue: 1.0) // #42C6FF
     static let accent = Color(red: 1.0, green: 0.749, blue: 0.341) // #FFBF57
+    static let success = Color(red: 0.176, green: 0.831, blue: 0.749) // #2DD4BF
 }

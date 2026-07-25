@@ -8,7 +8,6 @@ import android.os.Looper
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.GestureDetectorCompat
@@ -23,7 +22,12 @@ class LoginActivity : AppCompatActivity() {
 
     private val longPressRunnable = Runnable {
         longPressTriggered = true
-        Toast.makeText(this, R.string.login_long_press_done, Toast.LENGTH_SHORT).show()
+        showGestureResult(R.string.login_long_press_done)
+    }
+
+    private val hideGestureResultRunnable = Runnable {
+        binding.gestureResult.visibility = View.GONE
+        binding.gestureResult.text = ""
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,7 +82,7 @@ class LoginActivity : AppCompatActivity() {
                 override fun onDown(e: MotionEvent): Boolean = true
 
                 override fun onDoubleTap(e: MotionEvent): Boolean {
-                    Toast.makeText(this@LoginActivity, R.string.login_double_tap_done, Toast.LENGTH_SHORT).show()
+                    showGestureResult(R.string.login_double_tap_done)
                     return true
                 }
             },
@@ -89,12 +93,21 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    private fun showGestureResult(messageRes: Int) {
+        handler.removeCallbacks(hideGestureResultRunnable)
+        binding.gestureResult.text = getString(messageRes)
+        binding.gestureResult.visibility = View.VISIBLE
+        handler.postDelayed(hideGestureResultRunnable, RESULT_VISIBLE_MS)
+    }
+
     override fun onDestroy() {
         handler.removeCallbacks(longPressRunnable)
+        handler.removeCallbacks(hideGestureResultRunnable)
         super.onDestroy()
     }
 
     companion object {
         private const val LONG_PRESS_MS = 2000L
+        private const val RESULT_VISIBLE_MS = 2500L
     }
 }

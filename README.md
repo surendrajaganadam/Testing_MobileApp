@@ -7,7 +7,8 @@ Branding from [lebyy.com](https://lebyy.com).
 | Item | Value |
 |------|--------|
 | App name | **Lebyy** |
-| Package / Bundle ID | `com.lebyy.app` |
+| Android package | `com.lebyy.app` |
+| iOS bundle ID | `com.demo.lebyy` |
 | Login username | `demo_user` |
 | Login password | `demo_pass` |
 
@@ -114,9 +115,9 @@ These are the only common changes each person must do on their machine:
    - If empty: **Xcode → Settings → Accounts → + → Apple ID**
 6. If Xcode shows a Bundle ID conflict, change Bundle Identifier temporarily, e.g.:
 
-   `com.lebyy.app.yourname`
+   `com.demo.lebyy.yourname`
 
-   (default in this repo is `com.lebyy.app`)
+   (default in this repo is `com.demo.lebyy`)
 
 #### B) Trust the developer on the phone (first time only)
 
@@ -131,7 +132,7 @@ If you use XcodeGen and need a unique Bundle ID:
 
 ```yaml
 # Lebyy-iOS/project.yml
-PRODUCT_BUNDLE_IDENTIFIER: com.lebyy.app.yourname
+PRODUCT_BUNDLE_IDENTIFIER: com.demo.lebyy.yourname
 ```
 
 Then regenerate:
@@ -219,7 +220,7 @@ installApps: './releases/Lebyy-debug.apk',
 
 // iOS
 platform: 'ios',
-bundleId: 'com.lebyy.app',
+bundleId: 'com.demo.lebyy',
 ```
 
 If you changed the iOS Bundle ID for signing, use **that** Bundle ID in tests.
@@ -232,7 +233,7 @@ If you changed the iOS Bundle ID for signing, use **that** Bundle ID in tests.
 |---------|-----|
 | iOS: *Signing for "Lebyy" requires a development team* | Add Apple ID in Xcode Accounts, pick Team |
 | iOS: *Failed to install / Untrusted Developer* | Trust certificate on iPhone under Device Management |
-| iOS: Bundle ID already in use | Change to `com.lebyy.app.yourname` |
+| iOS: Bundle ID already in use | Change to `com.demo.lebyy.yourname` |
 | Android: *App not installed* | Uninstall older package first: `adb uninstall com.lebyy.app` |
 | Android Studio can't find SDK | Open project once in Android Studio so it creates `local.properties` |
 

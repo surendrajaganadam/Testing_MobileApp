@@ -21,14 +21,14 @@ class WebViewActivity : AppCompatActivity() {
 
         WebView.setWebContentsDebuggingEnabled(true)
 
-        binding.cartlyWebView.contentDescription = "test-WebView"
-        binding.cartlyWebView.setBackgroundColor(0xFFFFFFFF.toInt())
-        binding.cartlyWebView.settings.javaScriptEnabled = true
-        binding.cartlyWebView.settings.domStorageEnabled = true
-        binding.cartlyWebView.webViewClient = WebViewClient()
-        binding.cartlyWebView.webChromeClient = WebChromeClient()
+        binding.lebyyWebView.contentDescription = "test-WebView"
+        binding.lebyyWebView.setBackgroundColor(0xFFFFFFFF.toInt())
+        binding.lebyyWebView.settings.javaScriptEnabled = true
+        binding.lebyyWebView.settings.domStorageEnabled = true
+        binding.lebyyWebView.webViewClient = WebViewClient()
+        binding.lebyyWebView.webChromeClient = WebChromeClient()
 
-        binding.cartlyWebView.loadDataWithBaseURL(
+        binding.lebyyWebView.loadDataWithBaseURL(
             "https://lebyy.local/",
             """
             <!DOCTYPE html>
@@ -61,11 +61,11 @@ class WebViewActivity : AppCompatActivity() {
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
             url = "https://$url"
         }
-        binding.cartlyWebView.loadUrl(url)
+        binding.lebyyWebView.loadUrl(url)
     }
 
     override fun onDestroy() {
-        binding.cartlyWebView.destroy()
+        binding.lebyyWebView.destroy()
         super.onDestroy()
     }
 }

@@ -16,10 +16,4 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
 
-    <!-- Legacy aliases used across layouts -->
-    <color name="cartly_teal">@color/lebyy_primary</color>
-    <color name="cartly_teal_dark">@color/lebyy_bg_2</color>
-    <color name="cartly_orange">@color/lebyy_accent</color>
-    <color name="cartly_bg">@color/lebyy_bg</color>
-    <color name="cartly_text">@color/lebyy_text</color>
 </resources>

@@ -49,7 +49,6 @@
     <string name="place_order">PLACE ORDER</string>
     <string name="finish">PLACE ORDER</string>
     <string name="order_details_title">Order Details</string>
-    <string name="order_id_label">Order ID</string>
     <string name="order_confirmed">Order confirmed</string>
     <string name="order_cancelled">Order cancelled</string>
     <string name="cancel_order">CANCEL ORDER</string>

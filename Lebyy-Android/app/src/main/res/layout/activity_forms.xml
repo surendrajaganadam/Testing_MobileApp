@@ -88,9 +88,11 @@
                     <AutoCompleteTextView
                         android:id="@+id/dropdown"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="56dp"
                         android:contentDescription="test-Dropdown"
+                        android:gravity="center_vertical"
                         android:inputType="none"
+                        android:paddingHorizontal="12dp"
                         android:textColor="@color/lebyy_text" />
                 </com.google.android.material.textfield.TextInputLayout>
 

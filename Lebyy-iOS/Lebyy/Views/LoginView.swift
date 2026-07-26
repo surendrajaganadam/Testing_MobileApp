@@ -56,20 +56,28 @@ struct LoginView: View {
                     .accessibilityIdentifier("test-Password")
                     .accessibilityLabel("Password")
 
-                Button("LOGIN") {
+                // Put frame/background inside the label so the whole wide button is tappable
+                // (SwiftUI otherwise keeps the hit target on the text only).
+                Button {
                     if store.login(username: username.trimmingCharacters(in: .whitespaces), password: password) {
                         error = ""
                         store.isLoggedIn = true
                     } else {
                         error = "Invalid credentials. Use demo_user / demo_pass"
                     }
+                } label: {
+                    Text("LOGIN")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(LebyyTheme.accent)
+                        .foregroundStyle(LebyyTheme.bg)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .contentShape(Rectangle())
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(LebyyTheme.accent)
-                .foregroundStyle(LebyyTheme.bg)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .buttonStyle(.plain)
                 .accessibilityIdentifier("test-LOGIN")
+                .accessibilityLabel("LOGIN")
 
                 if !error.isEmpty {
                     Text(error).foregroundStyle(.red).font(.footnote)

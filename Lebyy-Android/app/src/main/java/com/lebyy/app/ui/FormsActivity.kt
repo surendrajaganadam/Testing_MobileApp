@@ -18,10 +18,10 @@ class FormsActivity : AppCompatActivity() {
 
         val options = listOf(
             "Select an item...",
-            "This app is awesome",
-            "webdriver.io is awesome",
-            "Appium is awesome",
-            "Lebyy is awesome",
+            "surendra is awesome",
+            "lebyy is awesome",
+            "i love your content",
+            "i refer this course to my friends",
         )
         val adapter = ArrayAdapter(this, R.layout.item_dropdown, options)
         adapter.setDropDownViewResource(R.layout.item_dropdown)

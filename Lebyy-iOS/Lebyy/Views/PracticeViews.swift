@@ -66,10 +66,10 @@ struct FormsView: View {
 
     private let options = [
         "Select an item...",
-        "This app is awesome",
-        "webdriver.io is awesome",
-        "Appium is awesome",
-        "Lebyy is awesome",
+        "surendra is awesome",
+        "lebyy is awesome",
+        "i love your content",
+        "i refer this course to my friends",
     ]
 
     var body: some View {
@@ -109,12 +109,31 @@ struct FormsView: View {
                     .foregroundStyle(LebyyTheme.muted)
                     .accessibilityIdentifier(notifications ? "test-SwitchStatus-ON" : "test-SwitchStatus-OFF")
 
-                Picker("Dropdown", selection: $dropdown) {
-                    ForEach(options, id: \.self) { Text($0).tag($0) }
+                // Full-width dropdown control (menu style is otherwise compact).
+                Menu {
+                    ForEach(options.filter { $0 != "Select an item..." }, id: \.self) { option in
+                        Button(option) { dropdown = option }
+                    }
+                } label: {
+                    HStack {
+                        Text(dropdown)
+                            .foregroundStyle(LebyyTheme.text)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                        Spacer(minLength: 8)
+                        Image(systemName: "chevron.down")
+                            .foregroundStyle(LebyyTheme.muted)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .background(LebyyTheme.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .contentShape(Rectangle())
                 }
-                .pickerStyle(.menu)
-                .tint(LebyyTheme.text)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(dropdown == "Select an item..." ? "Dropdown" : dropdown)
                 .accessibilityIdentifier("test-Dropdown")
+                .accessibilityValue(dropdown)
                 .onChange(of: dropdown) { _, value in
                     result = "Result: Dropdown \(value)"
                 }

@@ -23,7 +23,7 @@
                 android:id="@+id/cardImage"
                 android:layout_width="match_parent"
                 android:layout_height="180dp"
-                android:contentDescription="Course image"
+                android:contentDescription="course"
                 android:padding="12dp"
                 android:scaleType="fitCenter" />
 

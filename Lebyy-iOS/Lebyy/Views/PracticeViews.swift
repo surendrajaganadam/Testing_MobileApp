@@ -210,20 +210,26 @@ struct SwipeHorizontalView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 180)
                         .padding(12)
+                        .accessibilityHidden(true)
                     Text(card.0)
                         .font(.title2.bold())
                         .foregroundStyle(LebyyTheme.primary)
                         .padding(.horizontal)
                         .padding(.top, 8)
-                        .accessibilityIdentifier("test-CARD \(index + 1)")
+                        .accessibilityHidden(true)
                     Text(card.1)
                         .foregroundStyle(LebyyTheme.text)
                         .padding()
+                        .accessibilityHidden(true)
                 }
                 .background(LebyyTheme.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .padding(16)
                 .frame(maxHeight: 360)
+                // Universal label for every card — use getByLabel('course') (+ .first / swipe).
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("course")
+                .accessibilityIdentifier("test-CARD \(index + 1)")
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .always))

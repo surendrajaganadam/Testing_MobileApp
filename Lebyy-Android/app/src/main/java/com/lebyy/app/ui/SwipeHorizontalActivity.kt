@@ -43,9 +43,11 @@ class SwipeHorizontalActivity : AppCompatActivity() {
             override fun onBindViewHolder(holder: CardVH, position: Int) {
                 val card = cards[position]
                 holder.binding.cardImage.setImageResource(card.imageRes)
+                holder.binding.cardImage.contentDescription = "course"
                 holder.binding.cardTitle.text = card.title
-                holder.binding.cardTitle.contentDescription = "test-CARD ${position + 1}"
                 holder.binding.cardBody.text = card.body
+                // Universal label for every card — use getByLabel('course') (+ .first / swipe).
+                holder.binding.root.contentDescription = "course"
             }
 
             override fun getItemCount(): Int = cards.size

@@ -6,7 +6,8 @@ struct LoginView: View {
     @State private var password = ""
     @State private var error = ""
     @State private var gestureResult = ""
-    @State private var gestureResultTask: Task<Void, Never>?
+    @State private var doubleTapCount = 0
+    @State private var doubleTapResetTask: Task<Void, Never>?
 
     var body: some View {
         ScrollView {
@@ -56,8 +57,6 @@ struct LoginView: View {
                     .accessibilityIdentifier("test-Password")
                     .accessibilityLabel("Password")
 
-                // Put frame/background inside the label so the whole wide button is tappable
-                // (SwiftUI otherwise keeps the hit target on the text only).
                 Button {
                     if store.login(username: username.trimmingCharacters(in: .whitespaces), password: password) {
                         error = ""
@@ -91,22 +90,47 @@ struct LoginView: View {
                     .accessibilityIdentifier("test-QuickGestures")
 
                 gestureButton(title: "LONG PRESS ME", accessibilityId: "test-LoginLongPress")
-                    .onLongPressGesture(minimumDuration: 2) {
-                        showGestureResult("Long press done")
-                    }
+                    .highPriorityGesture(
+                        LongPressGesture(minimumDuration: 2)
+                            .onEnded { _ in showGestureResult("Long press done") }
+                    )
 
-                gestureButton(title: "DOUBLE TAP ME", accessibilityId: "test-LoginDoubleTap")
-                    .onTapGesture(count: 2) {
-                        showGestureResult("Double tap done")
-                    }
+                // Custom double-tap window (~800ms) so MobileWright's two sequential taps register.
+                Button {
+                    handleDoubleTap()
+                } label: {
+                    gestureButtonLabel(title: "DOUBLE TAP ME")
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("test-LoginDoubleTap")
+                .accessibilityLabel("DOUBLE TAP ME")
 
                 if !gestureResult.isEmpty {
-                    Text(gestureResult)
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(LebyyTheme.success)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 2)
-                        .accessibilityIdentifier("test-LoginGestureResult")
+                    HStack(spacing: 10) {
+                        Text(gestureResult)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(LebyyTheme.success)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .accessibilityIdentifier("test-LoginGestureResult")
+                            .accessibilityLabel(gestureResult)
+
+                        Button {
+                            gestureResult = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 22))
+                                .foregroundStyle(LebyyTheme.muted)
+                                .frame(width: 36, height: 36)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("test-LoginGestureResult-Dismiss")
+                        .accessibilityLabel("Dismiss")
+                    }
+                    .padding(12)
+                    .background(LebyyTheme.surface)
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(LebyyTheme.line, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
             }
             .padding(24)
@@ -116,6 +140,12 @@ struct LoginView: View {
     }
 
     private func gestureButton(title: String, accessibilityId: String) -> some View {
+        gestureButtonLabel(title: title)
+            .accessibilityIdentifier(accessibilityId)
+            .accessibilityLabel(title)
+    }
+
+    private func gestureButtonLabel(title: String) -> some View {
         Text(title)
             .font(.headline)
             .frame(maxWidth: .infinity)
@@ -127,19 +157,25 @@ struct LoginView: View {
                     .stroke(LebyyTheme.primary, lineWidth: 2)
             )
             .clipShape(RoundedRectangle(cornerRadius: 12))
-            .contentShape(RoundedRectangle(cornerRadius: 12))
-            .accessibilityIdentifier(accessibilityId)
+            .contentShape(Rectangle())
+    }
+
+    private func handleDoubleTap() {
+        doubleTapCount += 1
+        if doubleTapCount >= 2 {
+            doubleTapResetTask?.cancel()
+            doubleTapCount = 0
+            showGestureResult("Double tap done")
+            return
+        }
+        doubleTapResetTask?.cancel()
+        doubleTapResetTask = Task {
+            try? await Task.sleep(nanoseconds: 800_000_000)
+            await MainActor.run { doubleTapCount = 0 }
+        }
     }
 
     private func showGestureResult(_ message: String) {
-        gestureResultTask?.cancel()
         gestureResult = message
-        gestureResultTask = Task {
-            try? await Task.sleep(nanoseconds: 2_500_000_000)
-            guard !Task.isCancelled else { return }
-            await MainActor.run {
-                gestureResult = ""
-            }
-        }
     }
 }

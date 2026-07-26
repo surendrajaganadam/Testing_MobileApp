@@ -14,6 +14,7 @@
     <string name="login_double_tap_button">DOUBLE TAP ME</string>
     <string name="login_long_press_done">Long press done</string>
     <string name="login_double_tap_done">Double tap done</string>
+    <string name="login_gesture_result_dismiss">Dismiss</string>
     <string name="login_error">Invalid credentials. Use demo_user / demo_pass</string>
     <string name="products_title">Shop</string>
     <string name="add_to_cart">ADD TO CART</string>

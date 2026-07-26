@@ -5,12 +5,10 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.GestureDetectorCompat
 import com.lebyy.app.R
 import com.lebyy.app.data.ShopState
 import com.lebyy.app.databinding.ActivityLoginBinding
@@ -19,15 +17,15 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private val handler = Handler(Looper.getMainLooper())
     private var longPressTriggered = false
+    private var doubleTapCount = 0
 
     private val longPressRunnable = Runnable {
         longPressTriggered = true
         showGestureResult(R.string.login_long_press_done)
     }
 
-    private val hideGestureResultRunnable = Runnable {
-        binding.gestureResult.visibility = View.GONE
-        binding.gestureResult.text = ""
+    private val resetDoubleTapRunnable = Runnable {
+        doubleTapCount = 0
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +52,11 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
+        binding.gestureResultDismiss.setOnClickListener {
+            binding.gestureResultRow.visibility = View.GONE
+            binding.gestureResult.text = ""
+        }
+
         // Dedicated long-press target (2 seconds) — separate from double-tap to avoid conflicts.
         binding.buttonLongPress.setOnTouchListener { view, event ->
             when (event.actionMasked) {
@@ -75,39 +78,33 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        // Dedicated double-tap target.
-        val doubleTapDetector = GestureDetectorCompat(
-            this,
-            object : GestureDetector.SimpleOnGestureListener() {
-                override fun onDown(e: MotionEvent): Boolean = true
-
-                override fun onDoubleTap(e: MotionEvent): Boolean {
-                    showGestureResult(R.string.login_double_tap_done)
-                    return true
-                }
-            },
-        )
-        binding.buttonDoubleTap.setOnTouchListener { _, event ->
-            doubleTapDetector.onTouchEvent(event)
-            true
+        // Custom double-tap window so MobileWright's two sequential taps still count.
+        binding.buttonDoubleTap.setOnClickListener {
+            doubleTapCount += 1
+            if (doubleTapCount >= 2) {
+                handler.removeCallbacks(resetDoubleTapRunnable)
+                doubleTapCount = 0
+                showGestureResult(R.string.login_double_tap_done)
+            } else {
+                handler.removeCallbacks(resetDoubleTapRunnable)
+                handler.postDelayed(resetDoubleTapRunnable, DOUBLE_TAP_WINDOW_MS)
+            }
         }
     }
 
     private fun showGestureResult(messageRes: Int) {
-        handler.removeCallbacks(hideGestureResultRunnable)
         binding.gestureResult.text = getString(messageRes)
-        binding.gestureResult.visibility = View.VISIBLE
-        handler.postDelayed(hideGestureResultRunnable, RESULT_VISIBLE_MS)
+        binding.gestureResultRow.visibility = View.VISIBLE
     }
 
     override fun onDestroy() {
         handler.removeCallbacks(longPressRunnable)
-        handler.removeCallbacks(hideGestureResultRunnable)
+        handler.removeCallbacks(resetDoubleTapRunnable)
         super.onDestroy()
     }
 
     companion object {
         private const val LONG_PRESS_MS = 2000L
-        private const val RESULT_VISIBLE_MS = 2500L
+        private const val DOUBLE_TAP_WINDOW_MS = 800L
     }
 }

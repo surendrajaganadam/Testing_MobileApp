@@ -25,6 +25,7 @@ struct ProductCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // Product body → details. Cart button stays outside so add/remove works on home.
             NavigationLink {
                 ProductDetailView(product: product)
             } label: {
@@ -46,22 +47,33 @@ struct ProductCard: View {
                     }
                     .padding([.horizontal, .top], 16)
                 }
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
-            Button(inCart ? "REMOVE" : "ADD TO CART") {
+            Button {
                 if inCart {
                     store.removeFromCart(product.id)
                 } else {
                     store.addToCart(product, qty: 1)
                 }
+            } label: {
+                Text(inCart ? "REMOVE" : "ADD TO CART")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(inCart ? LebyyTheme.surface2 : LebyyTheme.accent)
+                    .foregroundStyle(inCart ? LebyyTheme.text : LebyyTheme.bg)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(inCart ? LebyyTheme.line : Color.clear, lineWidth: 1)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .contentShape(Rectangle())
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(inCart ? LebyyTheme.surface2 : LebyyTheme.accent)
-            .foregroundStyle(inCart ? LebyyTheme.text : LebyyTheme.bg)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .buttonStyle(.plain)
             .accessibilityIdentifier(inCart ? "test-REMOVE" : "test-ADD TO CART")
+            .accessibilityLabel(inCart ? "REMOVE" : "ADD TO CART")
             .padding(16)
         }
         .background(LebyyTheme.surface)
@@ -123,16 +135,22 @@ struct ProductDetailView: View {
                         .accessibilityIdentifier("test-QtyPlus")
                 }
 
-                Button("ADD TO CART") {
+                Button {
                     store.addToCart(product, qty: qty)
                     dismiss()
+                } label: {
+                    Text("ADD TO CART")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(LebyyTheme.accent)
+                        .foregroundStyle(LebyyTheme.bg)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .contentShape(Rectangle())
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(LebyyTheme.accent)
-                .foregroundStyle(LebyyTheme.bg)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .buttonStyle(.plain)
                 .accessibilityIdentifier("test-ADD TO CART")
+                .accessibilityLabel("ADD TO CART")
             }
             .padding(16)
         }
@@ -144,11 +162,50 @@ struct ProductDetailView: View {
 
 struct CartView: View {
     @EnvironmentObject private var store: AppStore
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack {
             if store.cartLines.isEmpty {
-                Text("Cart is empty").foregroundStyle(LebyyTheme.muted).padding()
+                Spacer(minLength: 40)
+                VStack(spacing: 18) {
+                    Image(systemName: "cart")
+                        .font(.system(size: 56, weight: .light))
+                        .foregroundStyle(LebyyTheme.primary)
+                        .accessibilityHidden(true)
+
+                    Text("Your cart is empty")
+                        .font(.title2.bold())
+                        .foregroundStyle(LebyyTheme.text)
+                        .accessibilityIdentifier("test-CartEmptyTitle")
+
+                    Text("Browse courses on Shop and tap ADD TO CART — no need to open product details first.")
+                        .font(.subheadline)
+                        .foregroundStyle(LebyyTheme.muted)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 28)
+                        .accessibilityIdentifier("test-CartEmptyMessage")
+
+                    Button {
+                        store.selected = .shop
+                        dismiss()
+                    } label: {
+                        Text("CONTINUE SHOPPING")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(LebyyTheme.accent)
+                            .foregroundStyle(LebyyTheme.bg)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 8)
+                    .accessibilityIdentifier("test-CONTINUE SHOPPING")
+                    .accessibilityLabel("CONTINUE SHOPPING")
+                }
+                .frame(maxWidth: .infinity)
                 Spacer()
             } else {
                 List {
@@ -194,6 +251,7 @@ struct CartView: View {
                 .accessibilityIdentifier("test-CHECKOUT")
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(LebyyTheme.bg.ignoresSafeArea())
         .navigationTitle("Your Cart")
     }

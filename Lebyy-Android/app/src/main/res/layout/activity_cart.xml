@@ -16,6 +16,58 @@
         app:title="@string/your_cart"
         app:titleTextColor="@color/lebyy_text" />
 
+    <LinearLayout
+        android:id="@+id/emptyCartPanel"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="28dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:contentDescription="@null"
+            android:src="@drawable/logo_lebyy" />
+
+        <TextView
+            android:id="@+id/emptyCartTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:contentDescription="test-CartEmptyTitle"
+            android:gravity="center"
+            android:text="@string/cart_empty_title"
+            android:textColor="@color/lebyy_text"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/emptyCartMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:contentDescription="test-CartEmptyMessage"
+            android:gravity="center"
+            android:text="@string/cart_empty_message"
+            android:textColor="@color/lebyy_muted"
+            android:textSize="15sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonContinueShopping"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="24dp"
+            android:contentDescription="test-CONTINUE SHOPPING"
+            android:text="@string/continue_shopping"
+            android:textAllCaps="true"
+            android:textColor="@color/lebyy_bg"
+            app:backgroundTint="@color/lebyy_accent"
+            app:cornerRadius="12dp" />
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/cartList"
         android:layout_width="match_parent"

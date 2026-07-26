@@ -2,6 +2,7 @@ package com.lebyy.app.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lebyy.app.data.ShopState
@@ -23,6 +24,8 @@ class CartActivity : AppCompatActivity() {
         binding.cartList.layoutManager = LinearLayoutManager(this)
         binding.cartList.adapter = adapter
 
+        binding.buttonContinueShopping.setOnClickListener { finish() }
+
         binding.buttonCheckout.setOnClickListener {
             if (ShopState.cart().isNotEmpty()) {
                 startActivity(Intent(this, CheckoutInfoActivity::class.java))
@@ -37,8 +40,15 @@ class CartActivity : AppCompatActivity() {
     }
 
     private fun refresh() {
-        adapter.submit(ShopState.cart())
+        val lines = ShopState.cart()
+        val empty = lines.isEmpty()
+        binding.emptyCartPanel.visibility = if (empty) View.VISIBLE else View.GONE
+        binding.cartList.visibility = if (empty) View.GONE else View.VISIBLE
+        binding.cartTotal.visibility = if (empty) View.GONE else View.VISIBLE
+        binding.buttonCheckout.visibility = if (empty) View.GONE else View.VISIBLE
+
+        adapter.submit(lines)
         binding.cartTotal.text = String.format(Locale.US, "Total: $%.2f", ShopState.cartTotal())
-        binding.buttonCheckout.isEnabled = ShopState.cart().isNotEmpty()
+        binding.buttonCheckout.isEnabled = !empty
     }
 }

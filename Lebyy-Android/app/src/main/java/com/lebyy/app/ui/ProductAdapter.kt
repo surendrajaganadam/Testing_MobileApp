@@ -2,6 +2,7 @@ package com.lebyy.app.ui
 
 import android.content.Intent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -32,7 +33,8 @@ class ProductAdapter(
         holder.binding.productPrice.text = String.format(Locale.US, "$%.2f", product.price)
         holder.binding.productDesc.text = product.description
 
-        holder.binding.root.setOnClickListener {
+        // Tap product content → details. Button stays separate for home add/remove.
+        val openDetails = View.OnClickListener {
             ctx.startActivity(
                 Intent(ctx, ProductDetailActivity::class.java).putExtra(
                     ProductDetailActivity.EXTRA_PRODUCT_ID,
@@ -40,6 +42,12 @@ class ProductAdapter(
                 ),
             )
         }
+        holder.binding.root.isClickable = false
+        holder.binding.root.setOnClickListener(null)
+        holder.binding.productImage.setOnClickListener(openDetails)
+        holder.binding.productName.setOnClickListener(openDetails)
+        holder.binding.productPrice.setOnClickListener(openDetails)
+        holder.binding.productDesc.setOnClickListener(openDetails)
 
         val inCart = ShopState.isInCart(product.id)
         if (inCart) {

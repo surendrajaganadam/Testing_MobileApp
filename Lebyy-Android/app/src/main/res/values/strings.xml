@@ -20,6 +20,8 @@
     <string name="add_to_cart">ADD TO CART</string>
     <string name="remove">REMOVE</string>
     <string name="your_cart">Your Cart</string>
+    <string name="cart_empty_title">Your cart is empty</string>
+    <string name="cart_empty_message">Browse courses on Shop and tap ADD TO CART — no need to open product details first.</string>
     <string name="checkout">CHECKOUT</string>
     <string name="continue_shopping">CONTINUE SHOPPING</string>
     <string name="checkout_info">Checkout Info</string>

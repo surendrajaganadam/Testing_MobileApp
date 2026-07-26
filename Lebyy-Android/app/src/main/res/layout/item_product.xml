@@ -57,8 +57,8 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonAddToCart"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
                 android:layout_marginTop="12dp"
                 android:contentDescription="test-ADD TO CART"
                 android:text="@string/add_to_cart"

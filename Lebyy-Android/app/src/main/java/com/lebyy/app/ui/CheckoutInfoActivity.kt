@@ -15,6 +15,7 @@ class CheckoutInfoActivity : AppCompatActivity() {
         binding = ActivityCheckoutInfoBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.toolbar.title = getString(com.lebyy.app.R.string.shipping_title)
         binding.toolbar.setNavigationOnClickListener { finish() }
         binding.buttonCancel.setOnClickListener { finish() }
 
@@ -29,7 +30,7 @@ class CheckoutInfoActivity : AppCompatActivity() {
             ShopState.firstName = first
             ShopState.lastName = last
             ShopState.zipCode = zip
-            startActivity(Intent(this, CheckoutOverviewActivity::class.java))
+            startActivity(Intent(this, PaymentActivity::class.java))
         }
     }
 }

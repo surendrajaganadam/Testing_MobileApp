@@ -40,6 +40,16 @@
         android:textSize="15sp" />
 
     <TextView
+        android:id="@+id/drawerOrders"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:contentDescription="test-Orders"
+        android:gravity="center_vertical"
+        android:text="@string/menu_orders"
+        android:textColor="@color/lebyy_text"
+        android:textSize="15sp" />
+
+    <TextView
         android:id="@+id/drawerAlerts"
         android:layout_width="match_parent"
         android:layout_height="44dp"

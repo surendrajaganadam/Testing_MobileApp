@@ -31,8 +31,14 @@
             android:name=".ui.CheckoutInfoActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ui.PaymentActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.CheckoutOverviewActivity" android:exported="false" />
-        <activity android:name=".ui.OrderCompleteActivity" android:exported="false" />
+        <activity android:name=".ui.OrderDetailsActivity" android:exported="false" />
+        <activity android:name=".ui.OrdersActivity" android:exported="false" />
+
         <activity
             android:name=".ui.WebViewActivity"
             android:exported="false"

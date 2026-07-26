@@ -13,7 +13,7 @@
         android:background="@color/lebyy_bg_2"
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
         app:navigationIcon="?attr/homeAsUpIndicator"
-        app:title="@string/overview_title"
+        app:title="@string/review_title"
         app:titleTextColor="@color/lebyy_text" />
 
     <ScrollView
@@ -28,27 +28,21 @@
             android:padding="16dp">
 
             <TextView
-                android:id="@+id/overviewItems"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/lebyy_text"
-                android:textSize="16sp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/payment_information"
+                android:text="@string/order_items"
                 android:textColor="@color/lebyy_text"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/overviewItems"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="@string/payment_card"
-                android:textColor="@color/lebyy_text" />
+                android:contentDescription="test-ReviewItem"
+                android:textColor="@color/lebyy_text"
+                android:textSize="16sp" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -64,28 +58,43 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:textColor="@color/lebyy_text" />
+                android:contentDescription="test-ReviewShipping"
+                android:textColor="@color/lebyy_muted" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/payment_information"
+                android:textColor="@color/lebyy_text"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/paymentInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:contentDescription="test-ReviewPayment"
+                android:textColor="@color/lebyy_muted" />
 
             <TextView
                 android:id="@+id/overviewTotal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:contentDescription="test-ReviewTotal"
                 android:textColor="@color/lebyy_primary"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <!-- Spacer so FINISH sits below the fold on small phones -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="280dp" />
-
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonFinish"
+                android:id="@+id/buttonPlaceOrder"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:contentDescription="test-FINISH"
-                android:text="@string/finish"
+                android:layout_marginTop="28dp"
+                android:contentDescription="test-PLACE ORDER"
+                android:text="@string/place_order"
                 android:textAllCaps="true"
                 android:textColor="@color/lebyy_bg"
                 app:backgroundTint="@color/lebyy_accent"

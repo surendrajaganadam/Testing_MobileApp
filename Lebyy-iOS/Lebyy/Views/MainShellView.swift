@@ -62,6 +62,7 @@ struct MainShellView: View {
     private var content: some View {
         switch store.selected {
         case .shop: ShopView()
+        case .orders: OrdersView()
         case .alerts: AlertsView()
         case .forms: FormsView()
         case .swipeH: SwipeHorizontalView()

@@ -61,6 +61,7 @@ object DrawerHelper {
         }
 
         header.drawerShop.setOnClickListener { go(CatalogActivity::class.java, "shop") }
+        header.drawerOrders.setOnClickListener { go(OrdersActivity::class.java, "orders") }
         header.drawerAlerts.setOnClickListener { go(AlertsActivity::class.java, "alerts") }
         header.drawerForms.setOnClickListener { go(FormsActivity::class.java, "forms") }
         header.drawerSwipeHorizontal.setOnClickListener {
@@ -83,6 +84,7 @@ object DrawerHelper {
         }
 
         highlight(header.drawerShop, current == "shop")
+        highlight(header.drawerOrders, current == "orders")
         highlight(header.drawerAlerts, current == "alerts")
         highlight(header.drawerForms, current == "forms")
         highlight(header.drawerSwipeHorizontal, current == "swipe_h")

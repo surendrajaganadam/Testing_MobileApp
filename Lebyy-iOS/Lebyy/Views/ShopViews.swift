@@ -270,83 +270,262 @@ struct CheckoutInfoView: View {
                 .accessibilityIdentifier("test-Zip/Postal Code")
 
             NavigationLink("CONTINUE") {
-                CheckoutOverviewView()
+                PaymentView()
             }
             .disabled(store.firstName.isEmpty || store.lastName.isEmpty || store.zipCode.isEmpty)
             .accessibilityIdentifier("test-CONTINUE")
         }
         .scrollContentBackground(.hidden)
         .background(LebyyTheme.bg.ignoresSafeArea())
-        .navigationTitle("Checkout Info")
+        .navigationTitle("Shipping")
     }
 }
 
-struct CheckoutOverviewView: View {
+/// Card-only payment step (any digits accepted — practice app, no Luhn/rules).
+struct PaymentView: View {
     @EnvironmentObject private var store: AppStore
-    @State private var goComplete = false
+
+    private var canContinue: Bool {
+        !store.cardNumber.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    var body: some View {
+        Form {
+            Section("Lebyy Pay — Card") {
+                TextField("Card Number", text: $store.cardNumber)
+                    .keyboardType(.numberPad)
+                    .textInputAutocapitalization(.never)
+                    .accessibilityIdentifier("test-Card Number")
+                    .accessibilityLabel("Card Number")
+                TextField("Expiry (MM/YY)", text: $store.cardExpiry)
+                    .accessibilityIdentifier("test-Card Expiry")
+                    .accessibilityLabel("Card Expiry")
+                SecureField("CVV", text: $store.cardCvv)
+                    .keyboardType(.numberPad)
+                    .accessibilityIdentifier("test-Card CVV")
+                    .accessibilityLabel("Card CVV")
+                Text("Any numbers accepted — no validation rules for practice automation.")
+                    .font(.caption)
+                    .foregroundStyle(LebyyTheme.muted)
+            }
+
+            NavigationLink("CONTINUE TO REVIEW") {
+                ReviewOrderView()
+            }
+            .disabled(!canContinue)
+            .accessibilityIdentifier("test-CONTINUE TO REVIEW")
+        }
+        .scrollContentBackground(.hidden)
+        .background(LebyyTheme.bg.ignoresSafeArea())
+        .navigationTitle("Payment")
+    }
+}
+
+struct ReviewOrderView: View {
+    @EnvironmentObject private var store: AppStore
+    @State private var placedOrderId: String?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                Text("Order items").font(.headline).foregroundStyle(LebyyTheme.text)
                 ForEach(store.cartLines) { line in
                     Text(String(format: "• %@ x%d — $%.2f", line.product.name, line.quantity, line.lineTotal))
                         .foregroundStyle(LebyyTheme.text)
+                        .accessibilityIdentifier("test-ReviewItem")
                 }
-                Text("Payment Information").font(.headline).foregroundStyle(LebyyTheme.text)
-                Text("Lebyy Card **** 4242").foregroundStyle(LebyyTheme.muted)
-                Text("Shipping Information").font(.headline).foregroundStyle(LebyyTheme.text)
-                Text("\(store.firstName) \(store.lastName)\n\(store.zipCode)").foregroundStyle(LebyyTheme.muted)
+
+                Text("Shipping").font(.headline).foregroundStyle(LebyyTheme.text)
+                Text("\(store.firstName) \(store.lastName)\n\(store.zipCode)")
+                    .foregroundStyle(LebyyTheme.muted)
+                    .accessibilityIdentifier("test-ReviewShipping")
+
+                Text("Payment").font(.headline).foregroundStyle(LebyyTheme.text)
+                Text("Card ending \(store.cardLast4)")
+                    .foregroundStyle(LebyyTheme.muted)
+                    .accessibilityIdentifier("test-ReviewPayment")
+
                 Text(String(format: "Total: $%.2f", store.cartTotal))
                     .font(.title3.bold())
                     .foregroundStyle(LebyyTheme.primary)
+                    .accessibilityIdentifier("test-ReviewTotal")
 
-                Spacer(minLength: 120)
-
-                Button("FINISH") {
-                    store.clearCart()
-                    goComplete = true
+                Button {
+                    let order = store.placeOrder()
+                    placedOrderId = order.id
+                } label: {
+                    Text("PLACE ORDER")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(LebyyTheme.accent)
+                        .foregroundStyle(LebyyTheme.bg)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .contentShape(Rectangle())
                 }
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(LebyyTheme.accent)
-                .foregroundStyle(LebyyTheme.bg)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .accessibilityIdentifier("test-FINISH")
+                .buttonStyle(.plain)
+                .padding(.top, 12)
+                .accessibilityIdentifier("test-PLACE ORDER")
+                .accessibilityLabel("PLACE ORDER")
             }
             .padding(16)
         }
         .background(LebyyTheme.bg.ignoresSafeArea())
-        .navigationTitle("Checkout Overview")
-        .navigationDestination(isPresented: $goComplete) {
-            OrderCompleteView()
+        .navigationTitle("Review Order")
+        .navigationDestination(item: $placedOrderId) { orderId in
+            OrderDetailsView(orderId: orderId, showPreviousOrders: true)
         }
     }
 }
 
-struct OrderCompleteView: View {
+struct OrdersView: View {
     @EnvironmentObject private var store: AppStore
 
     var body: some View {
-        VStack(spacing: 24) {
-            Image("logo_lebyy").resizable().scaledToFit().frame(width: 72, height: 72)
-            Text("Thank you for your order!")
-                .font(.title2.bold())
-                .foregroundStyle(LebyyTheme.primary)
-                .multilineTextAlignment(.center)
-            Button("BACK HOME") {
-                store.selected = .shop
+        Group {
+            if store.orders.isEmpty {
+                VStack(spacing: 12) {
+                    Text("No orders yet")
+                        .font(.title3.bold())
+                        .foregroundStyle(LebyyTheme.text)
+                        .accessibilityIdentifier("test-OrdersEmpty")
+                    Text("Complete a checkout to see order history here.")
+                        .font(.subheadline)
+                        .foregroundStyle(LebyyTheme.muted)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                List(store.orders) { order in
+                    NavigationLink {
+                        OrderDetailsView(orderId: order.id, showPreviousOrders: false)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(order.id)
+                                .font(.headline)
+                                .foregroundStyle(LebyyTheme.primary)
+                            Text(String(format: "$%.2f · %d item(s)", order.total, order.items.count))
+                                .font(.caption)
+                                .foregroundStyle(LebyyTheme.muted)
+                        }
+                    }
+                    .accessibilityIdentifier("test-Order-\(order.id)")
+                    .listRowBackground(LebyyTheme.surface)
+                }
+                .scrollContentBackground(.hidden)
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(LebyyTheme.accent)
-            .foregroundStyle(LebyyTheme.bg)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .accessibilityIdentifier("test-BACK HOME")
         }
-        .padding(24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(LebyyTheme.bg.ignoresSafeArea())
-        .navigationTitle("Order Complete")
-        .navigationBarBackButtonHidden(true)
+        .navigationTitle("My Orders")
+    }
+}
+
+struct OrderDetailsView: View {
+    @EnvironmentObject private var store: AppStore
+    let orderId: String
+    var showPreviousOrders: Bool = true
+
+    private var order: Order? { store.order(byId: orderId) }
+    private var previousOrders: [Order] {
+        store.orders.filter { $0.id != orderId }
+    }
+
+    private var dateText: String {
+        guard let order else { return "" }
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .short
+        return f.string(from: order.placedAt)
+    }
+
+    var body: some View {
+        ScrollView {
+            if let order {
+                VStack(alignment: .leading, spacing: 14) {
+                    Text("Order confirmed")
+                        .font(.title2.bold())
+                        .foregroundStyle(LebyyTheme.primary)
+                        .accessibilityIdentifier("test-OrderConfirmed")
+
+                    Text(order.id)
+                        .font(.headline)
+                        .foregroundStyle(LebyyTheme.text)
+                        .accessibilityIdentifier("test-OrderId")
+
+                    Text(dateText)
+                        .font(.caption)
+                        .foregroundStyle(LebyyTheme.muted)
+                        .accessibilityIdentifier("test-OrderDate")
+
+                    Text("Items").font(.headline).foregroundStyle(LebyyTheme.text)
+                    ForEach(order.items) { item in
+                        Text(String(format: "• %@ x%d — $%.2f", item.name, item.quantity, item.lineTotal))
+                            .foregroundStyle(LebyyTheme.text)
+                            .accessibilityIdentifier("test-OrderItem")
+                    }
+
+                    Text("Ship to").font(.headline).foregroundStyle(LebyyTheme.text)
+                    Text("\(order.firstName) \(order.lastName)\n\(order.zipCode)")
+                        .foregroundStyle(LebyyTheme.muted)
+                        .accessibilityIdentifier("test-OrderShipping")
+
+                    Text("Paid with").font(.headline).foregroundStyle(LebyyTheme.text)
+                    Text("Card ending \(order.cardLast4)")
+                        .foregroundStyle(LebyyTheme.muted)
+                        .accessibilityIdentifier("test-OrderPayment")
+
+                    Text(String(format: "Total: $%.2f", order.total))
+                        .font(.title3.bold())
+                        .foregroundStyle(LebyyTheme.primary)
+                        .accessibilityIdentifier("test-OrderTotal")
+
+                    if showPreviousOrders {
+                        Divider().overlay(LebyyTheme.line).padding(.vertical, 8)
+                        Text("Previous orders")
+                            .font(.headline)
+                            .foregroundStyle(LebyyTheme.text)
+                            .accessibilityIdentifier("test-PreviousOrdersTitle")
+
+                        if previousOrders.isEmpty {
+                            Text("No previous orders yet.")
+                                .foregroundStyle(LebyyTheme.muted)
+                                .accessibilityIdentifier("test-PreviousOrdersEmpty")
+                        } else {
+                            ForEach(previousOrders) { prev in
+                                NavigationLink {
+                                    OrderDetailsView(orderId: prev.id, showPreviousOrders: false)
+                                } label: {
+                                    HStack {
+                                        VStack(alignment: .leading) {
+                                            Text(prev.id).foregroundStyle(LebyyTheme.primary)
+                                            Text(String(format: "$%.2f", prev.total))
+                                                .font(.caption)
+                                                .foregroundStyle(LebyyTheme.muted)
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .foregroundStyle(LebyyTheme.muted)
+                                    }
+                                    .padding(12)
+                                    .background(LebyyTheme.surface)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("test-PreviousOrder-\(prev.id)")
+                            }
+                        }
+                    }
+                }
+                .padding(16)
+            } else {
+                Text("Order not found")
+                    .foregroundStyle(LebyyTheme.muted)
+                    .padding()
+            }
+        }
+        .background(LebyyTheme.bg.ignoresSafeArea())
+        .navigationTitle("Order Details")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

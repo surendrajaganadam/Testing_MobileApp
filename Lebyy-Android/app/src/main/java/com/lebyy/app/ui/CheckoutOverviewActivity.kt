@@ -29,11 +29,17 @@ class CheckoutOverviewActivity : AppCompatActivity() {
         }
         binding.overviewItems.text = items.ifEmpty { "No items" }
         binding.shippingInfo.text = "${ShopState.firstName} ${ShopState.lastName}\n${ShopState.zipCode}"
+        binding.paymentInfo.text = "Card ending ${ShopState.cardLast4()}"
         binding.overviewTotal.text = String.format(Locale.US, "Total: $%.2f", ShopState.cartTotal())
 
-        binding.buttonFinish.setOnClickListener {
-            ShopState.clearCart()
-            startActivity(Intent(this, OrderCompleteActivity::class.java))
+        binding.buttonPlaceOrder.setOnClickListener {
+            val order = ShopState.placeOrder()
+            startActivity(
+                Intent(this, OrderDetailsActivity::class.java).putExtra(
+                    OrderDetailsActivity.EXTRA_ORDER_ID,
+                    order.id,
+                ).putExtra(OrderDetailsActivity.EXTRA_SHOW_PREVIOUS, true),
+            )
             finish()
         }
     }

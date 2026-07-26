@@ -202,7 +202,7 @@ struct SwipeHorizontalView: View {
 
     var body: some View {
         TabView {
-            ForEach(Array(cards.enumerated()), id: \.offset) { index, card in
+            ForEach(Array(cards.enumerated()), id: \.offset) { _, card in
                 VStack(alignment: .leading, spacing: 0) {
                     Image(card.2)
                         .resizable()
@@ -226,10 +226,10 @@ struct SwipeHorizontalView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .padding(16)
                 .frame(maxHeight: 360)
-                // Universal label for every card — use getByLabel('course') (+ .first / swipe).
+                // Same label on every card — use getByLabel('course') (+ .first / swipe).
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("course")
-                .accessibilityIdentifier("test-CARD \(index + 1)")
+                .accessibilityIdentifier("course")
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .always))

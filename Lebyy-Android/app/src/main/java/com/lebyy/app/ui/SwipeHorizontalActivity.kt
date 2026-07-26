@@ -46,7 +46,7 @@ class SwipeHorizontalActivity : AppCompatActivity() {
                 holder.binding.cardImage.contentDescription = "course"
                 holder.binding.cardTitle.text = card.title
                 holder.binding.cardBody.text = card.body
-                // Universal label for every card — use getByLabel('course') (+ .first / swipe).
+                // Same name on every card — use getByLabel('course') (+ .first / swipe).
                 holder.binding.root.contentDescription = "course"
             }
 

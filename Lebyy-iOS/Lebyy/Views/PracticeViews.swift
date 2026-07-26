@@ -204,13 +204,15 @@ struct SwipeHorizontalView: View {
         TabView {
             ForEach(Array(cards.enumerated()), id: \.offset) { _, card in
                 VStack(alignment: .leading, spacing: 0) {
+                    // Override asset name (course_1…) so Inspector never shows course_N.
                     Image(card.2)
                         .resizable()
                         .scaledToFit()
                         .frame(maxWidth: .infinity)
                         .frame(height: 180)
                         .padding(12)
-                        .accessibilityHidden(true)
+                        .accessibilityLabel("course")
+                        .accessibilityIdentifier("course")
                     Text(card.0)
                         .font(.title2.bold())
                         .foregroundStyle(LebyyTheme.primary)
@@ -226,8 +228,7 @@ struct SwipeHorizontalView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .padding(16)
                 .frame(maxHeight: 360)
-                // Same label on every card — use getByLabel('course') (+ .first / swipe).
-                .accessibilityElement(children: .ignore)
+                .accessibilityElement(children: .contain)
                 .accessibilityLabel("course")
                 .accessibilityIdentifier("course")
             }

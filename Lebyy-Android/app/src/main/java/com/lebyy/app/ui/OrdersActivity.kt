@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lebyy.app.R
 import com.lebyy.app.data.Order
+import com.lebyy.app.data.OrderStatus
 import com.lebyy.app.data.ShopState
 import com.lebyy.app.databinding.ActivityOrdersBinding
 import java.util.Locale
@@ -62,7 +63,9 @@ class OrdersActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: VH, position: Int) {
             val order = orders[position]
-            holder.view.text = String.format(Locale.US, "%s  ·  $%.2f", order.id, order.total)
+            val cancelled = if (order.status == OrderStatus.CANCELLED) " · CANCELLED" else ""
+            holder.view.text =
+                String.format(Locale.US, "%s  ·  $%.2f%s", order.id, order.total, cancelled)
             holder.view.contentDescription = "test-Order-${order.id}"
             holder.view.setOnClickListener { onClick(order) }
         }

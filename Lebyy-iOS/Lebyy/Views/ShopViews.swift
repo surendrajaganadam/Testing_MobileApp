@@ -262,12 +262,32 @@ struct CheckoutInfoView: View {
 
     var body: some View {
         Form {
-            TextField("First Name", text: $store.firstName)
-                .accessibilityIdentifier("test-First Name")
-            TextField("Last Name", text: $store.lastName)
-                .accessibilityIdentifier("test-Last Name")
-            TextField("Zip/Postal Code", text: $store.zipCode)
-                .accessibilityIdentifier("test-Zip/Postal Code")
+            Section("Saved addresses") {
+                ForEach(store.savedAddresses) { address in
+                    Button {
+                        store.selectAddress(address)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(address.label)
+                                .foregroundStyle(LebyyTheme.primary)
+                            Text("\(address.firstName) \(address.lastName) · \(address.zipCode)")
+                                .font(.caption)
+                                .foregroundStyle(LebyyTheme.muted)
+                        }
+                    }
+                    .accessibilityIdentifier("test-SavedAddress-\(address.id)")
+                    .accessibilityLabel(address.label)
+                }
+            }
+
+            Section("Or enter manually") {
+                TextField("First Name", text: $store.firstName)
+                    .accessibilityIdentifier("test-First Name")
+                TextField("Last Name", text: $store.lastName)
+                    .accessibilityIdentifier("test-Last Name")
+                TextField("Zip/Postal Code", text: $store.zipCode)
+                    .accessibilityIdentifier("test-Zip/Postal Code")
+            }
 
             NavigationLink("CONTINUE") {
                 PaymentView()
@@ -335,6 +355,37 @@ struct ReviewOrderView: View {
                         .accessibilityIdentifier("test-ReviewItem")
                 }
 
+                Text("Coupon").font(.headline).foregroundStyle(LebyyTheme.text)
+                HStack(spacing: 10) {
+                    TextField("Coupon code", text: $store.couponInput)
+                        .textInputAutocapitalization(.characters)
+                        .padding(12)
+                        .background(LebyyTheme.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .accessibilityIdentifier("test-Coupon")
+                        .accessibilityLabel("Coupon code")
+                    Button("APPLY") {
+                        _ = store.applyCoupon()
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background(LebyyTheme.primary)
+                    .foregroundStyle(LebyyTheme.bg)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .accessibilityIdentifier("test-APPLY COUPON")
+                    .accessibilityLabel("APPLY COUPON")
+                }
+                if let code = store.appliedCoupon {
+                    Text("Applied: \(code) (−10%)")
+                        .font(.caption)
+                        .foregroundStyle(LebyyTheme.success)
+                        .accessibilityIdentifier("test-CouponApplied")
+                } else {
+                    Text("Any non-empty code gives 10% off.")
+                        .font(.caption)
+                        .foregroundStyle(LebyyTheme.muted)
+                }
+
                 Text("Shipping").font(.headline).foregroundStyle(LebyyTheme.text)
                 Text("\(store.firstName) \(store.lastName)\n\(store.zipCode)")
                     .foregroundStyle(LebyyTheme.muted)
@@ -345,6 +396,14 @@ struct ReviewOrderView: View {
                     .foregroundStyle(LebyyTheme.muted)
                     .accessibilityIdentifier("test-ReviewPayment")
 
+                Text(String(format: "Subtotal: $%.2f", store.cartSubtotal))
+                    .foregroundStyle(LebyyTheme.muted)
+                    .accessibilityIdentifier("test-ReviewSubtotal")
+                if store.cartDiscount > 0 {
+                    Text(String(format: "Discount: −$%.2f", store.cartDiscount))
+                        .foregroundStyle(LebyyTheme.success)
+                        .accessibilityIdentifier("test-ReviewDiscount")
+                }
                 Text(String(format: "Total: $%.2f", store.cartTotal))
                     .font(.title3.bold())
                     .foregroundStyle(LebyyTheme.primary)
@@ -402,9 +461,17 @@ struct OrdersView: View {
                         OrderDetailsView(orderId: order.id, showPreviousOrders: false)
                     } label: {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(order.id)
-                                .font(.headline)
-                                .foregroundStyle(LebyyTheme.primary)
+                            HStack {
+                                Text(order.id)
+                                    .font(.headline)
+                                    .foregroundStyle(LebyyTheme.primary)
+                                if order.status == .cancelled {
+                                    Text("CANCELLED")
+                                        .font(.caption2.bold())
+                                        .foregroundStyle(LebyyTheme.accent)
+                                        .accessibilityIdentifier("test-OrderStatus-Cancelled")
+                                }
+                            }
                             Text(String(format: "$%.2f · %d item(s)", order.total, order.items.count))
                                 .font(.caption)
                                 .foregroundStyle(LebyyTheme.muted)
@@ -443,10 +510,10 @@ struct OrderDetailsView: View {
         ScrollView {
             if let order {
                 VStack(alignment: .leading, spacing: 14) {
-                    Text("Order confirmed")
+                    Text(order.status == .cancelled ? "Order cancelled" : "Order confirmed")
                         .font(.title2.bold())
-                        .foregroundStyle(LebyyTheme.primary)
-                        .accessibilityIdentifier("test-OrderConfirmed")
+                        .foregroundStyle(order.status == .cancelled ? LebyyTheme.accent : LebyyTheme.primary)
+                        .accessibilityIdentifier(order.status == .cancelled ? "test-OrderCancelled" : "test-OrderConfirmed")
 
                     Text(order.id)
                         .font(.headline)
@@ -475,10 +542,38 @@ struct OrderDetailsView: View {
                         .foregroundStyle(LebyyTheme.muted)
                         .accessibilityIdentifier("test-OrderPayment")
 
+                    if order.discount > 0 {
+                        Text(String(format: "Subtotal: $%.2f", order.subtotal))
+                            .foregroundStyle(LebyyTheme.muted)
+                            .accessibilityIdentifier("test-OrderSubtotal")
+                        Text(String(format: "Discount (%@): −$%.2f", order.couponCode ?? "coupon", order.discount))
+                            .foregroundStyle(LebyyTheme.success)
+                            .accessibilityIdentifier("test-OrderDiscount")
+                    }
+
                     Text(String(format: "Total: $%.2f", order.total))
                         .font(.title3.bold())
                         .foregroundStyle(LebyyTheme.primary)
                         .accessibilityIdentifier("test-OrderTotal")
+
+                    if order.status == .placed {
+                        Button {
+                            _ = store.cancelOrder(order.id)
+                        } label: {
+                            Text("CANCEL ORDER")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(LebyyTheme.accent)
+                                .foregroundStyle(LebyyTheme.bg)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 8)
+                        .accessibilityIdentifier("test-CANCEL ORDER")
+                        .accessibilityLabel("CANCEL ORDER")
+                    }
 
                     if showPreviousOrders {
                         Divider().overlay(LebyyTheme.line).padding(.vertical, 8)

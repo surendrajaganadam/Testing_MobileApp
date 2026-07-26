@@ -48,6 +48,56 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:text="@string/coupon"
+                android:textColor="@color/lebyy_text"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/inputCoupon"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="test-Coupon"
+                        android:hint="@string/coupon_code"
+                        android:inputType="textCapCharacters" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonApplyCoupon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="test-APPLY COUPON"
+                    android:text="@string/apply_coupon"
+                    android:textAllCaps="true" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/couponStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:contentDescription="test-CouponApplied"
+                android:text="@string/coupon_hint"
+                android:textColor="@color/lebyy_muted"
+                android:textSize="13sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
                 android:text="@string/shipping_information"
                 android:textColor="@color/lebyy_text"
                 android:textSize="18sp"
@@ -79,10 +129,29 @@
                 android:textColor="@color/lebyy_muted" />
 
             <TextView
-                android:id="@+id/overviewTotal"
+                android:id="@+id/overviewSubtotal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:contentDescription="test-ReviewSubtotal"
+                android:textColor="@color/lebyy_muted"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/overviewDiscount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:contentDescription="test-ReviewDiscount"
+                android:textColor="@color/lebyy_success"
+                android:textSize="15sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/overviewTotal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:contentDescription="test-ReviewTotal"
                 android:textColor="@color/lebyy_primary"
                 android:textSize="20sp"

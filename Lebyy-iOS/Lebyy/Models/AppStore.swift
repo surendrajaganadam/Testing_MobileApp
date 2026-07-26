@@ -16,6 +16,14 @@ struct CartLine: Identifiable {
     var lineTotal: Double { product.price * Double(quantity) }
 }
 
+struct SavedAddress: Identifiable, Hashable {
+    let id: String
+    let label: String
+    let firstName: String
+    let lastName: String
+    let zipCode: String
+}
+
 struct OrderItem: Identifiable, Hashable {
     var id: String { productId }
     let productId: String
@@ -25,15 +33,24 @@ struct OrderItem: Identifiable, Hashable {
     let imageName: String
 }
 
+enum OrderStatus: String, Hashable {
+    case placed
+    case cancelled
+}
+
 struct Order: Identifiable, Hashable {
     let id: String
     let placedAt: Date
     let items: [OrderItem]
+    let subtotal: Double
+    let discount: Double
     let total: Double
+    let couponCode: String?
     let firstName: String
     let lastName: String
     let zipCode: String
     let cardLast4: String
+    var status: OrderStatus
 }
 
 enum MenuDestination: String, CaseIterable, Identifiable {
@@ -77,8 +94,19 @@ final class AppStore: ObservableObject {
     @Published var cardNumber = ""
     @Published var cardExpiry = ""
     @Published var cardCvv = ""
+    @Published var couponInput = ""
+    @Published var appliedCoupon: String?
     @Published var orders: [Order] = []
     @Published var lastPlacedOrderId: String?
+
+    /// Any non-empty coupon code applies a flat 10% discount (practice app).
+    static let couponDiscountRate = 0.10
+
+    let savedAddresses: [SavedAddress] = [
+        .init(id: "home", label: "Home — Demo City", firstName: "Demo", lastName: "User", zipCode: "560001"),
+        .init(id: "work", label: "Work — Lebyy Hub", firstName: "Surendra", lastName: "QA", zipCode: "500081"),
+        .init(id: "lab", label: "Lab — Automation Park", firstName: "Mobile", lastName: "Wright", zipCode: "94105"),
+    ]
 
     let products: [Product] = [
         .init(id: "c1", name: "Playwright Mastery", price: 19.99, description: "End-to-end web automation with Playwright — real projects, locators, and CI pipelines.", imageName: "course_1"),
@@ -91,7 +119,12 @@ final class AppStore: ObservableObject {
 
     var cartLines: [CartLine] { Array(cart.values) }
     var cartCount: Int { cart.values.reduce(0) { $0 + $1.quantity } }
-    var cartTotal: Double { cart.values.reduce(0) { $0 + $1.lineTotal } }
+    var cartSubtotal: Double { cart.values.reduce(0) { $0 + $1.lineTotal } }
+    var cartDiscount: Double {
+        guard appliedCoupon != nil else { return 0 }
+        return (cartSubtotal * Self.couponDiscountRate * 100).rounded() / 100
+    }
+    var cartTotal: Double { max(0, ((cartSubtotal - cartDiscount) * 100).rounded() / 100) }
 
     var cardLast4: String {
         let digits = cardNumber.filter(\.isNumber)
@@ -116,6 +149,28 @@ final class AppStore: ObservableObject {
 
     func removeFromCart(_ id: String) { cart.removeValue(forKey: id) }
 
+    func selectAddress(_ address: SavedAddress) {
+        firstName = address.firstName
+        lastName = address.lastName
+        zipCode = address.zipCode
+    }
+
+    @discardableResult
+    func applyCoupon() -> Bool {
+        let code = couponInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !code.isEmpty else {
+            appliedCoupon = nil
+            return false
+        }
+        appliedCoupon = code.uppercased()
+        return true
+    }
+
+    func clearCoupon() {
+        couponInput = ""
+        appliedCoupon = nil
+    }
+
     func clearCartOnly() {
         cart.removeAll()
     }
@@ -127,6 +182,7 @@ final class AppStore: ObservableObject {
         cardNumber = ""
         cardExpiry = ""
         cardCvv = ""
+        clearCoupon()
     }
 
     @discardableResult
@@ -144,11 +200,15 @@ final class AppStore: ObservableObject {
             id: "LB-\(Int(Date().timeIntervalSince1970))",
             placedAt: Date(),
             items: items,
+            subtotal: cartSubtotal,
+            discount: cartDiscount,
             total: cartTotal,
+            couponCode: appliedCoupon,
             firstName: firstName,
             lastName: lastName,
             zipCode: zipCode,
-            cardLast4: cardLast4
+            cardLast4: cardLast4,
+            status: .placed
         )
         orders.insert(order, at: 0)
         lastPlacedOrderId = order.id
@@ -161,11 +221,18 @@ final class AppStore: ObservableObject {
         orders.first { $0.id == id }
     }
 
+    @discardableResult
+    func cancelOrder(_ id: String) -> Bool {
+        guard let idx = orders.firstIndex(where: { $0.id == id }) else { return false }
+        guard orders[idx].status == .placed else { return false }
+        orders[idx].status = .cancelled
+        return true
+    }
+
     func logout() {
         isLoggedIn = false
         selected = .shop
         clearCartOnly()
         clearCheckoutFields()
-        // Keep order history for the session so automation can verify previous orders.
     }
 }

@@ -2,8 +2,12 @@ package com.lebyy.app.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import com.lebyy.app.R
 import com.lebyy.app.data.ShopState
 import com.lebyy.app.databinding.ActivityCheckoutInfoBinding
 
@@ -15,9 +19,36 @@ class CheckoutInfoActivity : AppCompatActivity() {
         binding = ActivityCheckoutInfoBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.toolbar.title = getString(com.lebyy.app.R.string.shipping_title)
+        binding.toolbar.title = getString(R.string.shipping_title)
         binding.toolbar.setNavigationOnClickListener { finish() }
         binding.buttonCancel.setOnClickListener { finish() }
+
+        binding.inputFirstName.setText(ShopState.firstName)
+        binding.inputLastName.setText(ShopState.lastName)
+        binding.inputZip.setText(ShopState.zipCode)
+
+        ShopState.savedAddresses.forEach { address ->
+            val row = TextView(this).apply {
+                text = "${address.label}\n${address.firstName} ${address.lastName} · ${address.zipCode}"
+                setTextColor(ContextCompat.getColor(this@CheckoutInfoActivity, R.color.lebyy_primary))
+                textSize = 15f
+                setPadding(0, 20, 0, 20)
+                contentDescription = "test-SavedAddress-${address.id}"
+                setOnClickListener {
+                    ShopState.selectAddress(address)
+                    binding.inputFirstName.setText(address.firstName)
+                    binding.inputLastName.setText(address.lastName)
+                    binding.inputZip.setText(address.zipCode)
+                }
+            }
+            binding.savedAddressesList.addView(
+                row,
+                LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                ),
+            )
+        }
 
         binding.buttonContinue.setOnClickListener {
             val first = binding.inputFirstName.text?.toString()?.trim().orEmpty()

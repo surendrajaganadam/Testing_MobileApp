@@ -46,6 +46,14 @@
     <string name="finish">PLACE ORDER</string>
     <string name="order_details_title">Order Details</string>
     <string name="order_confirmed">Order confirmed</string>
+    <string name="order_cancelled">Order cancelled</string>
+    <string name="cancel_order">CANCEL ORDER</string>
+    <string name="saved_addresses">Saved addresses</string>
+    <string name="or_enter_manually">Or enter manually</string>
+    <string name="coupon">Coupon</string>
+    <string name="coupon_code">Coupon code</string>
+    <string name="apply_coupon">APPLY</string>
+    <string name="coupon_hint">Any non-empty code gives 10% off.</string>
     <string name="previous_orders">Previous orders</string>
     <string name="previous_orders_empty">No previous orders yet.</string>
     <string name="orders_empty">No orders yet. Complete a checkout to see history here.</string>

@@ -172,8 +172,8 @@ class CheckoutOverviewActivity : AppCompatActivity() {
             binding.couponStatus.text =
                 "Coupon applied: $applied (−${ShopState.appliedCouponPercent}%)"
             binding.couponStatus.setTextColor(ContextCompat.getColor(this, R.color.lebyy_success))
-            binding.couponStatus.contentDescription = "test-CouponApplied-$applied"
-            binding.inputCoupon.contentDescription = "test-Coupon-$applied"
+            binding.couponStatus.contentDescription = "test-CouponApplied"
+            binding.inputCoupon.contentDescription = "test-Coupon"
         } else {
             binding.couponStatus.text = getString(R.string.coupon_hint)
             binding.couponStatus.setTextColor(ContextCompat.getColor(this, R.color.lebyy_muted))

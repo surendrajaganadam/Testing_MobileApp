@@ -36,23 +36,12 @@
                 android:textSize="22sp"
                 android:textStyle="bold" />
 
-            <!-- Stable anchor for automation (always test-OrderId). -->
-            <TextView
-                android:id="@+id/orderIdLabel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:contentDescription="test-OrderId"
-                android:text="@string/order_id_label"
-                android:textColor="@color/lebyy_muted"
-                android:textSize="12sp" />
-
-            <!-- Value + unique attr test-OrderId-{id} set in code. -->
             <TextView
                 android:id="@+id/orderId"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="8dp"
+                android:contentDescription="test-OrderId"
                 android:textColor="@color/lebyy_text"
                 android:textSize="18sp"
                 android:textStyle="bold" />

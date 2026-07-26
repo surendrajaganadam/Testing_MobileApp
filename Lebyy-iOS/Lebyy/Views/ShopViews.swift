@@ -501,13 +501,14 @@ struct ReviewOrderView: View {
                         .foregroundStyle(LebyyTheme.muted)
 
                     HStack(spacing: 10) {
-                        TextField("Coupon code", text: $store.couponInput)
+                        TextField("", text: $store.couponInput, prompt: Text("Coupon code"))
                             .textInputAutocapitalization(.characters)
+                            .foregroundStyle(LebyyTheme.text)
                             .padding(12)
                             .background(LebyyTheme.surface)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                             .accessibilityIdentifier("test-Coupon")
-                            .accessibilityLabel("Coupon code")
+                            .accessibilityLabel("test-Coupon")
                         Button("APPLY") {
                             if store.applyCoupon() {
                                 showCoupons = false
@@ -527,6 +528,17 @@ struct ReviewOrderView: View {
                 }
 
                 if let code = store.appliedCoupon {
+                    // Keep code visible after apply (not only status text).
+                    TextField("", text: .constant(code), prompt: Text("Coupon code"))
+                        .disabled(true)
+                        .foregroundStyle(LebyyTheme.text)
+                        .padding(12)
+                        .background(LebyyTheme.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .accessibilityIdentifier("test-Coupon")
+                        .accessibilityLabel("test-Coupon")
+                        .accessibilityValue(code)
+
                     Text("Coupon applied: \(code) (−\(store.appliedCouponPercent)%)")
                         .font(.subheadline.bold())
                         .foregroundStyle(LebyyTheme.success)
@@ -535,7 +547,7 @@ struct ReviewOrderView: View {
                         .background(LebyyTheme.surface)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                         .accessibilityIdentifier("test-CouponApplied")
-                        .accessibilityLabel("Coupon applied")
+                        .accessibilityLabel("test-CouponApplied-\(code)")
                 }
 
                 Text("Shipping").font(.headline).foregroundStyle(LebyyTheme.text)
@@ -605,30 +617,40 @@ struct OrdersView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                List(store.orders) { order in
-                    NavigationLink {
-                        OrderDetailsView(orderId: order.id, fromCheckout: false)
-                    } label: {
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text(order.id)
-                                    .font(.headline)
-                                    .foregroundStyle(LebyyTheme.primary)
-                                if order.status == .cancelled {
-                                    Text("CANCELLED")
-                                        .font(.caption2.bold())
-                                        .foregroundStyle(LebyyTheme.accent)
-                                        .accessibilityIdentifier("test-OrderStatus-Cancelled")
+                List {
+                    ForEach(Array(store.orders.enumerated()), id: \.element.id) { index, order in
+                        NavigationLink {
+                            OrderDetailsView(orderId: order.id, fromCheckout: false)
+                        } label: {
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Text(order.id)
+                                        .font(.headline)
+                                        .foregroundStyle(LebyyTheme.primary)
+                                        .accessibilityIdentifier("test-OrderId-\(order.id)")
+                                        .accessibilityLabel("test-OrderId-\(order.id)")
+                                        .accessibilityValue(order.id)
+                                    if order.status == .cancelled {
+                                        Text("CANCELLED")
+                                            .font(.caption2.bold())
+                                            .foregroundStyle(LebyyTheme.accent)
+                                            .accessibilityIdentifier("test-OrderStatus-Cancelled")
+                                    }
                                 }
+                                Text(String(format: "$%.2f · %d item(s)", order.total, order.items.count))
+                                    .font(.caption)
+                                    .foregroundStyle(LebyyTheme.muted)
+                                // Stable index (1 = latest) without knowing dynamic order id
+                                Text("")
+                                    .frame(width: 0, height: 0)
+                                    .accessibilityIdentifier("test-OrderIndex-\(index + 1)")
+                                    .accessibilityLabel("test-OrderIndex-\(index + 1)")
                             }
-                            Text(String(format: "$%.2f · %d item(s)", order.total, order.items.count))
-                                .font(.caption)
-                                .foregroundStyle(LebyyTheme.muted)
                         }
+                        .accessibilityIdentifier("test-Order-\(order.id)")
+                        .accessibilityLabel("test-Order-\(order.id)")
+                        .listRowBackground(LebyyTheme.surface)
                     }
-                    .accessibilityIdentifier("test-Order-\(order.id)")
-                    .accessibilityLabel(order.id)
-                    .listRowBackground(LebyyTheme.surface)
                 }
                 .scrollContentBackground(.hidden)
             }
@@ -663,15 +685,24 @@ struct OrderDetailsView: View {
                         .foregroundStyle(order.status == .cancelled ? LebyyTheme.accent : LebyyTheme.primary)
                         .accessibilityIdentifier(order.status == .cancelled ? "test-OrderCancelled" : "test-OrderConfirmed")
 
+                    Text("Order ID")
+                        .font(.caption)
+                        .foregroundStyle(LebyyTheme.muted)
+                        .accessibilityIdentifier("test-OrderId")
+                        .accessibilityLabel("test-OrderId")
+
                     Text(order.id)
                         .font(.headline)
                         .foregroundStyle(LebyyTheme.text)
-                        .accessibilityIdentifier("test-OrderId")
+                        .accessibilityIdentifier("test-OrderId-\(order.id)")
+                        .accessibilityLabel("test-OrderId-\(order.id)")
+                        .accessibilityValue(order.id)
 
                     Text(dateText)
                         .font(.caption)
                         .foregroundStyle(LebyyTheme.muted)
                         .accessibilityIdentifier("test-OrderDate")
+                        .accessibilityLabel("test-OrderDate")
 
                     Text("Items").font(.headline).foregroundStyle(LebyyTheme.text)
                     ForEach(order.items) { item in

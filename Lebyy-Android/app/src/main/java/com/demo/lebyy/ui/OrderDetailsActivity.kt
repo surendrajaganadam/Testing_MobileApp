@@ -73,6 +73,9 @@ class OrderDetailsActivity : AppCompatActivity() {
         }
 
         binding.orderId.text = order.id
+        // Unique per order (dynamic id) — getByLabel('test-OrderId-LB-...')
+        // Stable anchor remains orderIdLabel → test-OrderId
+        binding.orderId.contentDescription = "test-OrderId-${order.id}"
         binding.orderDate.text = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
             .format(Date(order.placedAtMs))
         binding.orderItems.text = order.items.joinToString("\n") {

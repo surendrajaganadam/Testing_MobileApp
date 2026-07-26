@@ -90,16 +90,18 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Lebyy.TextInputLayout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1">
+                    android:layout_weight="1"
+                    android:hint="@string/coupon_code">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/inputCoupon"
+                        style="@style/Widget.Lebyy.TextInputEditText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:contentDescription="test-Coupon"
-                        android:hint="@string/coupon_code"
                         android:inputType="textCapCharacters" />
                 </com.google.android.material.textfield.TextInputLayout>
 

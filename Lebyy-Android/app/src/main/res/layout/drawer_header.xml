@@ -43,7 +43,7 @@
         android:id="@+id/drawerOrders"
         android:layout_width="match_parent"
         android:layout_height="44dp"
-        android:contentDescription="test-Orders"
+        android:contentDescription="test-Order History"
         android:gravity="center_vertical"
         android:text="@string/menu_orders"
         android:textColor="@color/lebyy_text"

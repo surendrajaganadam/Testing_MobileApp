@@ -24,6 +24,13 @@ struct SavedAddress: Identifiable, Hashable {
     let zipCode: String
 }
 
+struct SampleCoupon: Identifiable, Hashable {
+    var id: String { code }
+    let code: String
+    let title: String
+    let percentOff: Int
+}
+
 struct OrderItem: Identifiable, Hashable {
     var id: String { productId }
     let productId: String
@@ -60,7 +67,7 @@ enum MenuDestination: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .shop: return "Shop"
-        case .orders: return "My Orders"
+        case .orders: return "Order History"
         case .alerts: return "Alerts"
         case .forms: return "Forms"
         case .swipeH: return "Swipe Left / Right"
@@ -73,7 +80,7 @@ enum MenuDestination: String, CaseIterable, Identifiable {
     var accessibilityId: String {
         switch self {
         case .shop: return "test-Shop"
-        case .orders: return "test-Orders"
+        case .orders: return "test-Order History"
         case .alerts: return "test-Alerts"
         case .forms: return "test-Forms"
         case .swipeH: return "test-SwipeHorizontal"
@@ -96,16 +103,27 @@ final class AppStore: ObservableObject {
     @Published var cardCvv = ""
     @Published var couponInput = ""
     @Published var appliedCoupon: String?
+    @Published var appliedCouponPercent = 0
     @Published var orders: [Order] = []
     @Published var lastPlacedOrderId: String?
+    /// After checkout, shell closes the cart stack and opens this order under My Orders.
+    @Published var orderDetailsToPresent: String?
+    @Published var dismissCartAfterCheckout = false
 
-    /// Any non-empty coupon code applies a flat 10% discount (practice app).
-    static let couponDiscountRate = 0.10
+    /// Unknown / custom codes get this default rate (practice app).
+    static let defaultCouponPercent = 10
 
     let savedAddresses: [SavedAddress] = [
         .init(id: "home", label: "Home — Demo City", firstName: "Demo", lastName: "User", zipCode: "560001"),
         .init(id: "work", label: "Work — Lebyy Hub", firstName: "Surendra", lastName: "QA", zipCode: "500081"),
         .init(id: "lab", label: "Lab — Automation Park", firstName: "Mobile", lastName: "Wright", zipCode: "94105"),
+    ]
+
+    let sampleCoupons: [SampleCoupon] = [
+        .init(code: "LEBYY10", title: "Lebyy starter — 10% off", percentOff: 10),
+        .init(code: "SAVE15", title: "Weekend deal — 15% off", percentOff: 15),
+        .init(code: "WELCOME20", title: "Welcome bonus — 20% off", percentOff: 20),
+        .init(code: "STUDENT25", title: "Student special — 25% off", percentOff: 25),
     ]
 
     let products: [Product] = [
@@ -121,10 +139,19 @@ final class AppStore: ObservableObject {
     var cartCount: Int { cart.values.reduce(0) { $0 + $1.quantity } }
     var cartSubtotal: Double { cart.values.reduce(0) { $0 + $1.lineTotal } }
     var cartDiscount: Double {
-        guard appliedCoupon != nil else { return 0 }
-        return (cartSubtotal * Self.couponDiscountRate * 100).rounded() / 100
+        guard appliedCoupon != nil, appliedCouponPercent > 0 else { return 0 }
+        let rate = Double(appliedCouponPercent) / 100
+        return (cartSubtotal * rate * 100).rounded() / 100
     }
     var cartTotal: Double { max(0, ((cartSubtotal - cartDiscount) * 100).rounded() / 100) }
+
+    func percentOff(for code: String) -> Int {
+        let normalized = code.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        if let sample = sampleCoupons.first(where: { $0.code == normalized }) {
+            return sample.percentOff
+        }
+        return Self.defaultCouponPercent
+    }
 
     var cardLast4: String {
         let digits = cardNumber.filter(\.isNumber)
@@ -160,15 +187,26 @@ final class AppStore: ObservableObject {
         let code = couponInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !code.isEmpty else {
             appliedCoupon = nil
+            appliedCouponPercent = 0
             return false
         }
-        appliedCoupon = code.uppercased()
+        let normalized = code.uppercased()
+        appliedCoupon = normalized
+        appliedCouponPercent = percentOff(for: normalized)
+        couponInput = normalized
         return true
+    }
+
+    @discardableResult
+    func applySampleCoupon(_ coupon: SampleCoupon) -> Bool {
+        couponInput = coupon.code
+        return applyCoupon()
     }
 
     func clearCoupon() {
         couponInput = ""
         appliedCoupon = nil
+        appliedCouponPercent = 0
     }
 
     func clearCartOnly() {
@@ -185,8 +223,10 @@ final class AppStore: ObservableObject {
         clearCoupon()
     }
 
+    /// Places the current cart as an order. Returns nil if the cart is empty (blocks re-order after back).
     @discardableResult
-    func placeOrder() -> Order {
+    func placeOrder() -> Order? {
+        guard !cart.isEmpty else { return nil }
         let items = cartLines.map {
             OrderItem(
                 productId: $0.product.id,
@@ -214,6 +254,10 @@ final class AppStore: ObservableObject {
         lastPlacedOrderId = order.id
         clearCartOnly()
         clearCheckoutFields()
+        // Leave checkout stack; open order under My Orders.
+        dismissCartAfterCheckout = true
+        selected = .orders
+        orderDetailsToPresent = order.id
         return order
     }
 

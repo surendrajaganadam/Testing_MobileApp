@@ -30,51 +30,69 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
+                android:layout_marginBottom="8dp"
                 android:text="@string/payment_card_hint"
                 android:textColor="@color/lebyy_muted"
                 android:textSize="13sp" />
 
-            <com.google.android.material.textfield.TextInputLayout
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                android:contentDescription="test-CardPlaceholder"
+                android:text="@string/card_reference_placeholders"
+                android:textColor="@color/lebyy_primary"
+                android:textSize="13sp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Lebyy.TextInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:hint="@string/card_number_hint">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/inputCardNumber"
+                    style="@style/Widget.Lebyy.TextInputEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:contentDescription="test-Card Number"
-                    android:hint="@string/card_number"
-                    android:inputType="number" />
+                    android:inputType="number"
+                    android:maxLength="19" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Lebyy.TextInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                android:hint="@string/card_expiry_hint">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/inputCardExpiry"
+                    style="@style/Widget.Lebyy.TextInputEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:contentDescription="test-Card Expiry"
-                    android:hint="@string/card_expiry"
-                    android:inputType="text" />
+                    android:inputType="number"
+                    android:maxLength="5" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Lebyy.TextInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp">
+                android:layout_marginBottom="20dp"
+                android:hint="@string/card_cvv_hint">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/inputCardCvv"
+                    style="@style/Widget.Lebyy.TextInputEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:contentDescription="test-Card CVV"
-                    android:hint="@string/card_cvv"
-                    android:inputType="numberPassword" />
+                    android:inputType="numberPassword"
+                    android:maxLength="4" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton

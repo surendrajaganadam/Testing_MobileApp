@@ -53,10 +53,39 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonViewCoupons"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:contentDescription="test-VIEW COUPONS"
+                android:text="@string/view_coupons"
+                android:textAllCaps="true"
+                android:textColor="@color/lebyy_primary"
+                app:strokeColor="@color/lebyy_primary" />
+
             <LinearLayout
+                android:id="@+id/couponList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
+                android:contentDescription="test-CouponList"
+                android:orientation="vertical"
+                android:visibility="gone" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/or_enter_coupon"
+                android:textColor="@color/lebyy_muted"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 

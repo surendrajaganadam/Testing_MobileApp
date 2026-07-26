@@ -260,6 +260,12 @@ struct CartView: View {
 struct CheckoutInfoView: View {
     @EnvironmentObject private var store: AppStore
 
+    private var canContinue: Bool {
+        !store.firstName.trimmingCharacters(in: .whitespaces).isEmpty
+            && !store.lastName.trimmingCharacters(in: .whitespaces).isEmpty
+            && !store.zipCode.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
     var body: some View {
         Form {
             Section("Saved addresses") {
@@ -289,11 +295,25 @@ struct CheckoutInfoView: View {
                     .accessibilityIdentifier("test-Zip/Postal Code")
             }
 
-            NavigationLink("CONTINUE") {
-                PaymentView()
+            Section {
+                NavigationLink {
+                    PaymentView()
+                } label: {
+                    Text("CONTINUE")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(canContinue ? LebyyTheme.accent : LebyyTheme.surface)
+                        .foregroundStyle(canContinue ? LebyyTheme.bg : LebyyTheme.muted)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .contentShape(Rectangle())
+                }
+                .disabled(!canContinue)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+                .accessibilityIdentifier("test-CONTINUE")
+                .accessibilityLabel("CONTINUE")
             }
-            .disabled(store.firstName.isEmpty || store.lastName.isEmpty || store.zipCode.isEmpty)
-            .accessibilityIdentifier("test-CONTINUE")
         }
         .scrollContentBackground(.hidden)
         .background(LebyyTheme.bg.ignoresSafeArea())
@@ -301,54 +321,121 @@ struct CheckoutInfoView: View {
     }
 }
 
-/// Card-only payment step (any digits accepted — practice app, no Luhn/rules).
+/// Card payment — 16-digit number (grouped), MM/YY expiry, CVV (practice app, no Luhn).
 struct PaymentView: View {
     @EnvironmentObject private var store: AppStore
 
+    private var cardDigits: String { store.cardNumber.filter(\.isNumber) }
+
     private var canContinue: Bool {
-        !store.cardNumber.trimmingCharacters(in: .whitespaces).isEmpty
+        cardDigits.count == 16 && store.cardExpiry.count == 5
     }
 
     var body: some View {
         Form {
             Section("Lebyy Pay — Card") {
-                TextField("Card Number", text: $store.cardNumber)
-                    .keyboardType(.numberPad)
-                    .textInputAutocapitalization(.never)
-                    .accessibilityIdentifier("test-Card Number")
-                    .accessibilityLabel("Card Number")
-                TextField("Expiry (MM/YY)", text: $store.cardExpiry)
-                    .accessibilityIdentifier("test-Card Expiry")
-                    .accessibilityLabel("Card Expiry")
-                SecureField("CVV", text: $store.cardCvv)
-                    .keyboardType(.numberPad)
-                    .accessibilityIdentifier("test-Card CVV")
-                    .accessibilityLabel("Card CVV")
-                Text("Any numbers accepted — no validation rules for practice automation.")
-                    .font(.caption)
-                    .foregroundStyle(LebyyTheme.muted)
+                TextField("4242 4242 4242 4242", text: Binding(
+                    get: { store.cardNumber },
+                    set: { store.cardNumber = Self.formatCardNumber($0) }
+                ))
+                .keyboardType(.numberPad)
+                .textInputAutocapitalization(.never)
+                .accessibilityIdentifier("test-Card Number")
+                .accessibilityLabel("Card Number")
+                .accessibilityHint("16 digits, groups of 4")
+
+                TextField("MM/YY", text: Binding(
+                    get: { store.cardExpiry },
+                    set: { store.cardExpiry = Self.formatExpiry($0) }
+                ))
+                .keyboardType(.numberPad)
+                .accessibilityIdentifier("test-Card Expiry")
+                .accessibilityLabel("Card Expiry")
+                .accessibilityHint("MM/YY")
+
+                SecureField("123", text: Binding(
+                    get: { store.cardCvv },
+                    set: { store.cardCvv = String($0.filter(\.isNumber).prefix(4)) }
+                ))
+                .keyboardType(.numberPad)
+                .accessibilityIdentifier("test-Card CVV")
+                .accessibilityLabel("Card CVV")
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Reference placeholders")
+                        .font(.caption.bold())
+                        .foregroundStyle(LebyyTheme.muted)
+                    Text("Card: 4242 4242 4242 4242")
+                        .font(.caption)
+                        .foregroundStyle(LebyyTheme.primary)
+                        .accessibilityIdentifier("test-CardPlaceholder")
+                    Text("Expiry: MM/YY  ·  CVV: 123")
+                        .font(.caption)
+                        .foregroundStyle(LebyyTheme.primary)
+                        .accessibilityIdentifier("test-ExpiryPlaceholder")
+                }
             }
 
-            NavigationLink("CONTINUE TO REVIEW") {
-                ReviewOrderView()
+            Section {
+                NavigationLink {
+                    ReviewOrderView()
+                } label: {
+                    Text("CONTINUE TO REVIEW")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(canContinue ? LebyyTheme.accent : LebyyTheme.surface)
+                        .foregroundStyle(canContinue ? LebyyTheme.bg : LebyyTheme.muted)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .contentShape(Rectangle())
+                }
+                .disabled(!canContinue)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+                .accessibilityIdentifier("test-CONTINUE TO REVIEW")
+                .accessibilityLabel("CONTINUE TO REVIEW")
             }
-            .disabled(!canContinue)
-            .accessibilityIdentifier("test-CONTINUE TO REVIEW")
         }
         .scrollContentBackground(.hidden)
         .background(LebyyTheme.bg.ignoresSafeArea())
         .navigationTitle("Payment")
     }
+
+    /// Groups up to 16 digits as `4242 4242 4242 4242`.
+    static func formatCardNumber(_ raw: String) -> String {
+        let digits = String(raw.filter(\.isNumber).prefix(16))
+        return stride(from: 0, to: digits.count, by: 4).map { i in
+            let start = digits.index(digits.startIndex, offsetBy: i)
+            let end = digits.index(start, offsetBy: min(4, digits.count - i))
+            return String(digits[start..<end])
+        }.joined(separator: " ")
+    }
+
+    /// Formats as `MM/YY` while typing.
+    static func formatExpiry(_ raw: String) -> String {
+        let digits = String(raw.filter(\.isNumber).prefix(4))
+        if digits.count <= 2 { return digits }
+        let mm = digits.prefix(2)
+        let yy = digits.dropFirst(2)
+        return "\(mm)/\(yy)"
+    }
 }
 
 struct ReviewOrderView: View {
     @EnvironmentObject private var store: AppStore
-    @State private var placedOrderId: String?
+    @State private var showCoupons = false
+
+    private var canPlace: Bool { !store.cartLines.isEmpty }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Text("Order items").font(.headline).foregroundStyle(LebyyTheme.text)
+                if store.cartLines.isEmpty {
+                    Text("Cart is empty — order already placed. Open Order History for details.")
+                        .foregroundStyle(LebyyTheme.muted)
+                        .accessibilityIdentifier("test-ReviewEmpty")
+                }
                 ForEach(store.cartLines) { line in
                     Text(String(format: "• %@ x%d — $%.2f", line.product.name, line.quantity, line.lineTotal))
                         .foregroundStyle(LebyyTheme.text)
@@ -356,34 +443,99 @@ struct ReviewOrderView: View {
                 }
 
                 Text("Coupon").font(.headline).foregroundStyle(LebyyTheme.text)
-                HStack(spacing: 10) {
-                    TextField("Coupon code", text: $store.couponInput)
-                        .textInputAutocapitalization(.characters)
-                        .padding(12)
+
+                Button {
+                    showCoupons.toggle()
+                } label: {
+                    Text(showCoupons ? "HIDE COUPONS" : "VIEW COUPONS")
+                        .font(.subheadline.bold())
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
                         .background(LebyyTheme.surface)
+                        .foregroundStyle(LebyyTheme.primary)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .accessibilityIdentifier("test-Coupon")
-                        .accessibilityLabel("Coupon code")
-                    Button("APPLY") {
-                        _ = store.applyCoupon()
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
-                    .background(LebyyTheme.primary)
-                    .foregroundStyle(LebyyTheme.bg)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .accessibilityIdentifier("test-APPLY COUPON")
-                    .accessibilityLabel("APPLY COUPON")
+                        .contentShape(Rectangle())
                 }
-                if let code = store.appliedCoupon {
-                    Text("Applied: \(code) (−10%)")
-                        .font(.caption)
-                        .foregroundStyle(LebyyTheme.success)
-                        .accessibilityIdentifier("test-CouponApplied")
-                } else {
-                    Text("Any non-empty code gives 10% off.")
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("test-VIEW COUPONS")
+                .accessibilityLabel(showCoupons ? "HIDE COUPONS" : "VIEW COUPONS")
+
+                if showCoupons {
+                    VStack(spacing: 10) {
+                        ForEach(store.sampleCoupons) { coupon in
+                            HStack(alignment: .center, spacing: 12) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(coupon.code)
+                                        .font(.headline)
+                                        .foregroundStyle(LebyyTheme.primary)
+                                    Text(coupon.title)
+                                        .font(.caption)
+                                        .foregroundStyle(LebyyTheme.muted)
+                                }
+                                Spacer(minLength: 8)
+                                Button("APPLY") {
+                                    if store.applySampleCoupon(coupon) {
+                                        showCoupons = false
+                                    }
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 10)
+                                .background(LebyyTheme.primary)
+                                .foregroundStyle(LebyyTheme.bg)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .accessibilityIdentifier("test-ApplyCoupon-\(coupon.code)")
+                                .accessibilityLabel("APPLY \(coupon.code)")
+                            }
+                            .padding(12)
+                            .background(LebyyTheme.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .accessibilityIdentifier("test-SampleCoupon-\(coupon.code)")
+                        }
+                    }
+                    .accessibilityIdentifier("test-CouponList")
+                }
+
+                if store.appliedCoupon == nil {
+                    Text("Or enter a code")
                         .font(.caption)
                         .foregroundStyle(LebyyTheme.muted)
+
+                    HStack(spacing: 10) {
+                        TextField("Coupon code", text: $store.couponInput)
+                            .textInputAutocapitalization(.characters)
+                            .padding(12)
+                            .background(LebyyTheme.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .accessibilityIdentifier("test-Coupon")
+                            .accessibilityLabel("Coupon code")
+                        Button("APPLY") {
+                            if store.applyCoupon() {
+                                showCoupons = false
+                            }
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 12)
+                        .background(LebyyTheme.primary)
+                        .foregroundStyle(LebyyTheme.bg)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .accessibilityIdentifier("test-APPLY COUPON")
+                        .accessibilityLabel("APPLY COUPON")
+                    }
+                    Text("Pick a sample coupon or type any code (custom codes = 10% off).")
+                        .font(.caption)
+                        .foregroundStyle(LebyyTheme.muted)
+                }
+
+                if let code = store.appliedCoupon {
+                    Text("Coupon applied: \(code) (−\(store.appliedCouponPercent)%)")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(LebyyTheme.success)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(LebyyTheme.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .accessibilityIdentifier("test-CouponApplied")
+                        .accessibilityLabel("Coupon applied")
                 }
 
                 Text("Shipping").font(.headline).foregroundStyle(LebyyTheme.text)
@@ -410,19 +562,19 @@ struct ReviewOrderView: View {
                     .accessibilityIdentifier("test-ReviewTotal")
 
                 Button {
-                    let order = store.placeOrder()
-                    placedOrderId = order.id
+                    _ = store.placeOrder()
                 } label: {
                     Text("PLACE ORDER")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(LebyyTheme.accent)
-                        .foregroundStyle(LebyyTheme.bg)
+                        .background(canPlace ? LebyyTheme.accent : LebyyTheme.surface)
+                        .foregroundStyle(canPlace ? LebyyTheme.bg : LebyyTheme.muted)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .disabled(!canPlace)
                 .padding(.top, 12)
                 .accessibilityIdentifier("test-PLACE ORDER")
                 .accessibilityLabel("PLACE ORDER")
@@ -431,9 +583,6 @@ struct ReviewOrderView: View {
         }
         .background(LebyyTheme.bg.ignoresSafeArea())
         .navigationTitle("Review Order")
-        .navigationDestination(item: $placedOrderId) { orderId in
-            OrderDetailsView(orderId: orderId, showPreviousOrders: true)
-        }
     }
 }
 
@@ -448,7 +597,7 @@ struct OrdersView: View {
                         .font(.title3.bold())
                         .foregroundStyle(LebyyTheme.text)
                         .accessibilityIdentifier("test-OrdersEmpty")
-                    Text("Complete a checkout to see order history here.")
+                    Text("Complete a checkout to see order history here. Tap an order to view or cancel it.")
                         .font(.subheadline)
                         .foregroundStyle(LebyyTheme.muted)
                         .multilineTextAlignment(.center)
@@ -458,7 +607,7 @@ struct OrdersView: View {
             } else {
                 List(store.orders) { order in
                     NavigationLink {
-                        OrderDetailsView(orderId: order.id, showPreviousOrders: false)
+                        OrderDetailsView(orderId: order.id, fromCheckout: false)
                     } label: {
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
@@ -478,25 +627,24 @@ struct OrdersView: View {
                         }
                     }
                     .accessibilityIdentifier("test-Order-\(order.id)")
+                    .accessibilityLabel(order.id)
                     .listRowBackground(LebyyTheme.surface)
                 }
                 .scrollContentBackground(.hidden)
             }
         }
         .background(LebyyTheme.bg.ignoresSafeArea())
-        .navigationTitle("My Orders")
+        .navigationTitle("Order History")
     }
 }
 
 struct OrderDetailsView: View {
     @EnvironmentObject private var store: AppStore
     let orderId: String
-    var showPreviousOrders: Bool = true
+    /// After checkout: hide back, show Order History button instead.
+    var fromCheckout: Bool = false
 
     private var order: Order? { store.order(byId: orderId) }
-    private var previousOrders: [Order] {
-        store.orders.filter { $0.id != orderId }
-    }
 
     private var dateText: String {
         guard let order else { return "" }
@@ -575,42 +723,23 @@ struct OrderDetailsView: View {
                         .accessibilityLabel("CANCEL ORDER")
                     }
 
-                    if showPreviousOrders {
-                        Divider().overlay(LebyyTheme.line).padding(.vertical, 8)
-                        Text("Previous orders")
+                    Button {
+                        store.orderDetailsToPresent = nil
+                        store.selected = .orders
+                    } label: {
+                        Text("ORDER HISTORY")
                             .font(.headline)
-                            .foregroundStyle(LebyyTheme.text)
-                            .accessibilityIdentifier("test-PreviousOrdersTitle")
-
-                        if previousOrders.isEmpty {
-                            Text("No previous orders yet.")
-                                .foregroundStyle(LebyyTheme.muted)
-                                .accessibilityIdentifier("test-PreviousOrdersEmpty")
-                        } else {
-                            ForEach(previousOrders) { prev in
-                                NavigationLink {
-                                    OrderDetailsView(orderId: prev.id, showPreviousOrders: false)
-                                } label: {
-                                    HStack {
-                                        VStack(alignment: .leading) {
-                                            Text(prev.id).foregroundStyle(LebyyTheme.primary)
-                                            Text(String(format: "$%.2f", prev.total))
-                                                .font(.caption)
-                                                .foregroundStyle(LebyyTheme.muted)
-                                        }
-                                        Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .foregroundStyle(LebyyTheme.muted)
-                                    }
-                                    .padding(12)
-                                    .background(LebyyTheme.surface)
-                                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityIdentifier("test-PreviousOrder-\(prev.id)")
-                            }
-                        }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(LebyyTheme.primary)
+                            .foregroundStyle(LebyyTheme.bg)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
+                    .padding(.top, 4)
+                    .accessibilityIdentifier("test-ORDER HISTORY")
+                    .accessibilityLabel("ORDER HISTORY")
                 }
                 .padding(16)
             } else {
@@ -622,5 +751,6 @@ struct OrderDetailsView: View {
         .background(LebyyTheme.bg.ignoresSafeArea())
         .navigationTitle("Order Details")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(fromCheckout)
     }
 }

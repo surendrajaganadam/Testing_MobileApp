@@ -52,44 +52,50 @@
                 android:textSize="14sp" />
 
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Lebyy.TextInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                android:hint="@string/first_name">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/inputFirstName"
+                    style="@style/Widget.Lebyy.TextInputEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:contentDescription="test-First Name"
-                    android:hint="@string/first_name"
                     android:inputType="textPersonName" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Lebyy.TextInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                android:hint="@string/last_name">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/inputLastName"
+                    style="@style/Widget.Lebyy.TextInputEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:contentDescription="test-Last Name"
-                    android:hint="@string/last_name"
                     android:inputType="textPersonName" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Lebyy.TextInputLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp">
+                android:layout_marginBottom="20dp"
+                android:hint="@string/zip_code">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/inputZip"
+                    style="@style/Widget.Lebyy.TextInputEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:contentDescription="test-Zip/Postal Code"
-                    android:hint="@string/zip_code"
                     android:inputType="textPostalAddress" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -98,8 +104,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:contentDescription="test-CONTINUE"
+                android:enabled="false"
                 android:text="@string/continue_btn"
-                android:textAllCaps="true" />
+                android:textAllCaps="true"
+                android:textColor="@color/lebyy_muted"
+                app:backgroundTint="@color/lebyy_surface"
+                app:cornerRadius="12dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonCancel"

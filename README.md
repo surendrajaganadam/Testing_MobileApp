@@ -7,7 +7,7 @@ Branding from [lebyy.com](https://lebyy.com).
 | Item | Value |
 |------|--------|
 | App name | **Lebyy** |
-| Android package | `com.lebyy.app` |
+| Android package | `com.demo.lebyy` |
 | iOS bundle ID | `com.demo.lebyy` |
 | Login username | `demo_user` |
 | Login password | `demo_pass` |
@@ -39,7 +39,7 @@ No source needed for testers who only want to install:
 3. Enable **Install unknown apps** for Files / Chrome / Drive
 4. Open the APK → Install → Open **Lebyy**
 
-**Package name:** `com.lebyy.app`
+**Package name:** `com.demo.lebyy`
 
 ### Build Android from source (optional)
 
@@ -215,7 +215,7 @@ Side menu:
 ```ts
 // Android
 platform: 'android',
-bundleId: 'com.lebyy.app',
+bundleId: 'com.demo.lebyy',
 installApps: './releases/Lebyy-debug.apk',
 
 // iOS
@@ -234,7 +234,7 @@ If you changed the iOS Bundle ID for signing, use **that** Bundle ID in tests.
 | iOS: *Signing for "Lebyy" requires a development team* | Add Apple ID in Xcode Accounts, pick Team |
 | iOS: *Failed to install / Untrusted Developer* | Trust certificate on iPhone under Device Management |
 | iOS: Bundle ID already in use | Change to `com.demo.lebyy.yourname` |
-| Android: *App not installed* | Uninstall older package first: `adb uninstall com.lebyy.app` |
+| Android: *App not installed* | Uninstall older package first: `adb uninstall com.demo.lebyy` |
 | Android Studio can't find SDK | Open project once in Android Studio so it creates `local.properties` |
 
 ---

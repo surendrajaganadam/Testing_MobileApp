@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.lebyy.app"
+    namespace = "com.demo.lebyy"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.lebyy.app"
+        applicationId = "com.demo.lebyy"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

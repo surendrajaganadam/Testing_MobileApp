@@ -39,7 +39,8 @@ struct LoginView: View {
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(LebyyTheme.line, lineWidth: 1))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                TextField("Username", text: $username)
+                // Placeholder via prompt so accessibilityLabel is not overridden by the title.
+                TextField("", text: $username, prompt: Text("Username"))
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     .padding()
@@ -47,15 +48,15 @@ struct LoginView: View {
                     .foregroundStyle(LebyyTheme.text)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .accessibilityIdentifier("test-Username")
-                    .accessibilityLabel("Username")
+                    .accessibilityLabel("test-Username")
 
-                SecureField("Password", text: $password)
+                SecureField("", text: $password, prompt: Text("Password"))
                     .padding()
                     .background(LebyyTheme.surface)
                     .foregroundStyle(LebyyTheme.text)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .accessibilityIdentifier("test-Password")
-                    .accessibilityLabel("Password")
+                    .accessibilityLabel("test-Password")
 
                 Button {
                     if store.login(username: username.trimmingCharacters(in: .whitespaces), password: password) {
@@ -76,7 +77,7 @@ struct LoginView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("test-LOGIN")
-                .accessibilityLabel("LOGIN")
+                .accessibilityLabel("test-LOGIN")
 
                 if !error.isEmpty {
                     Text(error).foregroundStyle(.red).font(.footnote)

@@ -40,4 +40,4 @@ cp app/build/outputs/apk/debug/app-debug.apk \
   ../../_publish_Testing_MobileApp/releases/Lebyy-debug.apk
 ```
 
-Package: `com.lebyy.app`
+Package: `com.demo.lebyy`

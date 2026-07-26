@@ -54,6 +54,15 @@ struct MainShellView: View {
                 .navigationDestination(isPresented: $showCart) {
                     CartView()
                 }
+                .navigationDestination(item: $store.orderDetailsToPresent) { orderId in
+                    OrderDetailsView(orderId: orderId, fromCheckout: true)
+                }
+                .onChange(of: store.dismissCartAfterCheckout) { _, dismiss in
+                    if dismiss {
+                        showCart = false
+                        store.dismissCartAfterCheckout = false
+                    }
+                }
         }
         .tint(LebyyTheme.primary)
     }

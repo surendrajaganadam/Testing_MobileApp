@@ -62,4 +62,18 @@
         <item name="android:textColor">@color/lebyy_bg</item>
         <item name="cornerRadius">12dp</item>
     </style>
+
+    <!-- Dark-theme inputs: typed text + hints stay readable on lebyy_bg -->
+    <style name="Widget.Lebyy.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
+        <item name="boxBackgroundColor">@color/lebyy_surface</item>
+        <item name="boxStrokeColor">@color/lebyy_primary</item>
+        <item name="hintTextColor">@color/lebyy_primary</item>
+        <item name="android:textColorHint">@color/lebyy_muted</item>
+        <item name="placeholderTextColor">@color/lebyy_muted</item>
+    </style>
+
+    <style name="Widget.Lebyy.TextInputEditText" parent="Widget.MaterialComponents.TextInputEditText.FilledBox">
+        <item name="android:textColor">@color/lebyy_text</item>
+        <item name="android:textColorHint">@color/lebyy_muted</item>
+    </style>
 </resources>

@@ -146,34 +146,17 @@
                 app:backgroundTint="@color/lebyy_accent"
                 app:cornerRadius="12dp" />
 
-            <TextView
-                android:id="@+id/previousOrdersTitle"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonOrderHistory"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
-                android:contentDescription="test-PreviousOrdersTitle"
-                android:text="@string/previous_orders"
-                android:textColor="@color/lebyy_text"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:visibility="gone" />
-
-            <TextView
-                android:id="@+id/previousOrdersEmpty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="56dp"
                 android:layout_marginTop="8dp"
-                android:contentDescription="test-PreviousOrdersEmpty"
-                android:text="@string/previous_orders_empty"
-                android:textColor="@color/lebyy_muted"
-                android:visibility="gone" />
-
-            <LinearLayout
-                android:id="@+id/previousOrdersList"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="vertical" />
+                android:contentDescription="test-ORDER HISTORY"
+                android:text="@string/order_history"
+                android:textAllCaps="true"
+                android:textColor="@color/lebyy_bg"
+                app:backgroundTint="@color/lebyy_primary"
+                app:cornerRadius="12dp" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

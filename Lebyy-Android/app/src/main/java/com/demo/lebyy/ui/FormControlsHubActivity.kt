@@ -3,7 +3,6 @@ package com.demo.lebyy.ui
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -41,19 +40,17 @@ class FormControlsHubActivity : AppCompatActivity() {
 
             override fun onBindViewHolder(holder: TopicVH, position: Int) {
                 val t = topics[position]
-                holder.binding.componentTitle.text = t.title
-                holder.binding.componentSubtitle.text = t.subtitle
-                holder.binding.root.contentDescription = null
-                holder.binding.componentTitle.contentDescription = t.id
-                val open = View.OnClickListener {
+                CatalogRowBinder.bind(
+                    binding = holder.binding,
+                    title = t.title,
+                    subtitle = t.subtitle,
+                    accessibilityId = t.id,
+                ) {
                     startActivity(
                         Intent(this@FormControlsHubActivity, FormsActivity::class.java)
                             .putExtra(FormsActivity.EXTRA_TOPIC, t.extra),
                     )
                 }
-                holder.binding.root.setOnClickListener(open)
-                holder.binding.componentTitle.setOnClickListener(open)
-                holder.binding.componentSubtitle.setOnClickListener(open)
             }
 
             override fun getItemCount(): Int = topics.size

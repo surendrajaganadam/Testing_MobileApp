@@ -11,8 +11,10 @@
     android:layout_margin="8dp">
 
     <!--
-      Keep the test-* id on the title TextView (not the card root) so Accessibility
-      Inspector / TalkBack highlight the title text, then the subtitle below.
+      Title + subtitle are separate a11y nodes using their visible text
+      (so Inspector shows "Alerts & Dialogs" then the description).
+      The test-* locator lives on a 1dp sibling so automation still works
+      without replacing the title's accessible name.
     -->
     <TextView
         android:id="@+id/componentTitle"
@@ -31,4 +33,11 @@
         android:importantForAccessibility="yes"
         android:textColor="@color/lebyy_muted"
         android:textSize="13sp" />
+
+    <View
+        android:id="@+id/componentA11yId"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:importantForAccessibility="yes"
+        android:focusable="true" />
 </LinearLayout>

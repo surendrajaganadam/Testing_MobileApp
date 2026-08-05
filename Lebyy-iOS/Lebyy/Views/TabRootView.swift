@@ -158,10 +158,12 @@ struct ComponentsCatalogView: View {
                                     .foregroundStyle(LebyyTheme.text)
                                     .font(.body.weight(.semibold))
                                     .accessibilityIdentifier(category.accessibilityId)
+                                    .accessibilityLabel(category.title)
                                     .accessibilityAddTraits(.isButton)
                                 Text(category.subtitle)
                                     .font(.caption)
                                     .foregroundStyle(LebyyTheme.muted)
+                                    .accessibilityLabel(category.subtitle)
                             }
                         }
                         .padding(.vertical, 4)
@@ -253,10 +255,12 @@ struct FormControlsHubView: View {
                                 .foregroundStyle(LebyyTheme.text)
                                 .font(.body.weight(.semibold))
                                 .accessibilityIdentifier(topic.accessibilityId)
+                                .accessibilityLabel(topic.title)
                                 .accessibilityAddTraits(.isButton)
                             Text(topic.subtitle)
                                 .font(.caption)
                                 .foregroundStyle(LebyyTheme.muted)
+                                .accessibilityLabel(topic.subtitle)
                         }
                         .padding(.vertical, 4)
                     }
@@ -303,10 +307,12 @@ struct SwipesHubView: View {
                 .foregroundStyle(LebyyTheme.text)
                 .font(.body.weight(.semibold))
                 .accessibilityIdentifier(id)
+                .accessibilityLabel(title)
                 .accessibilityAddTraits(.isButton)
             Text(subtitle)
                 .font(.caption)
                 .foregroundStyle(LebyyTheme.muted)
+                .accessibilityLabel(subtitle)
         }
         .padding(.vertical, 4)
         .accessibilityElement(children: .contain)

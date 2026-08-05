@@ -390,15 +390,13 @@ private class ComponentsAdapter(
 
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = items[position]
-        holder.binding.componentTitle.text = item.title
-        holder.binding.componentSubtitle.text = item.subtitle
-        // Put locator on the title text — not the card — so a11y inspector focuses text nodes.
-        holder.binding.root.contentDescription = null
-        holder.binding.componentTitle.contentDescription = item.accessibilityId
-        val open = View.OnClickListener { item.open() }
-        holder.binding.root.setOnClickListener(open)
-        holder.binding.componentTitle.setOnClickListener(open)
-        holder.binding.componentSubtitle.setOnClickListener(open)
+        CatalogRowBinder.bind(
+            binding = holder.binding,
+            title = item.title,
+            subtitle = item.subtitle,
+            accessibilityId = item.accessibilityId,
+            onOpen = item.open,
+        )
     }
 
     override fun getItemCount(): Int = items.size

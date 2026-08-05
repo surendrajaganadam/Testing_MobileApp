@@ -1,6 +1,7 @@
 package com.demo.lebyy.ui
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -93,20 +94,27 @@ class MainActivity : AppCompatActivity() {
             R.id.tabAccount -> showAccount()
         }
         binding.mainToolbar.title = when (id) {
-            R.id.tabHome -> "Home"
+            R.id.tabHome -> ""
             R.id.tabComponents -> "Components"
             R.id.tabShop -> "Shop"
             else -> "Account"
         }
+        binding.mainToolbar.visibility = if (id == R.id.tabHome) View.GONE else View.VISIBLE
     }
 
     private fun showHome() {
         val home = TabHomeBinding.inflate(layoutInflater, binding.tabContainer, true)
-        home.homeOpenComponents.setOnClickListener { selectTab(R.id.tabComponents) }
-        home.homeOpenShop.setOnClickListener {
-            selectTab(if (ShopState.isLoggedIn) R.id.tabShop else R.id.tabAccount)
+        home.homeSupport.setOnClickListener {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://lebyy.com")))
         }
-        home.homeOpenAccount.setOnClickListener { selectTab(R.id.tabAccount) }
+        home.homeGitHub.setOnClickListener {
+            startActivity(
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://github.com/surendrajaganadam/Testing_MobileApp")
+                )
+            )
+        }
     }
 
     private fun showComponents() {

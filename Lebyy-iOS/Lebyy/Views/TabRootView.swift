@@ -42,100 +42,100 @@ struct TabRootView: View {
 
 struct HomeView: View {
     @EnvironmentObject private var store: AppStore
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                HStack(spacing: 14) {
+        ZStack {
+            LebyyTheme.bg.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                Spacer(minLength: 48)
+
+                VStack(spacing: 22) {
                     Image("logo_lebyy")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 64, height: 64)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Lebyy")
-                            .font(.system(size: 32, weight: .bold))
-                            .foregroundStyle(LebyyTheme.primary)
+                        .frame(width: 168, height: 144)
+                        .accessibilityIdentifier("test-HomeLogo")
+                        .accessibilityLabel("Lebyy logo")
+
+                    HStack(spacing: 10) {
+                        Text("LEBYY")
+                            .font(.system(size: 30, weight: .ultraLight))
+                            .tracking(6)
+                            .foregroundStyle(Color.white)
                             .accessibilityIdentifier("test-HomeBrand")
-                        Text("Learn by yourself")
-                            .foregroundStyle(LebyyTheme.muted)
+
+                        Text("APP")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(LebyyTheme.bg)
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 7)
+                            .background(LebyyTheme.accent)
+                            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                     }
+
+                    Text("Demo app for mobile automation practice")
+                        .font(.system(size: 15, weight: .light))
+                        .foregroundStyle(Color.white.opacity(0.72))
+                        .multilineTextAlignment(.center)
+                        .accessibilityIdentifier("test-HomeBlurb")
+
+                    Text("Welcome to Lebyy Practice App")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(LebyyTheme.accent)
+                        .accessibilityIdentifier("test-HomeWelcome")
+                        .accessibilityLabel("Welcome to Lebyy Practice App")
+
+                    HStack(spacing: 40) {
+                        Image(systemName: "apple.logo")
+                            .font(.system(size: 38, weight: .regular))
+                            .foregroundStyle(LebyyTheme.accent)
+                            .accessibilityIdentifier("test-HomeIcon-iOS")
+                            .accessibilityLabel("iOS")
+
+                        Image(systemName: "smartphone")
+                            .font(.system(size: 36, weight: .regular))
+                            .foregroundStyle(LebyyTheme.accent)
+                            .accessibilityIdentifier("test-HomeIcon-Android")
+                            .accessibilityLabel("Android")
+                    }
+                    .padding(.top, 6)
                 }
-                .padding(.top, 8)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 28)
 
-                Text("Welcome to Lebyy Practice App")
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundStyle(LebyyTheme.accent)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .accessibilityIdentifier("test-HomeWelcome")
-                    .accessibilityLabel("Welcome to Lebyy Practice App")
+                Spacer()
 
-                Text("Use Components without login. Use Shop for the full login → checkout → logout E2E flow.")
-                    .font(.subheadline)
-                    .foregroundStyle(LebyyTheme.muted)
-                    .accessibilityIdentifier("test-HomeBlurb")
+                VStack(spacing: 16) {
+                    if !store.lastDeepLink.isEmpty {
+                        Text("Last deep link: \(store.lastDeepLink)")
+                            .font(.caption2)
+                            .foregroundStyle(LebyyTheme.muted)
+                            .accessibilityIdentifier("test-HomeDeepLink")
+                    }
 
-                homeCard(
-                    title: "Components",
-                    body: "Browse categorized controls without logging in — alerts, forms, gestures, lists…",
-                    cta: "Open Components",
-                    id: "test-HomeOpenComponents"
-                ) {
-                    store.selectedTab = .components
+                    Button("Support") {
+                        openURL(URL(string: "https://lebyy.com")!)
+                    }
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundStyle(Color.white.opacity(0.78))
+                    .accessibilityIdentifier("test-HomeSupport")
+                    .accessibilityLabel("Support")
+
+                    Button("GitHub") {
+                        openURL(URL(string: "https://github.com/surendrajaganadam/Testing_MobileApp")!)
+                    }
+                    .font(.system(size: 15, weight: .regular))
+                    .foregroundStyle(Color.white.opacity(0.5))
+                    .accessibilityIdentifier("test-HomeGitHub")
+                    .accessibilityLabel("GitHub")
                 }
-
-                homeCard(
-                    title: "Shop E2E",
-                    body: "Login → catalog → cart → checkout → orders → logout. Full commerce flow.",
-                    cta: store.isLoggedIn ? "Go to Shop" : "Login to Shop",
-                    id: "test-HomeOpenShop"
-                ) {
-                    store.selectedTab = store.isLoggedIn ? .shop : .account
-                }
-
-                homeCard(
-                    title: "Account",
-                    body: store.isLoggedIn ? "Signed in as \(store.displayName)" : "Sign in with demo_user / demo_pass",
-                    cta: store.isLoggedIn ? "Open Account" : "Open Login",
-                    id: "test-HomeOpenAccount"
-                ) {
-                    store.selectedTab = .account
-                }
-
-                if !store.lastDeepLink.isEmpty {
-                    Text("Last deep link: \(store.lastDeepLink)")
-                        .font(.caption)
-                        .foregroundStyle(LebyyTheme.muted)
-                        .accessibilityIdentifier("test-HomeDeepLink")
-                }
+                .padding(.bottom, 24)
             }
-            .padding(20)
         }
-        .background(LebyyTheme.bg.ignoresSafeArea())
-        .navigationTitle("Home")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(LebyyTheme.bg2, for: .navigationBar)
-        .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("test-HomeScreen")
-    }
-
-    private func homeCard(title: String, body: String, cta: String, id: String, action: @escaping () -> Void) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(LebyyTheme.primary)
-            Text(body)
-                .font(.subheadline)
-                .foregroundStyle(LebyyTheme.muted)
-            Button(cta, action: action)
-                .buttonStyle(LebyyPrimaryButton())
-                .accessibilityIdentifier(id)
-                .accessibilityLabel(cta)
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(LebyyTheme.surface)
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(LebyyTheme.line, lineWidth: 1))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }
 

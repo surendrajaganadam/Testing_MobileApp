@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/lebyy_bg"
+    android:contentDescription="test-ShopTab"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/shopGateTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="test-ShopLoginGateTitle"
+        android:gravity="center"
+        android:text="Shop needs login"
+        android:textColor="@color/lebyy_text"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="Browse Components freely. Sign in for cart → checkout → orders E2E."
+        android:textColor="@color/lebyy_muted" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/shopGoLogin"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="20dp"
+        android:contentDescription="test-ShopGoLogin"
+        android:text="Go to Login"
+        android:textColor="@color/lebyy_bg"
+        app:backgroundTint="@color/lebyy_accent"
+        app:cornerRadius="12dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/shopOpenCatalog"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="10dp"
+        android:contentDescription="test-ShopOpenCatalog"
+        android:text="Open Shop Catalog"
+        android:textColor="@color/lebyy_bg"
+        android:visibility="gone"
+        app:backgroundTint="@color/lebyy_primary"
+        app:cornerRadius="12dp" />
+</LinearLayout>

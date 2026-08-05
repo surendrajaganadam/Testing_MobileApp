@@ -43,9 +43,7 @@ class LoginActivity : AppCompatActivity() {
             val user = binding.inputUsername.text?.toString()?.trim().orEmpty()
             val pass = binding.inputPassword.text?.toString().orEmpty()
             if (user == "demo_user" && pass == "demo_pass") {
-                ShopState.resetSession()
-                startActivity(Intent(this, CatalogActivity::class.java))
-                finish()
+                goHomeAfterLogin()
             } else {
                 binding.loginError.visibility = View.VISIBLE
                 binding.loginError.text = getString(R.string.login_error)
@@ -90,6 +88,40 @@ class LoginActivity : AppCompatActivity() {
                 handler.postDelayed(resetDoubleTapRunnable, DOUBLE_TAP_WINDOW_MS)
             }
         }
+    }
+
+    private fun goHomeAfterLogin() {
+        ShopState.resetSession()
+        ShopState.loginSuccess()
+        val dest = ShopState.destinationFromDeepLinkHost(
+            intent?.data?.host ?: "",
+        )
+        if (dest != null && dest != "shop") {
+            val target = DrawerHelper.classForKey(dest)
+            if (target != null) {
+                startActivity(Intent(this, MainActivity::class.java))
+                startActivity(Intent(this, target))
+                finish()
+                return
+            }
+        }
+        startActivity(
+            Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra("open_tab", "shop")
+            },
+        )
+        finish()
+    }
+
+    private fun handleDeepLink(intent: Intent?) {
+        val uri = intent?.data ?: return
+        ShopState.lastDeepLink = uri.toString()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleDeepLink(intent)
     }
 
     private fun showGestureResult(messageRes: Int) {

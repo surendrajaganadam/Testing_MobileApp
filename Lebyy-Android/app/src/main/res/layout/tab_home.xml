@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/lebyy_bg"
+    android:contentDescription="test-HomeScreen"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:contentDescription="Lebyy logo"
+            android:src="@drawable/logo_lebyy" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:contentDescription="test-HomeBrand"
+            android:text="Lebyy"
+            android:textColor="@color/lebyy_primary"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/homeWelcome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:contentDescription="test-HomeWelcome"
+            android:text="Welcome to Lebyy Practice App"
+            android:textColor="@color/lebyy_accent"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="test-HomeBlurb"
+            android:text="Use Components without login. Use Shop for the full login → checkout → logout E2E flow."
+            android:textColor="@color/lebyy_muted"
+            android:textSize="14sp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/homeOpenComponents"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:contentDescription="test-HomeOpenComponents"
+            android:text="Open Components"
+            android:textColor="@color/lebyy_bg"
+            app:backgroundTint="@color/lebyy_accent"
+            app:cornerRadius="12dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/homeOpenShop"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="10dp"
+            android:contentDescription="test-HomeOpenShop"
+            android:text="Go to Shop / Login"
+            android:textColor="@color/lebyy_bg"
+            app:backgroundTint="@color/lebyy_primary"
+            app:cornerRadius="12dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/homeOpenAccount"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="10dp"
+            android:contentDescription="test-HomeOpenAccount"
+            android:text="Open Account"
+            android:textColor="@color/lebyy_text"
+            app:backgroundTint="@color/lebyy_surface_2"
+            app:cornerRadius="12dp" />
+    </LinearLayout>
+</ScrollView>

@@ -21,6 +21,7 @@ struct LoginView: View {
                 Text("Lebyy")
                     .font(.system(size: 30, weight: .bold))
                     .foregroundStyle(LebyyTheme.primary)
+                    .accessibilityIdentifier("test-LoginBrand")
 
                 Text("Learn by yourself")
                     .font(.subheadline)
@@ -39,7 +40,6 @@ struct LoginView: View {
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(LebyyTheme.line, lineWidth: 1))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                // Placeholder via prompt so accessibilityLabel is not overridden by the title.
                 TextField("", text: $username, prompt: Text("Username"))
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
@@ -61,7 +61,7 @@ struct LoginView: View {
                 Button {
                     if store.login(username: username.trimmingCharacters(in: .whitespaces), password: password) {
                         error = ""
-                        store.isLoggedIn = true
+                        store.loginSuccess()
                     } else {
                         error = "Invalid credentials. Use demo_user / demo_pass"
                     }
@@ -80,7 +80,11 @@ struct LoginView: View {
                 .accessibilityLabel("test-LOGIN")
 
                 if !error.isEmpty {
-                    Text(error).foregroundStyle(.red).font(.footnote)
+                    Text(error)
+                        .foregroundStyle(.red)
+                        .font(.footnote)
+                        .accessibilityIdentifier("test-LoginError")
+                        .accessibilityLabel(error)
                 }
 
                 Text("Quick Gestures")
@@ -96,7 +100,6 @@ struct LoginView: View {
                             .onEnded { _ in showGestureResult("Long press done") }
                     )
 
-                // Custom double-tap window (~800ms) so MobileWright's two sequential taps register.
                 Button {
                     handleDoubleTap()
                 } label: {
@@ -138,6 +141,7 @@ struct LoginView: View {
         }
         .background(LebyyTheme.bg.ignoresSafeArea())
         .animation(.easeInOut(duration: 0.2), value: gestureResult)
+        .accessibilityIdentifier("test-LoginScreen")
     }
 
     private func gestureButton(title: String, accessibilityId: String) -> some View {

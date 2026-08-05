@@ -9,6 +9,12 @@ struct LebyyApp: App {
             RootView()
                 .environmentObject(store)
                 .preferredColorScheme(.dark)
+                .onOpenURL { url in
+                    store.handleDeepLink(url)
+                    if !store.isLoggedIn {
+                        // Deep link remembered; navigate after login.
+                    }
+                }
         }
     }
 }

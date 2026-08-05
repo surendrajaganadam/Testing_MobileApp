@@ -13,11 +13,17 @@ import com.demo.lebyy.databinding.ItemProductBinding
 import java.util.Locale
 
 class ProductAdapter(
-    private val products: List<Product>,
+    private val products: MutableList<Product>,
     private val onCartChanged: () -> Unit,
 ) : RecyclerView.Adapter<ProductAdapter.VH>() {
 
     class VH(val binding: ItemProductBinding) : RecyclerView.ViewHolder(binding.root)
+
+    fun submit(items: List<Product>) {
+        products.clear()
+        products.addAll(items)
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val binding = ItemProductBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -33,7 +39,6 @@ class ProductAdapter(
         holder.binding.productPrice.text = String.format(Locale.US, "$%.2f", product.price)
         holder.binding.productDesc.text = product.description
 
-        // Tap product content → details. Button stays separate for home add/remove.
         val openDetails = View.OnClickListener {
             ctx.startActivity(
                 Intent(ctx, ProductDetailActivity::class.java).putExtra(
@@ -48,6 +53,14 @@ class ProductAdapter(
         holder.binding.productName.setOnClickListener(openDetails)
         holder.binding.productPrice.setOnClickListener(openDetails)
         holder.binding.productDesc.setOnClickListener(openDetails)
+
+        val wish = ShopState.isWishlisted(product.id)
+        holder.binding.buttonWishlist.text = if (wish) "UNWISH" else "WISHLIST"
+        holder.binding.buttonWishlist.contentDescription = if (wish) "test-UNWISH" else "test-WISHLIST"
+        holder.binding.buttonWishlist.setOnClickListener {
+            ShopState.toggleWishlist(product.id)
+            onCartChanged()
+        }
 
         val inCart = ShopState.isInCart(product.id)
         if (inCart) {

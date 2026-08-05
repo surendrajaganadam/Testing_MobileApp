@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0550F99B0034FE988CE00E4C /* FormControlsCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFE1EA48CA9FA73B91EB4710 /* FormControlsCatalog.swift */; };
 		20EC6E0D228C1201592D74F4 /* PracticeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B96A1FBAC26F96F6903B14BD /* PracticeViews.swift */; };
 		3AA0A33F8F2C42679515DC88 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E32738807BB67F23715F946 /* LoginView.swift */; };
 		43217A07C1A109513C85617F /* MainShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89EEB56EC384BC4BBA8F48A1 /* MainShellView.swift */; };
@@ -14,21 +15,27 @@
 		9467528320E9F7A207CEBF6F /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC833B95292247CF24972399 /* RootView.swift */; };
 		9B4279E97D9D870AE4CC5EE2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4B10BF9EB589EB1BB0A7C31E /* Assets.xcassets */; };
 		A309E06ECDCAF6EF0A22B126 /* LebyyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 310A775A370973FDAFAD6329 /* LebyyApp.swift */; };
+		C44A890B88A6A45F9130F063 /* ExtraPracticeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA89D986F1D2CA48E917AB91 /* ExtraPracticeViews.swift */; };
 		D48C0222473EB9BF1B397322 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07D6AD11DFB50DC88024020 /* Theme.swift */; };
+		DC10BB35DE24F37D420F7483 /* TabRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08C08C6B75C819D361673A1F /* TabRootView.swift */; };
 		F2E5742141BA83C0DFEE4F97 /* ShopViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7201755A9F8120B26BB61281 /* ShopViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		08C08C6B75C819D361673A1F /* TabRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabRootView.swift; sourceTree = "<group>"; };
 		310A775A370973FDAFAD6329 /* LebyyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LebyyApp.swift; sourceTree = "<group>"; };
 		3E32738807BB67F23715F946 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		4A62F1C11FC5E7846C6D8AC0 /* AppStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
 		4B10BF9EB589EB1BB0A7C31E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		523461CA336F8EE39416B52F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7201755A9F8120B26BB61281 /* ShopViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopViews.swift; sourceTree = "<group>"; };
 		89EEB56EC384BC4BBA8F48A1 /* MainShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainShellView.swift; sourceTree = "<group>"; };
 		8C3746305994F2A46B984661 /* Lebyy.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Lebyy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A07D6AD11DFB50DC88024020 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		AC833B95292247CF24972399 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		B96A1FBAC26F96F6903B14BD /* PracticeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeViews.swift; sourceTree = "<group>"; };
+		CA89D986F1D2CA48E917AB91 /* ExtraPracticeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtraPracticeViews.swift; sourceTree = "<group>"; };
+		DFE1EA48CA9FA73B91EB4710 /* FormControlsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormControlsCatalog.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -44,6 +51,7 @@
 			isa = PBXGroup;
 			children = (
 				4B10BF9EB589EB1BB0A7C31E /* Assets.xcassets */,
+				523461CA336F8EE39416B52F /* Info.plist */,
 				310A775A370973FDAFAD6329 /* LebyyApp.swift */,
 				DBC39D74B7D16ADA466581CF /* Models */,
 				92E4F721827F9A3A112070FC /* Views */,
@@ -54,11 +62,14 @@
 		92E4F721827F9A3A112070FC /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				CA89D986F1D2CA48E917AB91 /* ExtraPracticeViews.swift */,
+				DFE1EA48CA9FA73B91EB4710 /* FormControlsCatalog.swift */,
 				3E32738807BB67F23715F946 /* LoginView.swift */,
 				89EEB56EC384BC4BBA8F48A1 /* MainShellView.swift */,
 				B96A1FBAC26F96F6903B14BD /* PracticeViews.swift */,
 				AC833B95292247CF24972399 /* RootView.swift */,
 				7201755A9F8120B26BB61281 /* ShopViews.swift */,
+				08C08C6B75C819D361673A1F /* TabRootView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -152,12 +163,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				88CC2A3A6524FF9E5C7E4817 /* AppStore.swift in Sources */,
+				C44A890B88A6A45F9130F063 /* ExtraPracticeViews.swift in Sources */,
+				0550F99B0034FE988CE00E4C /* FormControlsCatalog.swift in Sources */,
 				A309E06ECDCAF6EF0A22B126 /* LebyyApp.swift in Sources */,
 				3AA0A33F8F2C42679515DC88 /* LoginView.swift in Sources */,
 				43217A07C1A109513C85617F /* MainShellView.swift in Sources */,
 				20EC6E0D228C1201592D74F4 /* PracticeViews.swift in Sources */,
 				9467528320E9F7A207CEBF6F /* RootView.swift in Sources */,
 				F2E5742141BA83C0DFEE4F97 /* ShopViews.swift in Sources */,
+				DC10BB35DE24F37D420F7483 /* TabRootView.swift in Sources */,
 				D48C0222473EB9BF1B397322 /* Theme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -172,6 +186,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = Lebyy/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -189,6 +204,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = Lebyy/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -254,8 +270,12 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Lebyy;
 				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Lebyy uses camera for permission automation practice.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Lebyy uses location for permission automation practice.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Lebyy uses photos for image-picker automation practice.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -319,8 +339,12 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Lebyy;
 				INFOPLIST_KEY_NSAppTransportSecurity_NSAllowsArbitraryLoads = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Lebyy uses camera for permission automation practice.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Lebyy uses location for permission automation practice.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Lebyy uses photos for image-picker automation practice.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = NO;

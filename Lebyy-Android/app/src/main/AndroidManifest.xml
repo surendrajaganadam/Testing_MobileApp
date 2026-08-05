@@ -14,7 +14,7 @@
         android:usesCleartextTraffic="true">
 
         <activity
-            android:name=".ui.LoginActivity"
+            android:name=".ui.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Lebyy.Splash"
             android:windowSoftInputMode="adjustResize">
@@ -22,7 +22,18 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="lebyy" />
+            </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity android:name=".ui.CatalogActivity" android:exported="false" />
         <activity android:name=".ui.ProductDetailActivity" android:exported="false" />
@@ -44,6 +55,7 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.AlertsActivity" android:exported="false" />
+        <activity android:name=".ui.FormControlsHubActivity" android:exported="false" />
         <activity
             android:name=".ui.FormsActivity"
             android:exported="false"
@@ -51,5 +63,10 @@
         <activity android:name=".ui.SwipeHorizontalActivity" android:exported="false" />
         <activity android:name=".ui.SwipeVerticalActivity" android:exported="false" />
         <activity android:name=".ui.GesturesActivity" android:exported="false" />
+        <activity android:name=".ui.ListsActivity" android:exported="false" />
+        <activity android:name=".ui.WaitsActivity" android:exported="false" />
+        <activity android:name=".ui.SystemActivity" android:exported="false" />
+        <activity android:name=".ui.NavigationActivity" android:exported="false" />
+        <activity android:name=".ui.SettingsActivity" android:exported="false" />
     </application>
 </manifest>

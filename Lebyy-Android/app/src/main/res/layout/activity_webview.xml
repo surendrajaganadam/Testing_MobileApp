@@ -61,6 +61,49 @@
                 app:backgroundTint="@color/lebyy_accent" />
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/lebyy_surface"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp"
+            android:paddingBottom="8dp">
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/loadJsAlertPage"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:contentDescription="test-LoadJSAlertPage"
+                android:text="Load JS Alert Page"
+                android:textSize="11sp"
+                android:textColor="@color/lebyy_bg"
+                app:backgroundTint="@color/lebyy_primary"
+                app:cornerRadius="8dp" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/loadStarterPage"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:contentDescription="test-LoadStarterPage"
+                android:text="Load Starter"
+                android:textSize="11sp"
+                android:textColor="@color/lebyy_text"
+                app:backgroundTint="@color/lebyy_surface_2"
+                app:cornerRadius="8dp" />
+        </LinearLayout>
+        <TextView
+            android:id="@+id/webResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/lebyy_surface"
+            android:contentDescription="test-WebResult"
+            android:paddingHorizontal="12dp"
+            android:paddingBottom="6dp"
+            android:text="Web: —"
+            android:textColor="@color/lebyy_accent"
+            android:textSize="12sp" />
+
         <FrameLayout
             android:id="@+id/webViewContainer"
             android:layout_width="match_parent"

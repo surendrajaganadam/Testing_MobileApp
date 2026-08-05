@@ -4,16 +4,82 @@ struct ShopView: View {
     @EnvironmentObject private var store: AppStore
 
     var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 14) {
-                ForEach(store.products) { product in
-                    ProductCard(product: product)
-                        .accessibilityIdentifier("test-\(product.name)")
+        VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 10) {
+                TextField("Search courses", text: $store.shopSearch)
+                    .padding(12)
+                    .background(LebyyTheme.surface)
+                    .foregroundStyle(LebyyTheme.text)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .accessibilityIdentifier("test-ShopSearch")
+                    .accessibilityLabel("Search courses")
+
+                if !store.shopSearch.isEmpty {
+                    Button("Clear Search") { store.shopSearch = "" }
+                        .font(.caption.bold())
+                        .foregroundStyle(LebyyTheme.accent)
+                        .accessibilityIdentifier("test-ClearSearch")
+                        .accessibilityLabel("Clear Search")
+                }
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(ShopSort.allCases) { sort in
+                            Button(sort.title) {
+                                store.shopSort = sort
+                            }
+                            .font(.caption.bold())
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(store.shopSort == sort ? LebyyTheme.accent : LebyyTheme.surface)
+                            .foregroundStyle(store.shopSort == sort ? LebyyTheme.bg : LebyyTheme.text)
+                            .clipShape(Capsule())
+                            .accessibilityIdentifier(sort.accessibilityId)
+                            .accessibilityLabel(sort.title)
+                            .accessibilityAddTraits(store.shopSort == sort ? .isSelected : [])
+                        }
+                    }
+                }
+                .accessibilityIdentifier("test-ShopSortBar")
+
+                Text("Showing \(store.filteredProducts.count) courses")
+                    .font(.caption)
+                    .foregroundStyle(LebyyTheme.muted)
+                    .accessibilityIdentifier("test-ShopCount")
+                    .accessibilityLabel("Showing \(store.filteredProducts.count) courses")
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+
+            if store.filteredProducts.isEmpty {
+                VStack(spacing: 12) {
+                    Spacer(minLength: 40)
+                    Text("No courses found")
+                        .font(.headline)
+                        .foregroundStyle(LebyyTheme.text)
+                        .accessibilityIdentifier("test-ShopEmpty")
+                    Text("Try another search term")
+                        .font(.caption)
+                        .foregroundStyle(LebyyTheme.muted)
+                        .accessibilityIdentifier("test-ShopEmptyMessage")
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 14) {
+                        ForEach(store.filteredProducts) { product in
+                            ProductCard(product: product)
+                                .accessibilityIdentifier("test-\(product.name)")
+                        }
+                    }
+                    .padding(16)
                 }
             }
-            .padding(16)
         }
         .background(LebyyTheme.bg.ignoresSafeArea())
+        .accessibilityIdentifier("test-ShopScreen")
     }
 }
 
@@ -38,12 +104,24 @@ struct ProductCard: View {
                         .clipped()
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(product.name).font(.headline).foregroundStyle(LebyyTheme.text)
+                        HStack {
+                            Text(product.name).font(.headline).foregroundStyle(LebyyTheme.text)
+                            Spacer()
+                            Image(systemName: store.isWishlisted(product.id) ? "heart.fill" : "heart")
+                                .foregroundStyle(LebyyTheme.accent)
+                                .accessibilityHidden(true)
+                        }
                         Text(String(format: "$%.2f", product.price)).foregroundStyle(LebyyTheme.accent)
                         Text(product.description)
                             .font(.subheadline)
                             .foregroundStyle(LebyyTheme.muted)
                             .lineLimit(2)
+                        if store.rating(for: product.id) > 0 {
+                            Text("Rating: \(store.rating(for: product.id))/5")
+                                .font(.caption)
+                                .foregroundStyle(LebyyTheme.primary)
+                                .accessibilityIdentifier("test-CardRating-\(product.id)")
+                        }
                     }
                     .padding([.horizontal, .top], 16)
                 }
@@ -51,29 +129,47 @@ struct ProductCard: View {
             }
             .buttonStyle(.plain)
 
-            Button {
-                if inCart {
-                    store.removeFromCart(product.id)
-                } else {
-                    store.addToCart(product, qty: 1)
+            HStack(spacing: 10) {
+                Button {
+                    store.toggleWishlist(product.id)
+                } label: {
+                    Text(store.isWishlisted(product.id) ? "UNWISH" : "WISHLIST")
+                        .font(.subheadline.bold())
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(LebyyTheme.surface2)
+                        .foregroundStyle(LebyyTheme.text)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .contentShape(Rectangle())
                 }
-            } label: {
-                Text(inCart ? "REMOVE" : "ADD TO CART")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(inCart ? LebyyTheme.surface2 : LebyyTheme.accent)
-                    .foregroundStyle(inCart ? LebyyTheme.text : LebyyTheme.bg)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(inCart ? LebyyTheme.line : Color.clear, lineWidth: 1)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .contentShape(Rectangle())
+                .buttonStyle(.plain)
+                .accessibilityIdentifier(store.isWishlisted(product.id) ? "test-UNWISH" : "test-WISHLIST")
+                .accessibilityLabel(store.isWishlisted(product.id) ? "UNWISH" : "WISHLIST")
+
+                Button {
+                    if inCart {
+                        store.removeFromCart(product.id)
+                    } else {
+                        store.addToCart(product, qty: 1)
+                    }
+                } label: {
+                    Text(inCart ? "REMOVE" : "ADD TO CART")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(inCart ? LebyyTheme.surface2 : LebyyTheme.accent)
+                        .foregroundStyle(inCart ? LebyyTheme.text : LebyyTheme.bg)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(inCart ? LebyyTheme.line : Color.clear, lineWidth: 1)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier(inCart ? "test-REMOVE" : "test-ADD TO CART")
+                .accessibilityLabel(inCart ? "REMOVE" : "ADD TO CART")
             }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier(inCart ? "test-REMOVE" : "test-ADD TO CART")
-            .accessibilityLabel(inCart ? "REMOVE" : "ADD TO CART")
             .padding(16)
         }
         .background(LebyyTheme.surface)
@@ -110,6 +206,48 @@ struct ProductDetailView: View {
                 Text(product.description)
                     .foregroundStyle(LebyyTheme.muted)
                     .accessibilityIdentifier("test-ProductDesc")
+
+                Text("Rating").font(.caption).foregroundStyle(LebyyTheme.muted)
+                HStack(spacing: 8) {
+                    ForEach(1...5, id: \.self) { star in
+                        Button {
+                            store.setRating(productId: product.id, stars: star)
+                        } label: {
+                            Image(systemName: store.rating(for: product.id) >= star ? "star.fill" : "star")
+                                .font(.title3)
+                                .foregroundStyle(LebyyTheme.accent)
+                                .frame(width: 40, height: 40)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("test-Rating-\(star)")
+                        .accessibilityLabel("Rate \(star) stars")
+                        .accessibilityAddTraits(store.rating(for: product.id) >= star ? .isSelected : [])
+                    }
+                }
+                .accessibilityIdentifier("test-RatingBar")
+
+                Text("Your rating: \(store.rating(for: product.id))/5")
+                    .font(.caption)
+                    .foregroundStyle(LebyyTheme.primary)
+                    .accessibilityIdentifier("test-RatingValue")
+                    .accessibilityLabel("Your rating: \(store.rating(for: product.id))/5")
+
+                Button {
+                    store.toggleWishlist(product.id)
+                } label: {
+                    Text(store.isWishlisted(product.id) ? "REMOVE FROM WISHLIST" : "ADD TO WISHLIST")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(LebyyTheme.surface2)
+                        .foregroundStyle(LebyyTheme.text)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier(store.isWishlisted(product.id) ? "test-REMOVE FROM WISHLIST" : "test-ADD TO WISHLIST")
+                .accessibilityLabel(store.isWishlisted(product.id) ? "REMOVE FROM WISHLIST" : "ADD TO WISHLIST")
 
                 Text("Quantity").font(.caption).foregroundStyle(LebyyTheme.muted)
 
@@ -187,7 +325,7 @@ struct CartView: View {
                         .accessibilityIdentifier("test-CartEmptyMessage")
 
                     Button {
-                        store.selected = .shop
+                        store.selectedTab = .shop
                         dismiss()
                     } label: {
                         Text("CONTINUE SHOPPING")
@@ -740,7 +878,7 @@ struct OrderDetailsView: View {
 
                     Button {
                         store.orderDetailsToPresent = nil
-                        store.selected = .orders
+                        store.showOrders = true
                     } label: {
                         Text("ORDER HISTORY")
                             .font(.headline)

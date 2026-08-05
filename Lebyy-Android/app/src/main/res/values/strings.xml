@@ -76,7 +76,17 @@
     <string name="menu_swipe_horizontal">Swipe Left / Right</string>
     <string name="menu_swipe_vertical">Swipe Up / Down</string>
     <string name="menu_gestures">Gestures</string>
+    <string name="menu_lists">Lists</string>
+    <string name="menu_waits">Waits</string>
+    <string name="menu_system">System</string>
+    <string name="menu_navigation">Navigation</string>
+    <string name="menu_settings">Settings</string>
     <string name="menu_webview">Web Browser</string>
+    <string name="lists_title">Lists</string>
+    <string name="waits_title">Waits</string>
+    <string name="system_title">System</string>
+    <string name="navigation_title">Navigation</string>
+    <string name="settings_title">Settings</string>
     <string name="logout">LOGOUT</string>
     <string name="webview">Web Browser</string>
     <string name="url_hint">enter a https url here...</string>

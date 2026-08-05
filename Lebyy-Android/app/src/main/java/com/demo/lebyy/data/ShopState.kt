@@ -74,6 +74,61 @@ object ShopState {
     /** Set true after a successful place-order so checkout/cart activities pop themselves. */
     var exitCheckoutStack: Boolean = false
 
+    // Shop extras / practice state
+    var shopSearch: String = ""
+    var shopSort: String = "nameAsc" // nameAsc, nameDesc, priceLow, priceHigh
+    private val wishlist = mutableSetOf<String>()
+    private val productRatings = mutableMapOf<String, Int>()
+    var displayName: String = "Demo User"
+    var sessionTimeoutEnabled: Boolean = false
+    var sessionTimeoutSeconds: Int = 60
+    var lastDeepLink: String = ""
+    var forcePortraitOnly: Boolean = false
+    var isLoggedIn: Boolean = false
+
+    fun isWishlisted(productId: String): Boolean = wishlist.contains(productId)
+
+    fun toggleWishlist(productId: String) {
+        if (!wishlist.add(productId)) wishlist.remove(productId)
+    }
+
+    fun setRating(productId: String, stars: Int) {
+        productRatings[productId] = stars.coerceIn(1, 5)
+    }
+
+    fun rating(productId: String): Int = productRatings[productId] ?: 0
+
+    fun filteredProducts(all: List<Product>): List<Product> {
+        val q = shopSearch.trim().lowercase()
+        var list = if (q.isEmpty()) all else all.filter {
+            it.name.lowercase().contains(q) || it.description.lowercase().contains(q)
+        }
+        list = when (shopSort) {
+            "nameDesc" -> list.sortedByDescending { it.name }
+            "priceLow" -> list.sortedBy { it.price }
+            "priceHigh" -> list.sortedByDescending { it.price }
+            else -> list.sortedBy { it.name }
+        }
+        return list
+    }
+
+    fun destinationFromDeepLinkHost(host: String): String? = when (host.lowercase()) {
+        "shop" -> "shop"
+        "orders", "orderhistory" -> "orders"
+        "alerts" -> "alerts"
+        "forms" -> "forms"
+        "swipeh", "swipehorizontal" -> "swipe_h"
+        "swipev", "swipevertical" -> "swipe_v"
+        "gestures" -> "gestures"
+        "lists" -> "lists"
+        "waits" -> "waits"
+        "system" -> "system"
+        "navigation", "nav" -> "navigation"
+        "settings" -> "settings"
+        "webview", "web" -> "webview"
+        else -> null
+    }
+
     fun addToCart(product: Product, quantity: Int = 1) {
         val qty = quantity.coerceAtLeast(1)
         val existing = cartLines[product.id]
@@ -224,6 +279,12 @@ object ShopState {
 
     fun resetSession() {
         clearCart()
+        shopSearch = ""
+        isLoggedIn = false
         // Keep order history for the session so automation can verify previous orders.
+    }
+
+    fun loginSuccess() {
+        isLoggedIn = true
     }
 }

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/drawerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:contentDescription="test-SystemScreen">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/lebyy_bg"
+        android:orientation="vertical">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/lebyy_bg_2"
+            android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+            app:title="@string/system_title"
+            app:titleTextColor="@color/lebyy_text" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:id="@+id/contentRoot"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Mock Permissions" android:textColor="@color/lebyy_primary" android:textStyle="bold" android:layout_marginBottom="8dp"/>
+                
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/permissionCamera"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginBottom="10dp"
+                    android:contentDescription="test-PermissionCamera"
+                    android:text="Camera"
+                    android:textColor="@color/lebyy_bg"
+                    app:backgroundTint="@color/lebyy_primary"
+                    app:cornerRadius="12dp" />
+                
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/permissionLocation"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginBottom="10dp"
+                    android:contentDescription="test-PermissionLocation"
+                    android:text="Location"
+                    android:textColor="@color/lebyy_bg"
+                    app:backgroundTint="@color/lebyy_primary"
+                    app:cornerRadius="12dp" />
+                
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/permissionNotifications"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginBottom="10dp"
+                    android:contentDescription="test-PermissionNotifications"
+                    android:text="Notifications"
+                    android:textColor="@color/lebyy_bg"
+                    app:backgroundTint="@color/lebyy_primary"
+                    app:cornerRadius="12dp" />
+                
+                <TextView
+                    android:id="@+id/permissionResult"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:contentDescription="test-PermissionResult"
+                    android:text="Permission: —"
+                    android:textColor="@color/lebyy_accent"
+                    android:textSize="15sp" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Image Picker" android:textColor="@color/lebyy_primary" android:textStyle="bold" android:layout_marginBottom="8dp"/>
+                
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/pickPhoto"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginBottom="10dp"
+                    android:contentDescription="test-PickPhoto"
+                    android:text="Pick Photo"
+                    android:textColor="@color/lebyy_bg"
+                    app:backgroundTint="@color/lebyy_accent"
+                    app:cornerRadius="12dp" />
+                
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/useSampleImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginBottom="10dp"
+                    android:contentDescription="test-UseSampleImage"
+                    android:text="Use Sample Image"
+                    android:textColor="@color/lebyy_bg"
+                    app:backgroundTint="@color/lebyy_primary"
+                    app:cornerRadius="12dp" />
+                
+                <TextView
+                    android:id="@+id/selectedImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:contentDescription="test-SelectedImage"
+                    android:text="Selected: None"
+                    android:textColor="@color/lebyy_muted"
+                    android:textSize="15sp" />
+                <ImageView android:id="@+id/imagePreview" android:layout_width="match_parent" android:layout_height="120dp"
+                    android:contentDescription="test-ImagePreview" android:scaleType="centerCrop" android:visibility="gone" android:layout_marginBottom="12dp"/>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Clipboard &amp; Share" android:textColor="@color/lebyy_primary" android:textStyle="bold" android:layout_marginBottom="8dp"/>
+                <EditText android:id="@+id/shareText" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:contentDescription="test-ShareText" android:hint="Share text" android:text="Lebyy automation rocks"
+                    android:textColor="@color/lebyy_text" android:textColorHint="@color/lebyy_muted"
+                    android:background="@color/lebyy_surface" android:padding="14dp" android:layout_marginBottom="10dp"/>
+                
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/copyClipboard"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginBottom="10dp"
+                    android:contentDescription="test-CopyClipboard"
+                    android:text="Copy to Clipboard"
+                    android:textColor="@color/lebyy_bg"
+                    app:backgroundTint="@color/lebyy_accent"
+                    app:cornerRadius="12dp" />
+                
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/pasteClipboard"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginBottom="10dp"
+                    android:contentDescription="test-PasteClipboard"
+                    android:text="Paste from Clipboard"
+                    android:textColor="@color/lebyy_bg"
+                    app:backgroundTint="@color/lebyy_primary"
+                    app:cornerRadius="12dp" />
+                
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/shareSheet"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginBottom="10dp"
+                    android:contentDescription="test-ShareSheet"
+                    android:text="Open Share Sheet"
+                    android:textColor="@color/lebyy_primary"
+                    app:backgroundTint="@color/lebyy_surface_2"
+                    app:cornerRadius="12dp" />
+                
+                <TextView
+                    android:id="@+id/clipboardResult"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:contentDescription="test-ClipboardResult"
+                    android:text="Clipboard: —"
+                    android:textColor="@color/lebyy_accent"
+                    android:textSize="15sp" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Orientation" android:textColor="@color/lebyy_primary" android:textStyle="bold" android:layout_marginBottom="8dp"/>
+                <TextView android:id="@+id/orientationHint" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:contentDescription="test-OrientationHint" android:text="Rotate device to practice landscape" android:textColor="@color/lebyy_muted" android:layout_marginBottom="8dp"/>
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/forcePortrait"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:contentDescription="test-ForcePortrait" android:text="Force Portrait Only" android:textColor="@color/lebyy_text" android:layout_marginBottom="8dp"/>
+                
+                <TextView
+                    android:id="@+id/orientationMode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:contentDescription="test-Orientation-All"
+                    android:text="Mode: All orientations"
+                    android:textColor="@color/lebyy_accent"
+                    android:textSize="15sp" />
+
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigationView"
+        android:layout_width="280dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/lebyy_surface"
+        android:contentDescription="test-Menu-panel" />
+</androidx.drawerlayout.widget.DrawerLayout>

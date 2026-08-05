@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/lebyy_bg"
+    android:contentDescription="test-ComponentsScreen"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="test-ComponentsHint"
+        android:padding="16dp"
+        android:text="Categorized practice demos. No login required."
+        android:textColor="@color/lebyy_muted" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/componentsList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:padding="8dp" />
+</LinearLayout>

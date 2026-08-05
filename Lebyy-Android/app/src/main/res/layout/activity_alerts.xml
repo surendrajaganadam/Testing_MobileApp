@@ -20,9 +20,13 @@
             app:title="@string/alerts_title"
             app:titleTextColor="@color/lebyy_text" />
 
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:fillViewport="true">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="20dp">
 
@@ -66,6 +70,53 @@
                 app:backgroundTint="@color/lebyy_primary_2"
                 app:cornerRadius="12dp" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonCustomModal"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:contentDescription="test-CustomModal"
+                android:text="Show Custom Modal"
+                android:textColor="@color/lebyy_bg"
+                app:backgroundTint="@color/lebyy_accent"
+                app:cornerRadius="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonBottomSheet"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="12dp"
+                android:contentDescription="test-BottomSheet"
+                android:text="Show Bottom Sheet"
+                android:textColor="@color/lebyy_bg"
+                app:backgroundTint="@color/lebyy_primary"
+                app:cornerRadius="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonToast"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="12dp"
+                android:contentDescription="test-Toast"
+                android:text="Show Toast"
+                android:textColor="@color/lebyy_bg"
+                app:backgroundTint="@color/lebyy_primary"
+                app:cornerRadius="12dp" />
+
+            <TextView
+                android:id="@+id/toastMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="@color/lebyy_surface_2"
+                android:contentDescription="test-ToastMessage"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="12dp"
+                android:text="Toast: Saved successfully"
+                android:textColor="@color/lebyy_text"
+                android:visibility="gone" />
+
             <TextView
                 android:id="@+id/alertResult"
                 android:layout_width="match_parent"
@@ -76,6 +127,7 @@
                 android:textColor="@color/lebyy_accent"
                 android:textSize="16sp" />
         </LinearLayout>
+        </ScrollView>
     </LinearLayout>
 
     <com.google.android.material.navigation.NavigationView

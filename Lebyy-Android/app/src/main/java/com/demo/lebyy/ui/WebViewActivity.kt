@@ -28,6 +28,37 @@ class WebViewActivity : AppCompatActivity() {
         binding.lebyyWebView.webViewClient = WebViewClient()
         binding.lebyyWebView.webChromeClient = WebChromeClient()
 
+        loadStarter(withJsAlert = false)
+
+        binding.loadJsAlertPage.setOnClickListener {
+            loadStarter(withJsAlert = true)
+            binding.webResult.text = "Web: JS alert page"
+        }
+        binding.loadStarterPage.setOnClickListener {
+            loadStarter(withJsAlert = false)
+            binding.webResult.text = "Web: starter"
+        }
+
+        binding.buttonGo.setOnClickListener { loadEnteredUrl() }
+        binding.inputUrl.setOnEditorActionListener { _, _, _ ->
+            loadEnteredUrl()
+            true
+        }
+    }
+
+    private fun loadStarter(withJsAlert: Boolean) {
+        val alertBlock = if (withJsAlert) {
+            """
+            <p><button id='jsAlertBtn' onclick="alert('Lebyy JS Alert')">Show JS Alert</button></p>
+            <p><button id='jsConfirmBtn' onclick="var r=confirm('Continue?'); document.getElementById('jsOut').innerText='Confirm:'+r">Show JS Confirm</button></p>
+            <p id='jsOut'>JS: —</p>
+            """.trimIndent()
+        } else {
+            """
+            <p>Enter a URL above and tap <b>GO TO SITE</b>.</p>
+            <p><a href="https://www.google.com" style="color:#0d6efd">Open Google</a></p>
+            """.trimIndent()
+        }
         binding.lebyyWebView.loadDataWithBaseURL(
             "https://lebyy.local/",
             """
@@ -38,8 +69,7 @@ class WebViewActivity : AppCompatActivity() {
             <body style="font-family: sans-serif; padding: 16px; background:#ffffff; color:#0f2144;">
               <h1 style="color:#0d1f3a;">Lebyy</h1>
               <p style="color:#4a6080;">Learn by yourself</p>
-              <p>Enter a URL above and tap <b>GO TO SITE</b>.</p>
-              <p><a href="https://www.google.com" style="color:#0d6efd">Open Google</a></p>
+              $alertBlock
             </body>
             </html>
             """.trimIndent(),
@@ -47,12 +77,6 @@ class WebViewActivity : AppCompatActivity() {
             "UTF-8",
             null,
         )
-
-        binding.buttonGo.setOnClickListener { loadEnteredUrl() }
-        binding.inputUrl.setOnEditorActionListener { _, _, _ ->
-            loadEnteredUrl()
-            true
-        }
     }
 
     private fun loadEnteredUrl() {

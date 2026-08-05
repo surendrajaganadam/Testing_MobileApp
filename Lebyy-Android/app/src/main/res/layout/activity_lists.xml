@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/drawerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:contentDescription="test-ListsScreen">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/lebyy_bg"
+        android:orientation="vertical">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/lebyy_bg_2"
+            android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+            app:title="@string/lists_title"
+            app:titleTextColor="@color/lebyy_text" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:id="@+id/contentRoot"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Pull to Refresh" android:textColor="@color/lebyy_primary" android:textStyle="bold" android:layout_marginBottom="6dp"/>
+                <TextView android:id="@+id/pullRefreshHint" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:contentDescription="test-PullRefreshHint" android:text="Pull the list below to refresh" android:textColor="@color/lebyy_muted" android:layout_marginBottom="8dp"/>
+                <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                    android:id="@+id/swipeRefresh"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    android:contentDescription="test-PullRefreshList">
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/refreshList"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+                </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                
+                <TextView
+                    android:id="@+id/refreshCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:contentDescription="test-RefreshCount"
+                    android:text="Refresh count: 0"
+                    android:textColor="@color/lebyy_accent"
+                    android:textSize="15sp" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Swipe to Delete" android:textColor="@color/lebyy_primary" android:textStyle="bold" android:layout_marginBottom="6dp"/>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/swipeActionsList"
+                    android:layout_width="match_parent"
+                    android:layout_height="240dp"
+                    android:contentDescription="test-SwipeActionsList"/>
+                
+                <TextView
+                    android:id="@+id/swipeActionResult"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:contentDescription="test-SwipeActionResult"
+                    android:text="Deleted: —"
+                    android:textColor="@color/lebyy_accent"
+                    android:textSize="15sp" />
+                
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/resetSwipeRows"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginBottom="10dp"
+                    android:contentDescription="test-ResetSwipeRows"
+                    android:text="Reset Swipe Rows"
+                    android:textColor="@color/lebyy_bg"
+                    app:backgroundTint="@color/lebyy_primary"
+                    app:cornerRadius="12dp" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Nested Scroll" android:textColor="@color/lebyy_primary" android:textStyle="bold" android:layout_marginBottom="6dp"/>
+                <HorizontalScrollView android:id="@+id/nestedHorizontalScroll" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:contentDescription="test-NestedHorizontalScroll" android:layout_marginBottom="12dp">
+                    <LinearLayout android:id="@+id/nestedCards" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal"/>
+                </HorizontalScrollView>
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="Infinite Scroll" android:textColor="@color/lebyy_primary" android:textStyle="bold" android:layout_marginBottom="6dp"/>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/infiniteList"
+                    android:layout_width="match_parent"
+                    android:layout_height="280dp"
+                    android:contentDescription="test-InfiniteList"/>
+                <ProgressBar android:id="@+id/infiniteLoading" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal" android:contentDescription="test-InfiniteLoading" android:visibility="gone"/>
+                
+                <TextView
+                    android:id="@+id/infinitePageCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:contentDescription="test-InfinitePageCount"
+                    android:text="Pages loaded: 0"
+                    android:textColor="@color/lebyy_accent"
+                    android:textSize="15sp" />
+
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigationView"
+        android:layout_width="280dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/lebyy_surface"
+        android:contentDescription="test-Menu-panel" />
+</androidx.drawerlayout.widget.DrawerLayout>

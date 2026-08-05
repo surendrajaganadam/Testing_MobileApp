@@ -19,6 +19,69 @@
             app:title="@string/products_title"
             app:titleTextColor="@color/lebyy_text" />
 
+        <EditText
+            android:id="@+id/shopSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:background="@color/lebyy_surface"
+            android:contentDescription="test-ShopSearch"
+            android:hint="Search courses"
+            android:padding="12dp"
+            android:textColor="@color/lebyy_text"
+            android:textColorHint="@color/lebyy_muted" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/clearSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginBottom="4dp"
+            android:contentDescription="test-ClearSearch"
+            android:text="Clear Search"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:cornerRadius="8dp" />
+
+        <HorizontalScrollView
+            android:id="@+id/shopSortBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="test-ShopSortBar"
+            android:paddingHorizontal="12dp"
+            android:paddingBottom="8dp">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton android:id="@+id/sortNameAsc" android:layout_width="wrap_content" android:layout_height="40dp" android:layout_marginEnd="8dp" android:contentDescription="test-Sort-NameAsc" android:text="Name A–Z" android:textSize="12sp" app:cornerRadius="20dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/sortNameDesc" android:layout_width="wrap_content" android:layout_height="40dp" android:layout_marginEnd="8dp" android:contentDescription="test-Sort-NameDesc" android:text="Name Z–A" android:textSize="12sp" app:cornerRadius="20dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/sortPriceLow" android:layout_width="wrap_content" android:layout_height="40dp" android:layout_marginEnd="8dp" android:contentDescription="test-Sort-PriceLow" android:text="Price Low–High" android:textSize="12sp" app:cornerRadius="20dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/sortPriceHigh" android:layout_width="wrap_content" android:layout_height="40dp" android:contentDescription="test-Sort-PriceHigh" android:text="Price High–Low" android:textSize="12sp" app:cornerRadius="20dp"/>
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <TextView
+            android:id="@+id/shopCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="test-ShopCount"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="4dp"
+            android:textColor="@color/lebyy_muted"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/shopEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="test-ShopEmpty"
+            android:gravity="center"
+            android:padding="24dp"
+            android:text="No courses found"
+            android:textColor="@color/lebyy_text"
+            android:visibility="gone" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/productList"
             android:layout_width="match_parent"

@@ -66,6 +66,48 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Rating"
+                android:textColor="@color/lebyy_muted"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:id="@+id/ratingBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:contentDescription="test-RatingBar"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+                <com.google.android.material.button.MaterialButton android:id="@+id/rating1" android:layout_width="48dp" android:layout_height="48dp" android:contentDescription="test-Rating-1" android:text="★" app:cornerRadius="8dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/rating2" android:layout_width="48dp" android:layout_height="48dp" android:contentDescription="test-Rating-2" android:text="★" app:cornerRadius="8dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/rating3" android:layout_width="48dp" android:layout_height="48dp" android:contentDescription="test-Rating-3" android:text="★" app:cornerRadius="8dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/rating4" android:layout_width="48dp" android:layout_height="48dp" android:contentDescription="test-Rating-4" android:text="★" app:cornerRadius="8dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/rating5" android:layout_width="48dp" android:layout_height="48dp" android:contentDescription="test-Rating-5" android:text="★" app:cornerRadius="8dp"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/ratingValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:contentDescription="test-RatingValue"
+                android:text="Your rating: 0/5"
+                android:textColor="@color/lebyy_primary"
+                android:layout_marginTop="4dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonWishlist"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="12dp"
+                android:contentDescription="test-ADD TO WISHLIST"
+                android:text="ADD TO WISHLIST"
+                android:textColor="@color/lebyy_text"
+                app:backgroundTint="@color/lebyy_surface_2"
+                app:cornerRadius="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="Quantity"
                 android:textColor="@color/lebyy_muted"

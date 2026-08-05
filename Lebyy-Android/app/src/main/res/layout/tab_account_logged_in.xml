@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/lebyy_bg"
+    android:contentDescription="test-AccountScreen"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="test-AccountSignedIn"
+        android:text="Signed in"
+        android:textColor="@color/lebyy_success"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/accountDisplayName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="@color/lebyy_surface"
+        android:contentDescription="test-DisplayName"
+        android:hint="Display name"
+        android:padding="14dp"
+        android:textColor="@color/lebyy_text"
+        android:textColorHint="@color/lebyy_muted" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/openSettings"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="12dp"
+        android:contentDescription="test-OpenSettings"
+        android:text="Settings &amp; Session"
+        android:textColor="@color/lebyy_bg"
+        app:backgroundTint="@color/lebyy_primary"
+        app:cornerRadius="12dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/accountLogout"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="12dp"
+        android:contentDescription="test-LOGOUT"
+        android:text="LOGOUT"
+        android:textColor="@color/lebyy_bg"
+        app:backgroundTint="@color/lebyy_accent"
+        app:cornerRadius="12dp" />
+</LinearLayout>

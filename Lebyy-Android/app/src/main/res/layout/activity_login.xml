@@ -123,6 +123,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
+            android:contentDescription="test-LoginError"
             android:textColor="#FF8A80"
             android:visibility="gone" />
 

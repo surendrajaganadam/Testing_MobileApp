@@ -55,17 +55,35 @@
                 android:textColor="@color/lebyy_muted"
                 android:textSize="14sp" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonWishlist"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:contentDescription="test-WISHLIST"
+                    android:text="WISHLIST"
+                    android:textAllCaps="true"
+                    android:textColor="@color/lebyy_text"
+                    app:backgroundTint="@color/lebyy_surface_2"
+                    app:cornerRadius="10dp" />
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonAddToCart"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="52dp"
-                android:layout_marginTop="12dp"
                 android:contentDescription="test-ADD TO CART"
                 android:text="@string/add_to_cart"
                 android:textAllCaps="true"
                 android:textColor="@color/lebyy_bg"
                 app:backgroundTint="@color/lebyy_accent"
                 app:cornerRadius="10dp" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

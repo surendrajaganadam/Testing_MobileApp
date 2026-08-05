@@ -1,6 +1,6 @@
 # Lebyy — Mobile E2E Practice App
 
-Debuggable practice app for **Android** and **iOS** automation (MobileWright / Appium / XCUITest style).
+Debuggable practice app for **Android** and **iOS** automation (MobileWright / Appium / XCUITest).
 
 Branding from [lebyy.com](https://lebyy.com).
 
@@ -11,6 +11,19 @@ Branding from [lebyy.com](https://lebyy.com).
 | iOS bundle ID | `com.demo.lebyy` |
 | Login username | `demo_user` |
 | Login password | `demo_pass` |
+
+## App structure
+
+Bottom tabs:
+
+| Tab | Login? | Purpose |
+|-----|--------|---------|
+| **Home** | No | Welcome + shortcuts |
+| **Components** | No | Categorized practice (alerts, forms, gestures, lists, waits, system, web…) |
+| **Shop** | Yes | Full E2E: catalog → cart → checkout → orders |
+| **Account** | Login / logout | Credentials + settings |
+
+Form Controls are nested by topic (Text Fields, Switches, Sliders, Date & Time, Selection, Validation, OTP).
 
 ---
 

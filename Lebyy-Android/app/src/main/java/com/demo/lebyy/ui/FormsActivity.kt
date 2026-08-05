@@ -30,40 +30,62 @@ class FormsActivity : AppCompatActivity() {
         setContentView(binding.root)
         DrawerHelper.setup(this, binding.drawerLayout, binding.navigationView, binding.toolbar, "forms")
 
-        val topic = intent.getStringExtra(EXTRA_TOPIC).orEmpty()
-        if (topic.isNotEmpty()) {
-            binding.toolbar.title = when (topic) {
-                "switches" -> "Switches"
-                "sliders" -> "Sliders"
-                "pickers" -> "Date & Time"
-                "selection" -> "Selection Controls"
-                "validation" -> "Validation"
-                "otp" -> "OTP / PIN"
-                "text" -> "Text Fields"
-                else -> "Forms"
-            }
-        }
+        val topic = intent.getStringExtra(EXTRA_TOPIC).orEmpty().ifEmpty { "text" }
+        applyTopic(topic)
+        wireControls(topic)
+    }
 
-        val options = listOf(
-            "Select an item...",
-            "surendra is awesome",
-            "lebyy is awesome",
-            "i love your content",
-            "i refer this course to my friends",
-        )
-        val adapter = ArrayAdapter(this, R.layout.item_dropdown, options)
-        adapter.setDropDownViewResource(R.layout.item_dropdown)
-        binding.dropdown.setAdapter(adapter)
-        binding.dropdown.setText(options[0], false)
-        binding.dropdown.setDropDownBackgroundResource(R.color.lebyy_surface_2)
-        binding.dropdown.threshold = 1
-        binding.dropdown.setOnClickListener { binding.dropdown.showDropDown() }
-        binding.dropdown.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) binding.dropdown.showDropDown()
+    private fun applyTopic(topic: String) {
+        val title = when (topic) {
+            "switches" -> "Switches"
+            "sliders" -> "Sliders"
+            "pickers" -> "Date & Time"
+            "selection" -> "Selection Controls"
+            "validation" -> "Validation"
+            "otp" -> "OTP / PIN"
+            "text" -> "Text Fields"
+            else -> "Forms"
         }
-        binding.dropdown.setOnItemClickListener { _, _, position, _ ->
-            binding.formsResult.text = "Result: Dropdown ${options[position]}"
+        binding.toolbar.title = title
+
+        val screenId = when (topic) {
+            "switches" -> "switches"
+            "sliders" -> "sliders"
+            "pickers" -> "pickers"
+            "selection" -> "selection"
+            "validation" -> "validation"
+            "otp" -> "otp"
+            else -> "textFields"
         }
+        binding.formsScroll.contentDescription = "test-FormTopicScreen-$screenId"
+
+        binding.sectionText.visibility = visibleIf(topic, "text")
+        binding.sectionSwitches.visibility = visibleIf(topic, "switches")
+        binding.sectionSliders.visibility = visibleIf(topic, "sliders")
+        binding.sectionPickers.visibility = visibleIf(topic, "pickers")
+        binding.sectionSelection.visibility = visibleIf(topic, "selection")
+        binding.sectionValidation.visibility = visibleIf(topic, "validation")
+        binding.sectionOtp.visibility = visibleIf(topic, "otp")
+    }
+
+    private fun visibleIf(topic: String, key: String): Int =
+        if (topic == key) View.VISIBLE else View.GONE
+
+    private fun wireControls(topic: String) {
+        binding.formsResult.text = "Result: —"
+
+        binding.inputText.addTextChangedListener(simpleWatcher {
+            binding.formsResult.text = "Result: Plain ${binding.inputText.text}"
+        })
+        binding.secureInput.addTextChangedListener(simpleWatcher {
+            binding.formsResult.text = "Result: Secure typed"
+        })
+        binding.emailInput.addTextChangedListener(simpleWatcher {
+            binding.formsResult.text = "Result: Email ${binding.emailInput.text}"
+        })
+        binding.multilineInput.addTextChangedListener(simpleWatcher {
+            binding.formsResult.text = "Result: Notes ${binding.multilineInput.text}"
+        })
 
         fun renderSwitchStatus(isChecked: Boolean) {
             val label = if (isChecked) "ON" else "OFF"
@@ -71,35 +93,39 @@ class FormsActivity : AppCompatActivity() {
             binding.switchStatus.contentDescription = "test-SwitchStatus-$label"
             binding.formsResult.text = "Result: Switch $label"
         }
-        renderSwitchStatus(binding.switchNotifications.isChecked)
+        if (topic == "switches") {
+            renderSwitchStatus(binding.switchNotifications.isChecked)
+        }
         binding.switchNotifications.setOnCheckedChangeListener { _, isChecked ->
             renderSwitchStatus(isChecked)
+        }
+        binding.switchLabeled.setOnCheckedChangeListener { _, isChecked ->
+            binding.formsResult.text = "Result: Labeled Switch ${if (isChecked) "ON" else "OFF"}"
         }
 
         binding.checkboxOne.setOnCheckedChangeListener { _, _ -> updateChecks() }
         binding.checkboxTwo.setOnCheckedChangeListener { _, _ -> updateChecks() }
 
-        binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            val label = when (checkedId) {
-                binding.radioOne.id -> "Radio 1"
-                binding.radioTwo.id -> "Radio 2"
-                else -> "—"
+        binding.slider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                binding.sliderValue.text = "Slider value: $progress"
+                binding.sliderValue.contentDescription = "Slider value: $progress"
+                binding.formsResult.text = "Result: Slider $progress"
             }
-            binding.formsResult.text = "Result: $label"
-        }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
 
-        binding.buttonActive.setOnClickListener {
-            val typed = binding.inputText.text?.toString().orEmpty()
-            binding.formsResult.text = "Result: Active tapped ($typed)"
-            Toast.makeText(this, "Active button clicked", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.buttonInactive.isEnabled = true
-        binding.buttonInactive.alpha = 0.45f
-        binding.buttonInactive.setOnClickListener {
-            binding.formsResult.text = "Result: Inactive tapped"
-            Toast.makeText(this, "Inactive button", Toast.LENGTH_SHORT).show()
-        }
+        binding.sliderStepped.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val stepped = progress + 1
+                binding.sliderSteppedValue.text = "Stepped value: $stepped"
+                binding.sliderSteppedValue.contentDescription = "Stepped value: $stepped"
+                binding.formsResult.text = "Result: Stepped $stepped"
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
 
         binding.buttonPickDate.setOnClickListener {
             DatePickerDialog(
@@ -131,16 +157,47 @@ class FormsActivity : AppCompatActivity() {
             ).show()
         }
 
-        binding.slider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                binding.sliderValue.text = "Slider value: $progress"
-                binding.sliderValue.contentDescription = "Slider value: $progress"
-                binding.slider.contentDescription = "test-Slider"
-                binding.formsResult.text = "Result: Slider $progress"
+        val options = listOf(
+            "Select an item...",
+            "surendra is awesome",
+            "lebyy is awesome",
+            "i love your content",
+            "i refer this course to my friends",
+        )
+        val adapter = ArrayAdapter(this, R.layout.item_dropdown, options)
+        adapter.setDropDownViewResource(R.layout.item_dropdown)
+        binding.dropdown.setAdapter(adapter)
+        binding.dropdown.setText(options[0], false)
+        binding.dropdown.setDropDownBackgroundResource(R.color.lebyy_surface_2)
+        binding.dropdown.threshold = 1
+        binding.dropdown.setOnClickListener { binding.dropdown.showDropDown() }
+        binding.dropdown.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) binding.dropdown.showDropDown()
+        }
+        binding.dropdown.setOnItemClickListener { _, _, position, _ ->
+            binding.formsResult.text = "Result: Dropdown ${options[position]}"
+        }
+
+        binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
+            val label = when (checkedId) {
+                binding.radioOne.id -> "Radio 1"
+                binding.radioTwo.id -> "Radio 2"
+                else -> "—"
             }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
+            binding.formsResult.text = "Result: $label"
+        }
+
+        binding.buttonActive.setOnClickListener {
+            val typed = binding.inputText.text?.toString().orEmpty()
+            binding.formsResult.text = "Result: Active tapped ($typed)"
+            Toast.makeText(this, "Active button clicked", Toast.LENGTH_SHORT).show()
+        }
+        binding.buttonInactive.isEnabled = true
+        binding.buttonInactive.alpha = 0.45f
+        binding.buttonInactive.setOnClickListener {
+            binding.formsResult.text = "Result: Inactive tapped"
+            Toast.makeText(this, "Inactive button", Toast.LENGTH_SHORT).show()
+        }
 
         binding.validationSubmit.setOnClickListener {
             val name = binding.validationName.text?.toString()?.trim().orEmpty()

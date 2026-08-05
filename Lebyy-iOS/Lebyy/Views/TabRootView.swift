@@ -46,71 +46,78 @@ struct HomeView: View {
 
     var body: some View {
         ZStack {
-            LebyyTheme.bg.ignoresSafeArea()
+            LinearGradient(
+                colors: [LebyyTheme.bg2, LebyyTheme.bg, Color.black.opacity(0.55)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                Spacer(minLength: 48)
+                Spacer(minLength: 36)
 
-                VStack(spacing: 22) {
+                VStack(spacing: 26) {
                     Image("logo_lebyy")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 168, height: 144)
+                        .frame(width: 210, height: 180)
+                        .shadow(color: LebyyTheme.primary.opacity(0.35), radius: 24, y: 8)
                         .accessibilityIdentifier("test-HomeLogo")
                         .accessibilityLabel("Lebyy logo")
 
-                    HStack(spacing: 10) {
+                    HStack(spacing: 12) {
                         Text("LEBYY")
-                            .font(.system(size: 30, weight: .ultraLight))
-                            .tracking(6)
-                            .foregroundStyle(Color.white)
+                            .font(.system(size: 42, weight: .bold, design: .rounded))
+                            .tracking(4)
+                            .foregroundStyle(LebyyTheme.primary)
                             .accessibilityIdentifier("test-HomeBrand")
 
                         Text("APP")
-                            .font(.system(size: 14, weight: .bold))
+                            .font(.system(size: 18, weight: .heavy, design: .rounded))
                             .foregroundStyle(LebyyTheme.bg)
-                            .padding(.horizontal, 9)
-                            .padding(.vertical, 7)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 9)
                             .background(LebyyTheme.accent)
-                            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
 
-                    Text("Demo app for mobile automation practice")
-                        .font(.system(size: 15, weight: .light))
-                        .foregroundStyle(Color.white.opacity(0.72))
-                        .multilineTextAlignment(.center)
-                        .accessibilityIdentifier("test-HomeBlurb")
-
                     Text("Welcome to Lebyy Practice App")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundStyle(LebyyTheme.accent)
+                        .multilineTextAlignment(.center)
                         .accessibilityIdentifier("test-HomeWelcome")
                         .accessibilityLabel("Welcome to Lebyy Practice App")
 
-                    HStack(spacing: 40) {
+                    Text("Demo app for mobile automation practice")
+                        .font(.system(size: 18, weight: .medium, design: .rounded))
+                        .foregroundStyle(LebyyTheme.text)
+                        .multilineTextAlignment(.center)
+                        .accessibilityIdentifier("test-HomeBlurb")
+
+                    HStack(spacing: 44) {
                         Image(systemName: "apple.logo")
-                            .font(.system(size: 38, weight: .regular))
-                            .foregroundStyle(LebyyTheme.accent)
+                            .font(.system(size: 48, weight: .semibold))
+                            .foregroundStyle(LebyyTheme.primary)
                             .accessibilityIdentifier("test-HomeIcon-iOS")
                             .accessibilityLabel("iOS")
 
                         Image(systemName: "smartphone")
-                            .font(.system(size: 36, weight: .regular))
-                            .foregroundStyle(LebyyTheme.accent)
+                            .font(.system(size: 46, weight: .semibold))
+                            .foregroundStyle(LebyyTheme.primary)
                             .accessibilityIdentifier("test-HomeIcon-Android")
                             .accessibilityLabel("Android")
                     }
-                    .padding(.top, 6)
+                    .padding(.top, 10)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.horizontal, 28)
+                .padding(.horizontal, 24)
 
                 Spacer()
 
-                VStack(spacing: 16) {
+                VStack(spacing: 18) {
                     if !store.lastDeepLink.isEmpty {
                         Text("Last deep link: \(store.lastDeepLink)")
-                            .font(.caption2)
+                            .font(.caption)
                             .foregroundStyle(LebyyTheme.muted)
                             .accessibilityIdentifier("test-HomeDeepLink")
                     }
@@ -118,20 +125,20 @@ struct HomeView: View {
                     Button("Support") {
                         openURL(URL(string: "https://lebyy.com")!)
                     }
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundStyle(Color.white.opacity(0.78))
+                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                    .foregroundStyle(LebyyTheme.primary)
                     .accessibilityIdentifier("test-HomeSupport")
                     .accessibilityLabel("Support")
 
                     Button("GitHub") {
                         openURL(URL(string: "https://github.com/surendrajaganadam/Testing_MobileApp")!)
                     }
-                    .font(.system(size: 15, weight: .regular))
-                    .foregroundStyle(Color.white.opacity(0.5))
+                    .font(.system(size: 18, weight: .medium, design: .rounded))
+                    .foregroundStyle(LebyyTheme.accent)
                     .accessibilityIdentifier("test-HomeGitHub")
                     .accessibilityLabel("GitHub")
                 }
-                .padding(.bottom, 24)
+                .padding(.bottom, 28)
             }
         }
         .toolbar(.hidden, for: .navigationBar)

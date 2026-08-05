@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/lebyy_bg"
+    android:background="@drawable/bg_home_gradient"
     android:contentDescription="test-HomeScreen">
 
     <LinearLayout
@@ -10,19 +10,19 @@
         android:layout_height="match_parent"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:paddingHorizontal="28dp"
-        android:paddingTop="56dp"
-        android:paddingBottom="24dp">
+        android:paddingHorizontal="24dp"
+        android:paddingTop="48dp"
+        android:paddingBottom="28dp">
 
         <Space
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0.35" />
+            android:layout_weight="0.28" />
 
         <ImageView
             android:id="@+id/homeLogo"
-            android:layout_width="168dp"
-            android:layout_height="144dp"
+            android:layout_width="210dp"
+            android:layout_height="180dp"
             android:contentDescription="test-HomeLogo"
             android:scaleType="fitCenter"
             android:src="@drawable/logo_lebyy" />
@@ -30,7 +30,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
+            android:layout_marginTop="26dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -38,69 +38,72 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:contentDescription="test-HomeBrand"
-                android:letterSpacing="0.28"
+                android:letterSpacing="0.12"
                 android:text="LEBYY"
                 android:textAllCaps="true"
-                android:textColor="@android:color/white"
-                android:textSize="30sp"
-                android:textStyle="normal" />
+                android:textColor="@color/lebyy_primary"
+                android:textSize="42sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:background="@color/lebyy_accent"
-                android:paddingHorizontal="9dp"
-                android:paddingVertical="7dp"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/bg_home_badge"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="9dp"
                 android:text="APP"
                 android:textColor="@color/lebyy_bg"
-                android:textSize="14sp"
+                android:textSize="18sp"
                 android:textStyle="bold" />
         </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:contentDescription="test-HomeBlurb"
-            android:gravity="center"
-            android:text="Demo app for mobile automation practice"
-            android:textColor="#B8FFFFFF"
-            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/homeWelcome"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="22dp"
             android:contentDescription="test-HomeWelcome"
             android:gravity="center"
             android:text="Welcome to Lebyy Practice App"
             android:textColor="@color/lebyy_accent"
-            android:textSize="13sp"
-            android:textStyle="bold" />
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:contentDescription="test-HomeBlurb"
+            android:gravity="center"
+            android:text="Demo app for mobile automation practice"
+            android:textColor="@color/lebyy_text"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="32dp"
             android:gravity="center"
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
                 android:contentDescription="test-HomeIcon-iOS"
                 android:src="@drawable/ic_platform_apple"
-                android:tint="@color/lebyy_accent" />
+                android:tint="@color/lebyy_primary" />
 
             <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="40dp"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="44dp"
                 android:contentDescription="test-HomeIcon-Android"
                 android:src="@drawable/ic_platform_android"
-                android:tint="@color/lebyy_accent" />
+                android:tint="@color/lebyy_primary" />
         </LinearLayout>
 
         <Space
@@ -113,20 +116,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="test-HomeSupport"
-            android:padding="8dp"
+            android:padding="10dp"
             android:text="Support"
-            android:textColor="#C7FFFFFF"
-            android:textSize="16sp" />
+            android:textColor="@color/lebyy_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/homeGitHub"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="6dp"
             android:contentDescription="test-HomeGitHub"
-            android:padding="8dp"
+            android:padding="10dp"
             android:text="GitHub"
-            android:textColor="#80FFFFFF"
-            android:textSize="15sp" />
+            android:textColor="@color/lebyy_accent"
+            android:textSize="18sp"
+            android:textStyle="bold" />
     </LinearLayout>
 </FrameLayout>

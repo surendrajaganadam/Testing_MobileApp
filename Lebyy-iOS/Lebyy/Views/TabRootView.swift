@@ -152,10 +152,13 @@ struct ComponentsCatalogView: View {
                                 .font(.title3)
                                 .foregroundStyle(LebyyTheme.primary)
                                 .frame(width: 36)
+                                .accessibilityHidden(true)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(category.title)
                                     .foregroundStyle(LebyyTheme.text)
                                     .font(.body.weight(.semibold))
+                                    .accessibilityIdentifier(category.accessibilityId)
+                                    .accessibilityAddTraits(.isButton)
                                 Text(category.subtitle)
                                     .font(.caption)
                                     .foregroundStyle(LebyyTheme.muted)
@@ -163,7 +166,7 @@ struct ComponentsCatalogView: View {
                         }
                         .padding(.vertical, 4)
                     }
-                    .accessibilityIdentifier(category.accessibilityId)
+                    .accessibilityElement(children: .contain)
                     .listRowBackground(LebyyTheme.surface)
                 }
             }
@@ -249,13 +252,15 @@ struct FormControlsHubView: View {
                             Text(topic.title)
                                 .foregroundStyle(LebyyTheme.text)
                                 .font(.body.weight(.semibold))
+                                .accessibilityIdentifier(topic.accessibilityId)
+                                .accessibilityAddTraits(.isButton)
                             Text(topic.subtitle)
                                 .font(.caption)
                                 .foregroundStyle(LebyyTheme.muted)
                         }
                         .padding(.vertical, 4)
                     }
-                    .accessibilityIdentifier(topic.accessibilityId)
+                    .accessibilityElement(children: .contain)
                     .listRowBackground(LebyyTheme.surface)
                 }
             }
@@ -294,11 +299,17 @@ struct SwipesHubView: View {
 
     private func row(_ title: String, _ subtitle: String, _ id: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(title).foregroundStyle(LebyyTheme.text).font(.body.weight(.semibold))
-            Text(subtitle).font(.caption).foregroundStyle(LebyyTheme.muted)
+            Text(title)
+                .foregroundStyle(LebyyTheme.text)
+                .font(.body.weight(.semibold))
+                .accessibilityIdentifier(id)
+                .accessibilityAddTraits(.isButton)
+            Text(subtitle)
+                .font(.caption)
+                .foregroundStyle(LebyyTheme.muted)
         }
         .padding(.vertical, 4)
-        .accessibilityIdentifier(id)
+        .accessibilityElement(children: .contain)
     }
 }
 

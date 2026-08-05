@@ -63,20 +63,17 @@
         <TextView
             android:id="@+id/homeWelcome"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="28dp"
             android:layout_marginTop="22dp"
             android:contentDescription="test-HomeWelcome"
             android:gravity="center"
             android:maxLines="1"
-            android:singleLine="true"
-            android:ellipsize="none"
             android:text="Welcome to Lebyy Practice App"
             android:textColor="@color/lebyy_accent"
-            android:textSize="20sp"
             android:textStyle="bold"
             android:fontFamily="sans-serif-medium"
             app:autoSizeTextType="uniform"
-            app:autoSizeMinTextSize="15sp"
+            app:autoSizeMinTextSize="14sp"
             app:autoSizeMaxTextSize="20sp"
             app:autoSizeStepGranularity="1sp" />
 

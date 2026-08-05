@@ -13,6 +13,7 @@
     <color name="lebyy_accent">#FFBF57</color>
     <color name="lebyy_accent_dark">#F0A500</color>
     <color name="lebyy_success">#2DD4BF</color>
+    <color name="lebyy_danger">#FF6B6B</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
 

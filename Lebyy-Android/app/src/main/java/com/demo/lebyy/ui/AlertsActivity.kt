@@ -66,22 +66,20 @@ class AlertsActivity : AppCompatActivity() {
                 .show()
         }
 
-        binding.buttonCustomModal.setOnClickListener {
-            val dialog = MaterialAlertDialogBuilder(this)
-                .setTitle("Custom Modal")
-                .setMessage("Not a system alert — custom overlay")
-                .setPositiveButton("OK") { _, _ ->
-                    binding.alertResult.text = "Result: Modal OK"
-                }
-                .setNegativeButton("Cancel") { _, _ ->
-                    binding.alertResult.text = "Result: Modal Cancel"
-                }
-                .create()
-            dialog.setOnShowListener {
-                dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)?.contentDescription = "test-ModalOK"
-                dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE)?.contentDescription = "test-ModalCancel"
-            }
-            dialog.show()
+        binding.buttonCustomModal.setOnClickListener { binding.modalBackdrop.visibility = View.VISIBLE }
+        binding.modalBackdrop.setOnClickListener {
+            binding.alertResult.text = "Result: Modal backdrop"
+            binding.modalBackdrop.visibility = View.GONE
+        }
+        // Absorbs taps so they do not fall through to the backdrop dismiss handler.
+        binding.customModalContent.setOnClickListener { }
+        binding.modalOk.setOnClickListener {
+            binding.alertResult.text = "Result: Modal OK"
+            binding.modalBackdrop.visibility = View.GONE
+        }
+        binding.modalCancel.setOnClickListener {
+            binding.alertResult.text = "Result: Modal Cancel"
+            binding.modalBackdrop.visibility = View.GONE
         }
 
         binding.buttonBottomSheet.setOnClickListener {

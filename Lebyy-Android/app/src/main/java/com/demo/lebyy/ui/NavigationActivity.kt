@@ -17,10 +17,11 @@ class NavigationActivity : AppCompatActivity() {
 
         val link = ShopState.lastDeepLink.ifEmpty { "—" }
         binding.lastDeepLink.text = "Last deep link: $link"
-        binding.lastDeepLink.contentDescription = "Last deep link: ${if (ShopState.lastDeepLink.isEmpty()) "none" else link}"
 
-        listOf("Home", "Search", "Profile").forEach {
-            binding.bottomTabs.addTab(binding.bottomTabs.newTab().setText(it))
+        listOf("Home", "Search", "Profile").forEach { name ->
+            val tab = binding.bottomTabs.newTab().setText(name)
+            tab.view.contentDescription = "test-Tab-$name"
+            binding.bottomTabs.addTab(tab)
         }
         binding.bottomTabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
@@ -28,7 +29,6 @@ class NavigationActivity : AppCompatActivity() {
                 binding.tabContent.text = "$name Tab"
                 binding.tabContent.contentDescription = "test-TabContent-$name"
                 binding.selectedTab.text = "Selected tab: $name"
-                binding.selectedTab.contentDescription = "Selected tab: $name"
             }
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}

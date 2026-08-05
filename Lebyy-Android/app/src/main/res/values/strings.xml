@@ -17,6 +17,9 @@
     <string name="login_gesture_result_dismiss">Dismiss</string>
     <string name="login_error">Invalid credentials. Use demo_user / demo_pass</string>
     <string name="products_title">Shop</string>
+    <string name="shop_login_required">Please log in to use Shop</string>
+    <string name="shop_ready">Shop ready</string>
+    <string name="home_last_deep_link">Last deep link: %1$s</string>
     <string name="add_to_cart">ADD TO CART</string>
     <string name="remove">REMOVE</string>
     <string name="your_cart">Your Cart</string>
@@ -70,6 +73,7 @@
     <string name="menu">Menu</string>
     <string name="menu_shop">Shop</string>
     <string name="menu_orders">Order History</string>
+    <string name="menu_orders_short">Orders</string>
     <string name="order_history">ORDER HISTORY</string>
     <string name="menu_alerts">Alerts</string>
     <string name="menu_forms">Forms</string>
@@ -95,6 +99,7 @@
     <string name="payment_card">Lebyy Card **** 4242</string>
     <string name="alerts_title">Alerts</string>
     <string name="forms_title">Forms</string>
+    <string name="swipes_title">Swipes</string>
     <string name="swipe_h_title">Swipe Left / Right</string>
     <string name="swipe_v_title">Swipe Up / Down</string>
     <string name="gestures_title">Gestures</string>

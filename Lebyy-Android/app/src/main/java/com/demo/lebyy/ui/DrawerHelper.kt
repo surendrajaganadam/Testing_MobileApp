@@ -60,6 +60,7 @@ object DrawerHelper {
         "orders" -> OrdersActivity::class.java
         "alerts" -> AlertsActivity::class.java
         "forms" -> FormControlsHubActivity::class.java
+        "swipes" -> SwipesHubActivity::class.java
         "swipe_h" -> SwipeHorizontalActivity::class.java
         "swipe_v" -> SwipeVerticalActivity::class.java
         "gestures" -> GesturesActivity::class.java
@@ -91,8 +92,17 @@ object DrawerHelper {
             }
         }
 
-        header.drawerShop.setOnClickListener { go(CatalogActivity::class.java, "shop") }
-        header.drawerOrders.setOnClickListener { go(OrdersActivity::class.java, "orders") }
+        // Shop + Order History need a session (iOS hides them behind the login gate too).
+        val shopVisibility = if (ShopState.isLoggedIn) View.VISIBLE else View.GONE
+        header.drawerShop.visibility = shopVisibility
+        header.drawerOrders.visibility = shopVisibility
+
+        header.drawerShop.setOnClickListener {
+            if (ShopState.isLoggedIn) go(CatalogActivity::class.java, "shop")
+        }
+        header.drawerOrders.setOnClickListener {
+            if (ShopState.isLoggedIn) go(OrdersActivity::class.java, "orders")
+        }
         header.drawerAlerts.setOnClickListener { go(AlertsActivity::class.java, "alerts") }
         header.drawerForms.setOnClickListener { go(FormControlsHubActivity::class.java, "forms") }
         header.drawerSwipeHorizontal.setOnClickListener {

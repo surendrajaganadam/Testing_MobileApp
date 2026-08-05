@@ -35,13 +35,28 @@
             android:layout_weight="1"
             android:contentDescription="test-SwipeCarousel" />
 
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/swipeDots"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@android:color/transparent"
+            android:contentDescription="test-SwipeDots"
+            app:tabBackground="@drawable/dot_page_indicator"
+            app:tabGravity="center"
+            app:tabIndicatorHeight="0dp"
+            app:tabMinWidth="8dp"
+            app:tabPaddingEnd="6dp"
+            app:tabPaddingStart="6dp"
+            app:tabRippleColor="@android:color/transparent" />
+
         <TextView
             android:id="@+id/swipeHStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:contentDescription="test-SwipeHStatus"
             android:padding="16dp"
-            android:text="Card 1 / 5"
+            android:text="Card 1 / 6"
             android:textColor="@color/lebyy_accent"
             android:textSize="16sp" />
     </LinearLayout>

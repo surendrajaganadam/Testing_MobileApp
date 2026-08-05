@@ -115,5 +115,15 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/homeDeepLink"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="test-HomeDeepLink"
+            android:gravity="center"
+            android:textColor="@color/lebyy_muted"
+            android:textSize="12sp"
+            android:visibility="gone" />
     </LinearLayout>
 </FrameLayout>

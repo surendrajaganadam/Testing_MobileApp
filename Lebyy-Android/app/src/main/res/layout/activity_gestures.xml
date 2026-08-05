@@ -3,125 +3,302 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:contentDescription="test-GesturesScreen">
 
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/lebyy_bg"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/lebyy_bg_2"
-            android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
-            app:title="@string/gestures_title"
-            app:titleTextColor="@color/lebyy_text" />
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fillViewport="true">
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp">
+            android:layout_height="match_parent"
+            android:background="@color/lebyy_bg"
+            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/gestureResult"
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:contentDescription="test-GestureResult"
-                android:text="@string/gesture_result_idle"
-                android:textColor="@color/lebyy_accent"
-                android:textSize="16sp" />
+                android:layout_height="?attr/actionBarSize"
+                android:background="@color/lebyy_bg_2"
+                android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+                app:title="@string/gestures_title"
+                app:titleTextColor="@color/lebyy_text" />
 
-            <FrameLayout
-                android:id="@+id/longPressTarget"
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:layout_marginBottom="20dp"
-                android:background="@color/lebyy_surface"
-                android:contentDescription="test-LongPress"
-                android:foreground="?attr/selectableItemBackground">
+                android:layout_height="match_parent"
+                android:fillViewport="true">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="@string/long_press_hint"
-                    android:textColor="@color/lebyy_primary"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-            </FrameLayout>
+                    android:clipChildren="false"
+                    android:orientation="vertical"
+                    android:padding="20dp">
 
-            <FrameLayout
-                android:id="@+id/doubleTapTarget"
-                android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:layout_marginBottom="16dp"
-                android:background="@color/lebyy_surface_2"
-                android:contentDescription="test-DoubleTap"
-                android:foreground="?attr/selectableItemBackground">
+                    <TextView
+                        android:id="@+id/gestureResult"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="20dp"
+                        android:contentDescription="test-GestureResult"
+                        android:text="@string/gesture_result_idle"
+                        android:textColor="@color/lebyy_accent"
+                        android:textSize="16sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="@string/double_tap_hint"
-                    android:textColor="@color/lebyy_primary"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-            </FrameLayout>
+                    <FrameLayout
+                        android:id="@+id/longPressTarget"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:layout_marginBottom="20dp"
+                        android:background="@color/lebyy_surface"
+                        android:contentDescription="test-LongPress"
+                        android:foreground="?attr/selectableItemBackground">
 
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:text="Drag &amp; Drop" android:textColor="@color/lebyy_primary" android:textStyle="bold" android:layout_marginBottom="8dp"/>
-            <FrameLayout android:id="@+id/dropTarget" android:layout_width="match_parent" android:layout_height="140dp"
-                android:background="@color/lebyy_surface" android:contentDescription="test-DropTarget" android:layout_marginBottom="8dp">
-                <TextView android:id="@+id/dropLabel" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:layout_gravity="center" android:text="Drop here" android:textColor="@color/lebyy_muted"/>
-                <TextView android:id="@+id/dragItem" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:layout_gravity="center" android:background="@color/lebyy_accent" android:padding="14dp"
-                    android:text="Drag me" android:textColor="@color/lebyy_bg" android:contentDescription="test-DragItem"/>
-            </FrameLayout>
-            <com.google.android.material.button.MaterialButton android:id="@+id/resetDragDrop"
-                android:layout_width="match_parent" android:layout_height="48dp" android:contentDescription="test-ResetDragDrop"
-                android:text="Reset Drag Drop" android:textColor="@color/lebyy_muted" app:backgroundTint="@color/lebyy_surface_2" app:cornerRadius="12dp"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="@string/long_press_hint"
+                            android:textColor="@color/lebyy_primary"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+                    </FrameLayout>
 
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="12dp" android:text="Pinch / Zoom" android:textColor="@color/lebyy_primary" android:textStyle="bold"/>
-            <ImageView android:id="@+id/pinchImage" android:layout_width="match_parent" android:layout_height="160dp"
-                android:contentDescription="test-PinchImage" android:scaleType="fitCenter" android:src="@drawable/course_1" android:layout_marginTop="8dp"/>
-            <TextView android:id="@+id/pinchValue" android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:contentDescription="test-PinchValue" android:text="Zoom: 1.00x" android:textColor="@color/lebyy_accent"/>
-            <com.google.android.material.button.MaterialButton android:id="@+id/resetPinch"
-                android:layout_width="match_parent" android:layout_height="48dp" android:contentDescription="test-ResetPinch"
-                android:text="Reset Zoom" android:textColor="@color/lebyy_muted" app:backgroundTint="@color/lebyy_surface_2" app:cornerRadius="12dp"/>
+                    <FrameLayout
+                        android:id="@+id/doubleTapTarget"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@color/lebyy_surface_2"
+                        android:contentDescription="test-DoubleTap"
+                        android:foreground="?attr/selectableItemBackground">
 
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="12dp" android:text="Multi-touch" android:textColor="@color/lebyy_primary" android:textStyle="bold"/>
-            <FrameLayout android:id="@+id/multiTouch" android:layout_width="match_parent" android:layout_height="100dp"
-                android:background="@color/lebyy_surface" android:contentDescription="test-MultiTouch" android:layout_marginTop="8dp">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center"
-                    android:text="Two-finger tap here" android:textColor="@color/lebyy_primary"/>
-            </FrameLayout>
-            <com.google.android.material.button.MaterialButton android:id="@+id/simulateMultiTouch"
-                android:layout_width="match_parent" android:layout_height="48dp" android:layout_marginTop="8dp"
-                android:contentDescription="test-SimulateMultiTouch" android:text="Simulate 2-Finger Tap"
-                android:textColor="@color/lebyy_bg" app:backgroundTint="@color/lebyy_primary" app:cornerRadius="12dp"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="@string/double_tap_hint"
+                            android:textColor="@color/lebyy_primary"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+                    </FrameLayout>
 
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="12dp" android:text="Context Menu" android:textColor="@color/lebyy_primary" android:textStyle="bold"/>
-            <TextView android:id="@+id/contextMenuTarget" android:layout_width="match_parent" android:layout_height="80dp"
-                android:layout_marginTop="8dp" android:background="@color/lebyy_surface" android:gravity="center"
-                android:contentDescription="test-ContextMenuTarget" android:text="Long-press for context menu" android:textColor="@color/lebyy_text"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="Drag &amp; Drop"
+                        android:textColor="@color/lebyy_primary"
+                        android:textStyle="bold" />
+
+                    <FrameLayout
+                        android:id="@+id/dropTarget"
+                        android:layout_width="match_parent"
+                        android:layout_height="140dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="@color/lebyy_surface"
+                        android:clipChildren="false"
+                        android:contentDescription="test-DropTarget">
+
+                        <TextView
+                            android:id="@+id/dropLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="Drop here"
+                            android:textColor="@color/lebyy_muted" />
+
+                        <TextView
+                            android:id="@+id/dragItem"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:background="@color/lebyy_accent"
+                            android:contentDescription="test-DragItem"
+                            android:padding="14dp"
+                            android:text="Drag me"
+                            android:textColor="@color/lebyy_bg" />
+                    </FrameLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/resetDragDrop"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:contentDescription="test-ResetDragDrop"
+                        android:text="Reset Drag Drop"
+                        android:textColor="@color/lebyy_muted"
+                        app:backgroundTint="@color/lebyy_surface_2"
+                        app:cornerRadius="12dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Pinch / Zoom"
+                        android:textColor="@color/lebyy_primary"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/pinchImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="160dp"
+                        android:layout_marginTop="8dp"
+                        android:contentDescription="test-PinchImage"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/course_1" />
+
+                    <TextView
+                        android:id="@+id/pinchValue"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="test-PinchValue"
+                        android:text="Zoom: 1.00x"
+                        android:textColor="@color/lebyy_accent" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/resetPinch"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:contentDescription="test-ResetPinch"
+                        android:text="Reset Zoom"
+                        android:textColor="@color/lebyy_muted"
+                        app:backgroundTint="@color/lebyy_surface_2"
+                        app:cornerRadius="12dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Multi-touch (2-finger tap)"
+                        android:textColor="@color/lebyy_primary"
+                        android:textStyle="bold" />
+
+                    <FrameLayout
+                        android:id="@+id/multiTouch"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:layout_marginTop="8dp"
+                        android:contentDescription="test-MultiTouch">
+
+                        <FrameLayout
+                            android:id="@+id/multiTouchBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@color/lebyy_surface"
+                            android:contentDescription="test-MultiTouchBox">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="Two-finger tap here"
+                                android:textColor="@color/lebyy_primary" />
+                        </FrameLayout>
+                    </FrameLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/simulateMultiTouch"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="8dp"
+                        android:contentDescription="test-SimulateMultiTouch"
+                        android:text="Simulate 2-Finger Tap"
+                        android:textColor="@color/lebyy_bg"
+                        app:backgroundTint="@color/lebyy_primary"
+                        app:cornerRadius="12dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Context Menu"
+                        android:textColor="@color/lebyy_primary"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/contextMenuTarget"
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@color/lebyy_surface"
+                        android:contentDescription="test-ContextMenuTarget"
+                        android:gravity="center"
+                        android:text="Long-press for context menu"
+                        android:textColor="@color/lebyy_text" />
+                </LinearLayout>
+            </ScrollView>
         </LinearLayout>
-        </ScrollView>
-    </LinearLayout>
+
+        <!-- In-window context menu so automation can address each action by id. -->
+        <FrameLayout
+            android:id="@+id/contextMenuScrim"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#99000000"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/contextMenuPopup"
+                android:layout_width="240dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_context_menu"
+                android:contentDescription="test-ContextMenu"
+                android:orientation="vertical"
+                android:paddingVertical="4dp">
+
+                <TextView
+                    android:id="@+id/contextCopy"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="test-ContextCopy"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="20dp"
+                    android:text="Copy"
+                    android:textColor="@color/lebyy_text"
+                    android:textSize="16sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/lebyy_line" />
+
+                <TextView
+                    android:id="@+id/contextShare"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="test-ContextShare"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="20dp"
+                    android:text="Share"
+                    android:textColor="@color/lebyy_text"
+                    android:textSize="16sp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/lebyy_line" />
+
+                <TextView
+                    android:id="@+id/contextDelete"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="test-ContextDelete"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="20dp"
+                    android:text="Delete"
+                    android:textColor="@color/lebyy_danger"
+                    android:textSize="16sp" />
+            </LinearLayout>
+        </FrameLayout>
+    </FrameLayout>
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"

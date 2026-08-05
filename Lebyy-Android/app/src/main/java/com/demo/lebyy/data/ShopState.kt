@@ -83,8 +83,18 @@ object ShopState {
     var sessionTimeoutEnabled: Boolean = false
     var sessionTimeoutSeconds: Int = 60
     var lastDeepLink: String = ""
+
+    /**
+     * Deep link host that arrived while logged out and still needs to be honoured once the
+     * user signs in (mirrors iOS `applyPendingDeepLinkNavigation`).
+     */
+    var pendingDeepLinkHost: String? = null
     var forcePortraitOnly: Boolean = false
     var isLoggedIn: Boolean = false
+
+    /** True for destinations that are only reachable with an active session. */
+    fun destinationRequiresLogin(destination: String?): Boolean =
+        destination == "shop" || destination == "orders" || destination == "settings"
 
     fun isWishlisted(productId: String): Boolean = wishlist.contains(productId)
 
@@ -116,8 +126,8 @@ object ShopState {
         "shop" -> "shop"
         "orders", "orderhistory" -> "orders"
         "alerts" -> "alerts"
-        "forms" -> "forms"
-        "swipeh", "swipehorizontal" -> "swipe_h"
+        "forms", "formcontrols" -> "forms"
+        "swipes", "swipeh", "swipehorizontal" -> "swipe_h"
         "swipev", "swipevertical" -> "swipe_v"
         "gestures" -> "gestures"
         "lists" -> "lists"
@@ -281,6 +291,7 @@ object ShopState {
         clearCart()
         shopSearch = ""
         isLoggedIn = false
+        pendingDeepLinkHost = null
         // Keep order history for the session so automation can verify previous orders.
     }
 

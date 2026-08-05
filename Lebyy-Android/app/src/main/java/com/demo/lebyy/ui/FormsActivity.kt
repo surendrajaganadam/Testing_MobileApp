@@ -109,7 +109,6 @@ class FormsActivity : AppCompatActivity() {
         binding.slider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 binding.sliderValue.text = "Slider value: $progress"
-                binding.sliderValue.contentDescription = "Slider value: $progress"
                 binding.formsResult.text = "Result: Slider $progress"
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -120,7 +119,6 @@ class FormsActivity : AppCompatActivity() {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 val stepped = progress + 1
                 binding.sliderSteppedValue.text = "Stepped value: $stepped"
-                binding.sliderSteppedValue.contentDescription = "Stepped value: $stepped"
                 binding.formsResult.text = "Result: Stepped $stepped"
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -133,7 +131,6 @@ class FormsActivity : AppCompatActivity() {
                 { _, y, m, d ->
                     val text = String.format(Locale.US, "%04d-%02d-%02d", y, m + 1, d)
                     binding.dateValue.text = "Selected date: $text"
-                    binding.dateValue.contentDescription = "Selected date: $text"
                     binding.formsResult.text = "Result: Date $text"
                 },
                 calendar.get(Calendar.YEAR),
@@ -148,7 +145,6 @@ class FormsActivity : AppCompatActivity() {
                 { _, hour, minute ->
                     val text = String.format(Locale.US, "%02d:%02d", hour, minute)
                     binding.timeValue.text = "Selected time: $text"
-                    binding.timeValue.contentDescription = "Selected time: $text"
                     binding.formsResult.text = "Result: Time $text"
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),
@@ -246,7 +242,6 @@ class FormsActivity : AppCompatActivity() {
     private fun updateOtpValue(otps: List<EditText>) {
         val code = otps.joinToString("") { it.text?.toString().orEmpty() }
         binding.otpValue.text = "OTP value: $code"
-        binding.otpValue.contentDescription = "OTP value: $code"
         binding.formsResult.text = "Result: OTP $code"
     }
 

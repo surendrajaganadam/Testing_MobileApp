@@ -35,8 +35,56 @@
 
                 <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:text="Delayed Content" android:textColor="@color/lebyy_primary" android:textStyle="bold" android:layout_marginBottom="8dp"/>
-                <TextView android:id="@+id/delayLabel" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:contentDescription="test-DelayStepper" android:text="Delay: 3s" android:textColor="@color/lebyy_text" android:layout_marginBottom="4dp"/>
+                <LinearLayout
+                    android:id="@+id/delayStepper"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:contentDescription="test-DelayStepper"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/delayMinus"
+                        android:layout_width="56dp"
+                        android:layout_height="48dp"
+                        android:contentDescription="test-DelayMinus"
+                        android:importantForAccessibility="yes"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:minWidth="0dp"
+                        android:text="−"
+                        android:textColor="@color/lebyy_bg"
+                        android:textSize="20sp"
+                        app:backgroundTint="@color/lebyy_primary"
+                        app:cornerRadius="12dp" />
+
+                    <TextView
+                        android:id="@+id/delayLabel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:contentDescription="test-DelayValue"
+                        android:gravity="center"
+                        android:text="Delay: 3s"
+                        android:textColor="@color/lebyy_text"
+                        android:textSize="16sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/delayPlus"
+                        android:layout_width="56dp"
+                        android:layout_height="48dp"
+                        android:contentDescription="test-DelayPlus"
+                        android:importantForAccessibility="yes"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:minWidth="0dp"
+                        android:text="+"
+                        android:textColor="@color/lebyy_bg"
+                        android:textSize="20sp"
+                        app:backgroundTint="@color/lebyy_primary"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
                 <SeekBar android:id="@+id/delaySeek" android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:max="7" android:progress="2" android:contentDescription="test-DelaySeek" android:layout_marginBottom="10dp"/>
                 

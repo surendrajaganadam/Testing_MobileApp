@@ -67,9 +67,51 @@
                     android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:contentDescription="test-SessionTimeoutToggle" android:text="Enable auto logout" android:textColor="@color/lebyy_text" android:layout_marginBottom="8dp"/>
                 <TextView android:id="@+id/sessionTimeoutLabel" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:contentDescription="test-SessionTimeoutStepper" android:text="Timeout: 60s" android:textColor="@color/lebyy_text" android:layout_marginBottom="4dp"/>
+                    android:contentDescription="test-SessionTimeoutLabel" android:text="Timeout: 60s" android:textColor="@color/lebyy_text" android:layout_marginBottom="4dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/sessionTimeoutMinus"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="56dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="10dp"
+                        android:contentDescription="test-SessionTimeoutStepper-Minus"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="−"
+                        android:textColor="@color/lebyy_primary"
+                        android:textSize="20sp"
+                        app:backgroundTint="@color/lebyy_surface"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/lebyy_primary"
+                        app:strokeWidth="2dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/sessionTimeoutPlus"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="56dp"
+                        android:layout_height="48dp"
+                        android:contentDescription="test-SessionTimeoutStepper-Plus"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="+"
+                        android:textColor="@color/lebyy_primary"
+                        android:textSize="20sp"
+                        app:backgroundTint="@color/lebyy_surface"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/lebyy_primary"
+                        app:strokeWidth="2dp" />
+                </LinearLayout>
+
                 <SeekBar android:id="@+id/sessionTimeoutSeek" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:max="11" android:progress="5" android:contentDescription="test-SessionTimeoutSeek" android:layout_marginBottom="10dp"/>
+                    android:max="11" android:progress="5" android:contentDescription="test-SessionTimeoutStepper" android:layout_marginBottom="10dp"/>
                 
                 <TextView
                     android:id="@+id/sessionCountdown"

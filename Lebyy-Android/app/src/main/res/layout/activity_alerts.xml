@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:contentDescription="test-AlertsScreen">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -129,6 +130,76 @@
         </LinearLayout>
         </ScrollView>
     </LinearLayout>
+
+    <!-- Custom modal overlay (not a system dialog) — mirrors the iOS AlertsView overlay -->
+    <FrameLayout
+        android:id="@+id/modalBackdrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#8C000000"
+        android:clickable="true"
+        android:contentDescription="test-ModalBackdrop"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/customModalContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="32dp"
+            android:background="@color/lebyy_surface"
+            android:clickable="true"
+            android:contentDescription="test-CustomModalContent"
+            android:focusable="true"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/modalTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:contentDescription="test-ModalTitle"
+                android:gravity="center"
+                android:text="Custom Modal"
+                android:textColor="@color/lebyy_primary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/modalBody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:contentDescription="test-ModalBody"
+                android:gravity="center"
+                android:text="Not a system alert — custom overlay"
+                android:textColor="@color/lebyy_muted"
+                android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/modalOk"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginBottom="10dp"
+                android:contentDescription="test-ModalOK"
+                android:text="OK"
+                android:textColor="@color/lebyy_bg"
+                app:backgroundTint="@color/lebyy_accent"
+                app:cornerRadius="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/modalCancel"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:contentDescription="test-ModalCancel"
+                android:text="Cancel"
+                android:textColor="@color/lebyy_text"
+                app:backgroundTint="@color/lebyy_surface_2"
+                app:cornerRadius="12dp" />
+        </LinearLayout>
+    </FrameLayout>
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"

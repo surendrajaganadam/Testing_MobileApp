@@ -1,19 +1,29 @@
 package com.demo.lebyy.ui
 
 import android.os.Bundle
-import android.os.SystemClock
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
-import android.widget.PopupMenu
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.GestureDetectorCompat
+import androidx.core.view.isVisible
+import com.demo.lebyy.R
 import com.demo.lebyy.databinding.ActivityGesturesBinding
+import kotlin.math.abs
+import kotlin.math.max
 
 class GesturesActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGesturesBinding
     private var multiTapCount = 0
     private var scaleFactor = 1f
+    private val contextMenuBackCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            hideContextMenu()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,11 +31,22 @@ class GesturesActivity : AppCompatActivity() {
         setContentView(binding.root)
         DrawerHelper.setup(this, binding.drawerLayout, binding.navigationView, binding.toolbar, "gestures")
 
+        setupLongPress()
+        setupDoubleTap()
+        setupDragAndDrop()
+        setupPinch()
+        setupMultiTouch()
+        setupContextMenu()
+    }
+
+    private fun setupLongPress() {
         binding.longPressTarget.setOnLongClickListener {
             binding.gestureResult.text = "Result: Long Pressed"
             true
         }
+    }
 
+    private fun setupDoubleTap() {
         val detector = GestureDetectorCompat(
             this,
             object : GestureDetector.SimpleOnGestureListener() {
@@ -36,51 +57,71 @@ class GesturesActivity : AppCompatActivity() {
                 }
             },
         )
-
-        var lastTap = 0L
         binding.doubleTapTarget.setOnTouchListener { _, event ->
             detector.onTouchEvent(event)
-            if (event.action == MotionEvent.ACTION_UP) {
-                val now = SystemClock.uptimeMillis()
-                if (now - lastTap < 300) {
-                    binding.gestureResult.text = "Result: Double Tapped"
+            true
+        }
+    }
+
+    private fun setupDragAndDrop() {
+        // iOS accepts a drop when the translation stays inside ±120 x ±80 of the start point.
+        val toleranceX = 120 * resources.displayMetrics.density
+        val toleranceY = 80 * resources.displayMetrics.density
+        var startX = 0f
+        var startY = 0f
+
+        binding.dragItem.setOnTouchListener { view, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    startX = event.rawX
+                    startY = event.rawY
                 }
-                lastTap = now
+                MotionEvent.ACTION_MOVE -> {
+                    view.translationX = event.rawX - startX
+                    view.translationY = event.rawY - startY
+                }
+                MotionEvent.ACTION_UP -> {
+                    val dx = abs(event.rawX - startX)
+                    val dy = abs(event.rawY - startY)
+                    setDropped(dx < toleranceX && dy < toleranceY)
+                    view.animate().translationX(0f).translationY(0f).setDuration(180).start()
+                }
+                MotionEvent.ACTION_CANCEL -> {
+                    view.animate().translationX(0f).translationY(0f).setDuration(180).start()
+                }
             }
             true
         }
 
-        binding.dragItem.setOnTouchListener { view, event ->
-            when (event.actionMasked) {
-                MotionEvent.ACTION_MOVE -> {
-                    view.translationX = event.rawX - binding.dropTarget.width / 2f
-                    view.translationY = event.rawY - binding.dropTarget.top - view.height
-                    true
-                }
-                MotionEvent.ACTION_UP -> {
-                    val inTarget = event.rawY > binding.dropTarget.top &&
-                        event.rawY < binding.dropTarget.bottom
-                    if (inTarget) {
-                        binding.dropLabel.text = "Dropped!"
-                        binding.dropLabel.contentDescription = "Dropped"
-                        binding.gestureResult.text = "Result: Drag Dropped"
-                    } else {
-                        binding.gestureResult.text = "Result: Drag Missed"
-                    }
-                    view.animate().translationX(0f).translationY(0f).start()
-                    true
-                }
-                else -> true
-            }
-        }
         binding.resetDragDrop.setOnClickListener {
-            binding.dropLabel.text = "Drop here"
-            binding.dropLabel.contentDescription = "Drop here"
+            resetDropTarget()
             binding.dragItem.translationX = 0f
             binding.dragItem.translationY = 0f
             binding.gestureResult.text = "Result: —"
         }
+    }
 
+    private fun setDropped(dropped: Boolean) {
+        if (dropped) {
+            binding.dropLabel.text = "Dropped!"
+            binding.dropLabel.contentDescription = "Dropped"
+            binding.dropTarget.setBackgroundColor(
+                ColorUtils.setAlphaComponent(ContextCompat.getColor(this, R.color.lebyy_success), 77),
+            )
+            binding.gestureResult.text = "Result: Drag Dropped"
+        } else {
+            resetDropTarget()
+            binding.gestureResult.text = "Result: Drag Missed"
+        }
+    }
+
+    private fun resetDropTarget() {
+        binding.dropLabel.text = "Drop here"
+        binding.dropLabel.contentDescription = "Drop here"
+        binding.dropTarget.setBackgroundColor(ContextCompat.getColor(this, R.color.lebyy_surface))
+    }
+
+    private fun setupPinch() {
         val scaleDetector = ScaleGestureDetector(
             this,
             object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
@@ -89,8 +130,11 @@ class GesturesActivity : AppCompatActivity() {
                     binding.pinchImage.scaleX = scaleFactor
                     binding.pinchImage.scaleY = scaleFactor
                     binding.pinchValue.text = "Zoom: ${"%.2f".format(scaleFactor)}x"
-                    binding.gestureResult.text = "Result: Pinch ${"%.2f".format(scaleFactor)}x"
                     return true
+                }
+
+                override fun onScaleEnd(detector: ScaleGestureDetector) {
+                    binding.gestureResult.text = "Result: Pinch ${"%.2f".format(scaleFactor)}x"
                 }
             },
         )
@@ -105,35 +149,55 @@ class GesturesActivity : AppCompatActivity() {
             binding.pinchValue.text = "Zoom: 1.00x"
             binding.gestureResult.text = "Result: Pinch reset"
         }
+    }
 
+    private fun setupMultiTouch() {
+        // Count a finished two-finger tap, mirroring the iOS UITapGestureRecognizer.
+        var maxPointers = 0
         binding.multiTouch.setOnTouchListener { _, event ->
-            if (event.pointerCount >= 2 && event.actionMasked == MotionEvent.ACTION_POINTER_DOWN) {
-                multiTapCount++
-                binding.gestureResult.text = "Result: Multi-touch $multiTapCount"
-            }
-            true
-        }
-        binding.simulateMultiTouch.setOnClickListener {
-            multiTapCount++
-            binding.gestureResult.text = "Result: Multi-touch $multiTapCount"
-        }
-
-        binding.contextMenuTarget.setOnLongClickListener {
-            PopupMenu(this, binding.contextMenuTarget).apply {
-                menu.add(0, 1, 0, "Copy")
-                menu.add(0, 2, 1, "Share")
-                menu.add(0, 3, 2, "Delete")
-                setOnMenuItemClickListener { item ->
-                    binding.gestureResult.text = when (item.itemId) {
-                        1 -> "Result: Context Copy"
-                        2 -> "Result: Context Share"
-                        else -> "Result: Context Delete"
-                    }
-                    true
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> maxPointers = 1
+                MotionEvent.ACTION_POINTER_DOWN -> maxPointers = max(maxPointers, event.pointerCount)
+                MotionEvent.ACTION_UP -> {
+                    if (maxPointers >= 2) registerMultiTouch()
+                    maxPointers = 0
                 }
-                show()
+                MotionEvent.ACTION_CANCEL -> maxPointers = 0
             }
             true
         }
+        binding.simulateMultiTouch.setOnClickListener { registerMultiTouch() }
+    }
+
+    private fun registerMultiTouch() {
+        multiTapCount++
+        binding.gestureResult.text = "Result: Multi-touch $multiTapCount"
+    }
+
+    private fun setupContextMenu() {
+        onBackPressedDispatcher.addCallback(this, contextMenuBackCallback)
+        binding.contextMenuTarget.setOnLongClickListener {
+            showContextMenu()
+            true
+        }
+        binding.contextMenuScrim.setOnClickListener { hideContextMenu() }
+        binding.contextCopy.setOnClickListener { pickContextAction("Copy") }
+        binding.contextShare.setOnClickListener { pickContextAction("Share") }
+        binding.contextDelete.setOnClickListener { pickContextAction("Delete") }
+    }
+
+    private fun pickContextAction(action: String) {
+        binding.gestureResult.text = "Result: Context $action"
+        hideContextMenu()
+    }
+
+    private fun showContextMenu() {
+        binding.contextMenuScrim.isVisible = true
+        contextMenuBackCallback.isEnabled = true
+    }
+
+    private fun hideContextMenu() {
+        binding.contextMenuScrim.isVisible = false
+        contextMenuBackCallback.isEnabled = false
     }
 }

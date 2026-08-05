@@ -20,7 +20,6 @@ class SystemActivity : AppCompatActivity() {
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
             binding.selectedImage.text = "Selected: Picked Photo"
-            binding.selectedImage.contentDescription = "Selected: Picked Photo"
             binding.imagePreview.setImageURI(uri)
             binding.imagePreview.visibility = View.VISIBLE
         }
@@ -39,7 +38,6 @@ class SystemActivity : AppCompatActivity() {
         binding.pickPhoto.setOnClickListener { pickImage.launch("image/*") }
         binding.useSampleImage.setOnClickListener {
             binding.selectedImage.text = "Selected: course_1"
-            binding.selectedImage.contentDescription = "Selected: course_1"
             binding.imagePreview.setImageResource(R.drawable.course_1)
             binding.imagePreview.visibility = View.VISIBLE
         }

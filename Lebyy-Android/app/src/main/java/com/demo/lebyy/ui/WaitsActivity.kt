@@ -9,6 +9,11 @@ import androidx.appcompat.app.AppCompatActivity
 import com.demo.lebyy.databinding.ActivityWaitsBinding
 
 class WaitsActivity : AppCompatActivity() {
+    private companion object {
+        const val MIN_DELAY = 1
+        const val MAX_DELAY = 8
+    }
+
     private lateinit var binding: ActivityWaitsBinding
     private val handler = Handler(Looper.getMainLooper())
     private var delaySeconds = 3
@@ -19,12 +24,12 @@ class WaitsActivity : AppCompatActivity() {
         setContentView(binding.root)
         DrawerHelper.setup(this, binding.drawerLayout, binding.navigationView, binding.toolbar, "waits")
 
-        binding.delaySeek.progress = delaySeconds - 1
-        binding.delayLabel.text = "Delay: ${delaySeconds}s"
+        renderDelay()
+        binding.delayMinus.setOnClickListener { setDelay(delaySeconds - 1) }
+        binding.delayPlus.setOnClickListener { setDelay(delaySeconds + 1) }
         binding.delaySeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                delaySeconds = progress + 1
-                binding.delayLabel.text = "Delay: ${delaySeconds}s"
+                if (fromUser) setDelay(progress + MIN_DELAY)
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
@@ -37,7 +42,6 @@ class WaitsActivity : AppCompatActivity() {
             handler.postDelayed({
                 binding.loadingSpinner.visibility = View.GONE
                 binding.delayedContent.text = "Content ready after ${seconds}s"
-                binding.delayedContent.contentDescription = "Content ready after ${seconds}s"
             }, seconds * 1000L)
         }
 
@@ -52,6 +56,18 @@ class WaitsActivity : AppCompatActivity() {
         binding.networkRetry.setOnClickListener {
             setNetworkLoading()
             handler.postDelayed({ setNetworkSuccess() }, 500)
+        }
+    }
+
+    private fun setDelay(seconds: Int) {
+        delaySeconds = seconds.coerceIn(MIN_DELAY, MAX_DELAY)
+        renderDelay()
+    }
+
+    private fun renderDelay() {
+        binding.delayLabel.text = "Delay: ${delaySeconds}s"
+        if (binding.delaySeek.progress != delaySeconds - MIN_DELAY) {
+            binding.delaySeek.progress = delaySeconds - MIN_DELAY
         }
     }
 

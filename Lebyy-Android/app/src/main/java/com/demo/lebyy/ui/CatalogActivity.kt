@@ -9,6 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,8 +23,16 @@ class CatalogActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCatalogBinding
     private lateinit var adapter: ProductAdapter
 
+    /** True when the activity was opened while logged out and is finishing itself. */
+    private var gated = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!ShopState.isLoggedIn) {
+            gated = true
+            redirectToLogin()
+            return
+        }
         binding = ActivityCatalogBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -77,6 +86,17 @@ class CatalogActivity : AppCompatActivity() {
         })
     }
 
+    private fun redirectToLogin() {
+        Toast.makeText(this, R.string.shop_login_required, Toast.LENGTH_SHORT).show()
+        startActivity(
+            Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                putExtra("open_tab", "account")
+            },
+        )
+        finish()
+    }
+
     private fun refreshList() {
         val items = ShopState.filteredProducts(Catalog.products)
         adapter.submit(items)
@@ -88,12 +108,25 @@ class CatalogActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (gated) return
+        if (!ShopState.isLoggedIn) {
+            gated = true
+            redirectToLogin()
+            return
+        }
         invalidateOptionsMenu()
         refreshList()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        if (gated) return false
         menuInflater.inflate(R.menu.catalog_toolbar, menu)
+
+        val ordersItem = menu.findItem(R.id.actionOrders)
+        val ordersView = LayoutInflater.from(this).inflate(R.layout.view_orders_action, null)
+        ordersView.setOnClickListener { openOrders() }
+        ordersItem.actionView = ordersView
+
         val cartItem = menu.findItem(R.id.actionCart)
         val count = ShopState.cartCount()
         cartItem.title = "Cart ($count)"
@@ -115,10 +148,20 @@ class CatalogActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.actionCart) {
-            startActivity(Intent(this, CartActivity::class.java))
-            return true
+        return when (item.itemId) {
+            R.id.actionCart -> {
+                startActivity(Intent(this, CartActivity::class.java))
+                true
+            }
+            R.id.actionOrders -> {
+                openOrders()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
-        return super.onOptionsItemSelected(item)
+    }
+
+    private fun openOrders() {
+        startActivity(Intent(this, OrdersActivity::class.java))
     }
 }

@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -32,9 +31,9 @@ class SwipeVerticalActivity : AppCompatActivity() {
                 val label = items[position]
                 holder.text.text = label
                 holder.text.contentDescription = "test-$label"
-                holder.text.setOnClickListener {
-                    Toast.makeText(this@SwipeVerticalActivity, label, Toast.LENGTH_SHORT).show()
-                }
+                // Rows are inert on iOS — keep them non-interactive so swipe practice stays clean.
+                holder.text.isClickable = false
+                holder.text.background = null
             }
 
             override fun getItemCount(): Int = items.size

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/loginScreen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/lebyy_bg"
+    android:contentDescription="test-LoginScreen"
     android:fillViewport="true">
 
     <LinearLayout
@@ -22,9 +24,11 @@
             android:src="@drawable/logo_lebyy" />
 
         <TextView
+            android:id="@+id/loginBrand"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:contentDescription="test-LoginBrand"
             android:text="@string/brand_name"
             android:textColor="@color/lebyy_primary"
             android:textSize="30sp"

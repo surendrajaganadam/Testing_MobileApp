@@ -9,6 +9,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.demo.lebyy.R
 import com.demo.lebyy.databinding.ActivitySwipeHorizontalBinding
 import com.demo.lebyy.databinding.ItemSwipeCardBinding
+import com.google.android.material.tabs.TabLayoutMediator
 
 class SwipeHorizontalActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySwipeHorizontalBinding
@@ -58,6 +59,10 @@ class SwipeHorizontalActivity : AppCompatActivity() {
                 binding.swipeHStatus.text = "Card ${position + 1} / ${cards.size}"
             }
         })
+
+        TabLayoutMediator(binding.swipeDots, binding.swipePager) { tab, position ->
+            tab.setContentDescription("test-SwipeDot-${position + 1}")
+        }.attach()
     }
 
     private class CardVH(val binding: ItemSwipeCardBinding) : RecyclerView.ViewHolder(binding.root)

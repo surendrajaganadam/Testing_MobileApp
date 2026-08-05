@@ -22,7 +22,6 @@ class SettingsActivity : AppCompatActivity() {
             }
             remaining--
             binding.sessionCountdown.text = "Logs out in: ${remaining}s"
-            binding.sessionCountdown.contentDescription = "Logs out in: ${remaining}s"
             handler.postDelayed(this, 1000)
         }
     }
@@ -35,7 +34,8 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.displayName.setText(ShopState.displayName)
         binding.sessionTimeoutToggle.isChecked = ShopState.sessionTimeoutEnabled
-        val progress = ((ShopState.sessionTimeoutSeconds - 10) / 10).coerceIn(0, 11)
+        val progress = ((ShopState.sessionTimeoutSeconds - MIN_TIMEOUT_SECONDS) / STEP_SECONDS)
+            .coerceIn(0, MAX_PROGRESS)
         binding.sessionTimeoutSeek.progress = progress
         binding.sessionTimeoutLabel.text = "Timeout: ${ShopState.sessionTimeoutSeconds}s"
 
@@ -55,7 +55,7 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.sessionTimeoutSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                ShopState.sessionTimeoutSeconds = 10 + progress * 10
+                ShopState.sessionTimeoutSeconds = MIN_TIMEOUT_SECONDS + progress * STEP_SECONDS
                 binding.sessionTimeoutLabel.text = "Timeout: ${ShopState.sessionTimeoutSeconds}s"
             }
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
@@ -64,9 +64,21 @@ class SettingsActivity : AppCompatActivity() {
             }
         })
 
+        binding.sessionTimeoutMinus.setOnClickListener { stepTimeout(-STEP_SECONDS) }
+        binding.sessionTimeoutPlus.setOnClickListener { stepTimeout(STEP_SECONDS) }
+
         binding.resetSessionTimer.setOnClickListener { resetTimer() }
         binding.forceLogout.setOnClickListener { logoutNow() }
 
+        if (ShopState.sessionTimeoutEnabled) resetTimer()
+    }
+
+    /** Moves the timeout by [deltaSeconds], clamped to the iOS 10…120s range. */
+    private fun stepTimeout(deltaSeconds: Int) {
+        val next = (ShopState.sessionTimeoutSeconds + deltaSeconds)
+            .coerceIn(MIN_TIMEOUT_SECONDS, MAX_TIMEOUT_SECONDS)
+        // The SeekBar listener writes the state and refreshes the label.
+        binding.sessionTimeoutSeek.progress = (next - MIN_TIMEOUT_SECONDS) / STEP_SECONDS
         if (ShopState.sessionTimeoutEnabled) resetTimer()
     }
 
@@ -92,5 +104,12 @@ class SettingsActivity : AppCompatActivity() {
     override fun onDestroy() {
         handler.removeCallbacks(tick)
         super.onDestroy()
+    }
+
+    private companion object {
+        const val MIN_TIMEOUT_SECONDS = 10
+        const val MAX_TIMEOUT_SECONDS = 120
+        const val STEP_SECONDS = 10
+        const val MAX_PROGRESS = (MAX_TIMEOUT_SECONDS - MIN_TIMEOUT_SECONDS) / STEP_SECONDS
     }
 }

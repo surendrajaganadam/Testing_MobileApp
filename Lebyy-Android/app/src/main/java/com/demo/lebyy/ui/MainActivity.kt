@@ -1,8 +1,12 @@
 package com.demo.lebyy.ui
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -31,6 +35,21 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var currentTab = R.id.tabHome
 
+    private val handler = Handler(Looper.getMainLooper())
+
+    /** Login layout currently embedded in the Account tab, if any. */
+    private var embeddedLogin: ActivityLoginBinding? = null
+    private var doubleTapCount = 0
+
+    /** Set when the Shop tab is entered so it lands straight on the catalog, like iOS. */
+    private var pendingShopAutoOpen = false
+
+    /** Guards the auto-open while a deep link drives navigation itself. */
+    private var skipShopAutoOpenOnce = false
+
+    private val longPressRunnable = Runnable { showLoginGestureResult(R.string.login_long_press_done) }
+    private val resetDoubleTapRunnable = Runnable { doubleTapCount = 0 }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         // Required: switches Theme.Lebyy.Splash → Theme.Lebyy before Material views inflate.
         installSplashScreen()
@@ -39,13 +58,24 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.mainToolbar)
 
+        // Avoid the Google Password Manager dialog covering the embedded login during automation
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            window.decorView.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+        }
+
         binding.bottomNav.setOnItemSelectedListener { item ->
             currentTab = item.itemId
+            if (item.itemId == R.id.tabShop) {
+                pendingShopAutoOpen = !skipShopAutoOpenOnce
+            }
             showTab(item.itemId)
             true
         }
-        val openTab = intent.getStringExtra("open_tab")
-        binding.bottomNav.selectedItemId = when (openTab) {
+
+        // Record the link before the first tab renders so Home can show the caption right away.
+        intent?.data?.let { ShopState.lastDeepLink = it.toString() }
+
+        binding.bottomNav.selectedItemId = when (intent.getStringExtra("open_tab")) {
             "shop" -> R.id.tabShop
             "account" -> R.id.tabAccount
             "components" -> R.id.tabComponents
@@ -56,6 +86,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
+        when (intent.getStringExtra("open_tab")) {
+            "shop" -> selectTab(R.id.tabShop)
+            "account" -> selectTab(R.id.tabAccount)
+            "components" -> selectTab(R.id.tabComponents)
+            "home" -> selectTab(R.id.tabHome)
+        }
         handleDeepLink(intent)
     }
 
@@ -67,27 +104,64 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        handler.removeCallbacks(longPressRunnable)
+        handler.removeCallbacks(resetDoubleTapRunnable)
+        super.onDestroy()
+    }
+
     fun selectTab(id: Int) {
         binding.bottomNav.selectedItemId = id
     }
 
+    // MARK: - Deep links
+
     private fun handleDeepLink(intent: Intent?) {
         val uri = intent?.data ?: return
         ShopState.lastDeepLink = uri.toString()
-        val host = uri.host.orEmpty().lowercase()
-        when (host) {
-            "home" -> selectTab(R.id.tabHome)
-            "components", "catalog", "alerts", "forms", "gestures", "lists",
-            "waits", "system", "navigation", "webview", "swipes",
-            -> {
-                selectTab(R.id.tabComponents)
+        val host = uri.host.orEmpty().ifEmpty { uri.path.orEmpty().trim('/') }.lowercase()
+        navigateForDeepLinkHost(host)
+    }
+
+    /** Selects the matching tab *and* opens the target screen, mirroring iOS `handleDeepLink`. */
+    private fun navigateForDeepLinkHost(host: String) {
+        val tab = tabForDeepLinkHost(host) ?: return
+        val destination = ShopState.destinationFromDeepLinkHost(host)
+
+        if (ShopState.destinationRequiresLogin(destination) && !ShopState.isLoggedIn) {
+            ShopState.pendingDeepLinkHost = host
+            selectTab(R.id.tabAccount)
+            return
+        }
+
+        skipShopAutoOpenOnce = destination != null
+        selectTab(tab)
+        skipShopAutoOpenOnce = false
+
+        when {
+            destination == null -> Unit
+            destination == "shop" -> openCatalog()
+            else -> DrawerHelper.classForKey(destination)?.let {
+                startActivity(Intent(this, it))
             }
-            "shop", "orders" -> selectTab(R.id.tabShop)
-            "account", "login", "settings" -> selectTab(R.id.tabAccount)
         }
     }
 
+    private fun tabForDeepLinkHost(host: String): Int? = when (host) {
+        "home" -> R.id.tabHome
+        "components", "catalog", "alerts", "forms", "formcontrols", "swipes", "swipeh",
+        "swipev", "swipehorizontal", "swipevertical", "gestures", "lists", "waits",
+        "system", "navigation", "nav", "webview", "web",
+        -> R.id.tabComponents
+        "shop", "orders", "orderhistory" -> R.id.tabShop
+        "account", "login", "settings" -> R.id.tabAccount
+        else -> null
+    }
+
+    // MARK: - Tabs
+
     private fun showTab(id: Int) {
+        embeddedLogin = null
         binding.tabContainer.removeAllViews()
         when (id) {
             R.id.tabHome -> showHome()
@@ -105,7 +179,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showHome() {
-        TabHomeBinding.inflate(layoutInflater, binding.tabContainer, true)
+        val home = TabHomeBinding.inflate(layoutInflater, binding.tabContainer, true)
+        if (ShopState.lastDeepLink.isEmpty()) {
+            home.homeDeepLink.visibility = View.GONE
+        } else {
+            home.homeDeepLink.visibility = View.VISIBLE
+            home.homeDeepLink.text = getString(R.string.home_last_deep_link, ShopState.lastDeepLink)
+        }
     }
 
     private fun showComponents() {
@@ -118,7 +198,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this, FormControlsHubActivity::class.java))
             },
             ComponentItem("Swipes", "Horizontal carousel & vertical scroll", "test-Components-Swipes") {
-                startActivity(Intent(this, SwipeHorizontalActivity::class.java))
+                startActivity(Intent(this, SwipesHubActivity::class.java))
             },
             ComponentItem("Gestures", "Long press, drag, pinch, multi-touch…", "test-Components-Gestures") {
                 startActivity(Intent(this, GesturesActivity::class.java))
@@ -143,21 +223,49 @@ class MainActivity : AppCompatActivity() {
         tab.componentsList.adapter = ComponentsAdapter(items)
     }
 
+    /**
+     * iOS makes the Shop tab *be* the catalog once signed in. Android keeps a thin launcher that
+     * carries the same toolbar actions (Orders / Cart) and jumps straight into [CatalogActivity]
+     * whenever the tab is entered.
+     */
     private fun showShop() {
+        val autoOpenCatalog = pendingShopAutoOpen
+        pendingShopAutoOpen = false
+
         val tab = TabShopBinding.inflate(layoutInflater, binding.tabContainer, true)
         if (ShopState.isLoggedIn) {
-            tab.shopGateTitle.text = "Shop ready"
+            tab.shopGateTitle.text = getString(R.string.shop_ready)
             tab.shopGateTitle.contentDescription = "test-ShopReady"
             tab.shopGoLogin.visibility = View.GONE
             tab.shopOpenCatalog.visibility = View.VISIBLE
-            tab.shopOpenCatalog.setOnClickListener {
-                startActivity(Intent(this, CatalogActivity::class.java))
+            tab.shopActionsRow.visibility = View.VISIBLE
+            tab.shopOpenCatalog.setOnClickListener { openCatalog() }
+            tab.shopOpenOrders.setOnClickListener {
+                startActivity(Intent(this, OrdersActivity::class.java))
             }
+            tab.shopCart.setOnClickListener {
+                startActivity(Intent(this, CartActivity::class.java))
+            }
+
+            val count = ShopState.cartCount()
+            if (count > 0) {
+                tab.shopCartCount.visibility = View.VISIBLE
+                tab.shopCartCount.text = if (count > 99) "99+" else count.toString()
+            } else {
+                tab.shopCartCount.visibility = View.GONE
+            }
+
+            if (autoOpenCatalog) openCatalog()
         } else {
             tab.shopGoLogin.visibility = View.VISIBLE
             tab.shopOpenCatalog.visibility = View.GONE
+            tab.shopActionsRow.visibility = View.GONE
             tab.shopGoLogin.setOnClickListener { selectTab(R.id.tabAccount) }
         }
+    }
+
+    private fun openCatalog() {
+        startActivity(Intent(this, CatalogActivity::class.java))
     }
 
     private fun showAccount() {
@@ -186,19 +294,87 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // MARK: - Embedded login
+
     private fun wireEmbeddedLogin(login: ActivityLoginBinding) {
+        embeddedLogin = login
+        handler.removeCallbacks(longPressRunnable)
+        handler.removeCallbacks(resetDoubleTapRunnable)
+        doubleTapCount = 0
+        login.gestureResultRow.visibility = View.GONE
+        login.gestureResult.text = ""
+
         login.buttonLogin.setOnClickListener {
             val user = login.inputUsername.text?.toString()?.trim().orEmpty()
             val pass = login.inputPassword.text?.toString().orEmpty()
             if (user == "demo_user" && pass == "demo_pass") {
-                ShopState.resetSession()
-                ShopState.loginSuccess()
-                selectTab(R.id.tabShop)
+                completeLogin()
             } else {
                 login.loginError.visibility = View.VISIBLE
                 login.loginError.text = getString(R.string.login_error)
             }
         }
+
+        login.gestureResultDismiss.setOnClickListener {
+            login.gestureResultRow.visibility = View.GONE
+            login.gestureResult.text = ""
+        }
+
+        // Dedicated long-press target (2 seconds) — separate from double-tap to avoid conflicts.
+        login.buttonLongPress.setOnTouchListener { view, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    view.isPressed = true
+                    handler.removeCallbacks(longPressRunnable)
+                    handler.postDelayed(longPressRunnable, LONG_PRESS_MS)
+                    true
+                }
+
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    view.isPressed = false
+                    handler.removeCallbacks(longPressRunnable)
+                    true
+                }
+
+                else -> false
+            }
+        }
+
+        // Custom double-tap window so MobileWright's two sequential taps still count.
+        login.buttonDoubleTap.setOnClickListener {
+            doubleTapCount += 1
+            if (doubleTapCount >= 2) {
+                handler.removeCallbacks(resetDoubleTapRunnable)
+                doubleTapCount = 0
+                showLoginGestureResult(R.string.login_double_tap_done)
+            } else {
+                handler.removeCallbacks(resetDoubleTapRunnable)
+                handler.postDelayed(resetDoubleTapRunnable, DOUBLE_TAP_WINDOW_MS)
+            }
+        }
+    }
+
+    private fun showLoginGestureResult(messageRes: Int) {
+        val login = embeddedLogin ?: return
+        login.gestureResult.text = getString(messageRes)
+        login.gestureResultRow.visibility = View.VISIBLE
+    }
+
+    private fun completeLogin() {
+        val pendingHost = ShopState.pendingDeepLinkHost
+        ShopState.resetSession()
+        ShopState.loginSuccess()
+        if (pendingHost != null) {
+            ShopState.pendingDeepLinkHost = null
+            navigateForDeepLinkHost(pendingHost)
+        } else {
+            selectTab(R.id.tabShop)
+        }
+    }
+
+    private companion object {
+        const val LONG_PRESS_MS = 2000L
+        const val DOUBLE_TAP_WINDOW_MS = 800L
     }
 }
 

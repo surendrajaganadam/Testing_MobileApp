@@ -60,6 +60,7 @@
             android:name=".ui.FormsActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.SwipesHubActivity" android:exported="false" />
         <activity android:name=".ui.SwipeHorizontalActivity" android:exported="false" />
         <activity android:name=".ui.SwipeVerticalActivity" android:exported="false" />
         <activity android:name=".ui.GesturesActivity" android:exported="false" />

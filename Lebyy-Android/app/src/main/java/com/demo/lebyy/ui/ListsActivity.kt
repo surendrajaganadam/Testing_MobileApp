@@ -3,6 +3,7 @@ package com.demo.lebyy.ui
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.demo.lebyy.databinding.ActivityListsBinding
+import com.demo.lebyy.databinding.ItemSwipeActionRowBinding
 
 class ListsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityListsBinding
@@ -42,12 +44,13 @@ class ListsActivity : AppCompatActivity() {
                 refreshItems += (1..8).map { "Refresh Item $it · v$refreshCount" }
                 refreshAdapter.notifyDataSetChanged()
                 binding.refreshCount.text = "Refresh count: $refreshCount"
-                binding.refreshCount.contentDescription = "Refresh count: $refreshCount"
                 binding.swipeRefresh.isRefreshing = false
             }, 800)
         }
 
-        val swipeAdapter = SimpleTextAdapter(swipeItems, "test-SwipeRow")
+        val swipeAdapter = SwipeActionAdapter(swipeItems) { message ->
+            binding.swipeActionResult.text = message
+        }
         binding.swipeActionsList.layoutManager = LinearLayoutManager(this)
         binding.swipeActionsList.adapter = swipeAdapter
         ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
@@ -58,24 +61,12 @@ class ListsActivity : AppCompatActivity() {
             ): Boolean = false
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val pos = viewHolder.bindingAdapterPosition
-                if (pos < 0 || pos >= swipeItems.size) return
-                val item = swipeItems.removeAt(pos)
-                swipeAdapter.notifyItemRemoved(pos)
-                if (direction == ItemTouchHelper.LEFT) {
-                    binding.swipeActionResult.text = "Deleted: $item"
-                } else {
-                    binding.swipeActionResult.text = "Edited: $item"
-                    swipeItems.add(pos, item)
-                    swipeAdapter.notifyItemInserted(pos)
-                }
+                swipeAdapter.revealActions(viewHolder.bindingAdapterPosition)
             }
         }).attachToRecyclerView(binding.swipeActionsList)
 
         binding.resetSwipeRows.setOnClickListener {
-            swipeItems.clear()
-            swipeItems += (1..6).map { "Swipe Row $it" }
-            swipeAdapter.notifyDataSetChanged()
+            swipeAdapter.reset((1..6).map { "Swipe Row $it" })
             binding.swipeActionResult.text = "Deleted: —"
         }
 
@@ -121,6 +112,67 @@ class ListsActivity : AppCompatActivity() {
             binding.infiniteLoading.visibility = View.GONE
             loadingMore = false
         }, 700)
+    }
+}
+
+/**
+ * Swipe a row to reveal its Delete / Edit action buttons, mirroring the iOS `swipeActions` rows.
+ * The buttons stay in the hierarchy with stable ids so automation can tap them after the swipe.
+ */
+private class SwipeActionAdapter(
+    private val items: MutableList<String>,
+    private val onResult: (String) -> Unit,
+) : RecyclerView.Adapter<SwipeActionAdapter.VH>() {
+    private val revealed = mutableSetOf<String>()
+
+    class VH(val binding: ItemSwipeActionRowBinding) : RecyclerView.ViewHolder(binding.root)
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+        val rowBinding = ItemSwipeActionRowBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        (rowBinding.root.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin = 8
+        return VH(rowBinding)
+    }
+
+    override fun onBindViewHolder(holder: VH, position: Int) {
+        val item = items[position]
+        val isRevealed = item in revealed
+        holder.binding.rowText.text = item
+        holder.binding.swipeDeleteAction.visibility = if (isRevealed) View.VISIBLE else View.GONE
+        holder.binding.swipeEditAction.visibility = if (isRevealed) View.VISIBLE else View.GONE
+        holder.binding.swipeDeleteAction.setOnClickListener { delete(item) }
+        holder.binding.swipeEditAction.setOnClickListener { edit(item) }
+    }
+
+    override fun getItemCount(): Int = items.size
+
+    fun revealActions(position: Int) {
+        val item = items.getOrNull(position) ?: return
+        revealed += item
+        notifyItemChanged(position)
+    }
+
+    fun reset(newItems: List<String>) {
+        revealed.clear()
+        items.clear()
+        items += newItems
+        notifyDataSetChanged()
+    }
+
+    private fun delete(item: String) {
+        val position = items.indexOf(item)
+        if (position < 0) return
+        items.removeAt(position)
+        revealed -= item
+        notifyItemRemoved(position)
+        onResult("Deleted: $item")
+    }
+
+    private fun edit(item: String) {
+        val position = items.indexOf(item)
+        if (position < 0) return
+        revealed -= item
+        notifyItemChanged(position)
+        onResult("Edited: $item")
     }
 }
 

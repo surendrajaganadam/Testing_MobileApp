@@ -50,4 +50,59 @@
         android:visibility="gone"
         app:backgroundTint="@color/lebyy_primary"
         app:cornerRadius="12dp" />
+
+    <LinearLayout
+        android:id="@+id/shopActionsRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/shopOpenOrders"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:contentDescription="test-OpenOrders"
+            android:text="Orders"
+            android:textColor="@color/lebyy_primary"
+            app:backgroundTint="@color/lebyy_surface"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/lebyy_primary"
+            app:strokeWidth="2dp" />
+
+        <FrameLayout
+            android:id="@+id/shopCart"
+            android:layout_width="56dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="12dp"
+            android:background="?attr/selectableItemBackground"
+            android:contentDescription="test-Cart">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center"
+                android:contentDescription="test-Cart"
+                android:src="@drawable/ic_cart"
+                android:tint="@color/lebyy_primary" />
+
+            <TextView
+                android:id="@+id/shopCartCount"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/bg_cart_badge"
+                android:contentDescription="test-CartCount"
+                android:gravity="center"
+                android:text="0"
+                android:textColor="@color/lebyy_bg"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
 </LinearLayout>

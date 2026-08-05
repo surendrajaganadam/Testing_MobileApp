@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.demo.lebyy.R
@@ -32,6 +33,8 @@ class MainActivity : AppCompatActivity() {
     private var currentTab = R.id.tabHome
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Required: switches Theme.Lebyy.Splash → Theme.Lebyy before Material views inflate.
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

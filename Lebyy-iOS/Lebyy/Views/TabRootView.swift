@@ -82,9 +82,12 @@ struct HomeView: View {
                     }
 
                     Text("Welcome to Lebyy Practice App")
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
                         .foregroundStyle(LebyyTheme.accent)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
                         .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
                         .accessibilityIdentifier("test-HomeWelcome")
                         .accessibilityLabel("Welcome to Lebyy Practice App")
 

@@ -1,7 +1,6 @@
 package com.demo.lebyy.ui
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -106,18 +105,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showHome() {
-        val home = TabHomeBinding.inflate(layoutInflater, binding.tabContainer, true)
-        home.homeSupport.setOnClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://lebyy.com")))
-        }
-        home.homeGitHub.setOnClickListener {
-            startActivity(
-                Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse("https://github.com/surendrajaganadam/Testing_MobileApp")
-                )
-            )
-        }
+        TabHomeBinding.inflate(layoutInflater, binding.tabContainer, true)
     }
 
     private fun showComponents() {

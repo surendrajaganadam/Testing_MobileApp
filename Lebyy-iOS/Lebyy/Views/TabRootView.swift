@@ -42,7 +42,6 @@ struct TabRootView: View {
 
 struct HomeView: View {
     @EnvironmentObject private var store: AppStore
-    @Environment(\.openURL) private var openURL
 
     var body: some View {
         ZStack {
@@ -117,31 +116,13 @@ struct HomeView: View {
 
                 Spacer()
 
-                VStack(spacing: 18) {
-                    if !store.lastDeepLink.isEmpty {
-                        Text("Last deep link: \(store.lastDeepLink)")
-                            .font(.caption)
-                            .foregroundStyle(LebyyTheme.muted)
-                            .accessibilityIdentifier("test-HomeDeepLink")
-                    }
-
-                    Button("Support") {
-                        openURL(URL(string: "https://lebyy.com")!)
-                    }
-                    .font(.system(size: 20, weight: .semibold, design: .rounded))
-                    .foregroundStyle(LebyyTheme.primary)
-                    .accessibilityIdentifier("test-HomeSupport")
-                    .accessibilityLabel("Support")
-
-                    Button("GitHub") {
-                        openURL(URL(string: "https://github.com/surendrajaganadam/Testing_MobileApp")!)
-                    }
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundStyle(LebyyTheme.accent)
-                    .accessibilityIdentifier("test-HomeGitHub")
-                    .accessibilityLabel("GitHub")
+                if !store.lastDeepLink.isEmpty {
+                    Text("Last deep link: \(store.lastDeepLink)")
+                        .font(.caption)
+                        .foregroundStyle(LebyyTheme.muted)
+                        .accessibilityIdentifier("test-HomeDeepLink")
+                        .padding(.bottom, 28)
                 }
-                .padding(.bottom, 28)
             }
         }
         .toolbar(.hidden, for: .navigationBar)

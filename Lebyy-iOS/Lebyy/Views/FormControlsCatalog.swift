@@ -134,13 +134,9 @@ struct FormControlTopicView: View {
                 .accessibilityLabel("Disabled")
 
             sectionHeader("Checkbox-style toggles")
-            Toggle("Option A", isOn: $checkA)
-                .toggleStyle(.checkboxIOS)
-                .accessibilityIdentifier("test-Checkbox-1")
+            LebyyCheckbox(title: "Option A", isOn: $checkA, accessibilityId: "test-Checkbox-1")
                 .onChange(of: checkA) { _, _ in updateChecks() }
-            Toggle("Option B", isOn: $checkB)
-                .toggleStyle(.checkboxIOS)
-                .accessibilityIdentifier("test-Checkbox-2")
+            LebyyCheckbox(title: "Option B", isOn: $checkB, accessibilityId: "test-Checkbox-2")
                 .onChange(of: checkB) { _, _ in updateChecks() }
         }
     }

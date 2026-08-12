@@ -273,13 +273,9 @@ struct FormsView: View {
                 }
 
                 Text("Checkboxes").font(.caption).foregroundStyle(LebyyTheme.muted)
-                Toggle("Option A", isOn: $checkA)
-                    .toggleStyle(.checkboxIOS)
-                    .accessibilityIdentifier("test-Checkbox-1")
+                LebyyCheckbox(title: "Option A", isOn: $checkA, accessibilityId: "test-Checkbox-1")
                     .onChange(of: checkA) { _, _ in updateChecks() }
-                Toggle("Option B", isOn: $checkB)
-                    .toggleStyle(.checkboxIOS)
-                    .accessibilityIdentifier("test-Checkbox-2")
+                LebyyCheckbox(title: "Option B", isOn: $checkB, accessibilityId: "test-Checkbox-2")
                     .onChange(of: checkB) { _, _ in updateChecks() }
 
                 Text("Radio buttons").font(.caption).foregroundStyle(LebyyTheme.muted)
@@ -472,17 +468,53 @@ struct FormsView: View {
 
 struct CheckboxIOSToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
+        // Prefer LebyyCheckbox for new UI. Kept for any remaining Toggle(.checkboxIOS) call sites.
         Button {
             configuration.isOn.toggle()
         } label: {
             HStack {
                 Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
                     .foregroundStyle(LebyyTheme.primary)
+                    .accessibilityHidden(true)
                 configuration.label.foregroundStyle(LebyyTheme.text)
                 Spacer()
             }
         }
         .buttonStyle(.plain)
+        .accessibilityRemoveTraits(.isToggle)
+        .accessibilityAddTraits(configuration.isOn ? [.isButton, .isSelected] : .isButton)
+        .accessibilityValue(configuration.isOn ? "Checked" : "Unchecked")
+    }
+}
+
+/// Checkbox control that is NOT a SwiftUI `Toggle` (those always expose as Switch in Accessibility Inspector).
+struct LebyyCheckbox: View {
+    let title: String
+    @Binding var isOn: Bool
+    var accessibilityId: String
+
+    var body: some View {
+        Button {
+            isOn.toggle()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: isOn ? "checkmark.square.fill" : "square")
+                    .font(.title3)
+                    .foregroundStyle(LebyyTheme.primary)
+                    .accessibilityHidden(true)
+                Text(title)
+                    .foregroundStyle(LebyyTheme.text)
+                Spacer(minLength: 0)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityIdentifier(accessibilityId)
+        .accessibilityLabel(title)
+        .accessibilityValue(isOn ? "Checked" : "Unchecked")
+        .accessibilityAddTraits(isOn ? [.isButton, .isSelected] : .isButton)
+        .accessibilityRemoveTraits(.isToggle)
     }
 }
 

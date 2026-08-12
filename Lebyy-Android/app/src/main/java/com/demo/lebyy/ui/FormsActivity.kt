@@ -40,6 +40,7 @@ class FormsActivity : AppCompatActivity() {
             "switches" -> "Switches"
             "sliders" -> "Sliders"
             "pickers" -> "Date & Time"
+            "pickerView" -> "PickerView"
             "selection" -> "Selection Controls"
             "validation" -> "Validation"
             "otp" -> "OTP / PIN"
@@ -52,6 +53,7 @@ class FormsActivity : AppCompatActivity() {
             "switches" -> "switches"
             "sliders" -> "sliders"
             "pickers" -> "pickers"
+            "pickerView" -> "pickerView"
             "selection" -> "selection"
             "validation" -> "validation"
             "otp" -> "otp"
@@ -63,6 +65,7 @@ class FormsActivity : AppCompatActivity() {
         binding.sectionSwitches.visibility = visibleIf(topic, "switches")
         binding.sectionSliders.visibility = visibleIf(topic, "sliders")
         binding.sectionPickers.visibility = visibleIf(topic, "pickers")
+        binding.sectionPickerView.visibility = visibleIf(topic, "pickerView")
         binding.sectionSelection.visibility = visibleIf(topic, "selection")
         binding.sectionValidation.visibility = visibleIf(topic, "validation")
         binding.sectionOtp.visibility = visibleIf(topic, "otp")
@@ -152,6 +155,37 @@ class FormsActivity : AppCompatActivity() {
                 true,
             ).show()
         }
+
+        val fruits = arrayOf("Apple", "Banana", "Cherry", "Dragonfruit", "Elderberry", "Fig", "Grape")
+        binding.pickerView.minValue = 0
+        binding.pickerView.maxValue = fruits.lastIndex
+        binding.pickerView.displayedValues = fruits
+        binding.pickerView.wrapSelectorWheel = true
+        binding.pickerViewValue.text = "Selected: ${fruits[binding.pickerView.value]}"
+        binding.pickerView.setOnValueChangedListener { _, _, newVal ->
+            binding.pickerViewValue.text = "Selected: ${fruits[newVal]}"
+            binding.formsResult.text = "Result: PickerView ${fruits[newVal]}"
+        }
+
+        val colors = arrayOf("Red", "Green", "Blue", "Yellow", "Purple")
+        val sizes = arrayOf("S", "M", "L", "XL")
+        binding.pickerViewColor.minValue = 0
+        binding.pickerViewColor.maxValue = colors.lastIndex
+        binding.pickerViewColor.displayedValues = colors
+        binding.pickerViewColor.wrapSelectorWheel = true
+        binding.pickerViewSize.minValue = 0
+        binding.pickerViewSize.maxValue = sizes.lastIndex
+        binding.pickerViewSize.displayedValues = sizes
+        binding.pickerViewSize.value = 1
+        binding.pickerViewSize.wrapSelectorWheel = true
+        fun updateMultiPicker() {
+            val value = "${colors[binding.pickerViewColor.value]} / ${sizes[binding.pickerViewSize.value]}"
+            binding.pickerViewMultiValue.text = "Selected: $value"
+            binding.formsResult.text = "Result: PickerView $value"
+        }
+        updateMultiPicker()
+        binding.pickerViewColor.setOnValueChangedListener { _, _, _ -> updateMultiPicker() }
+        binding.pickerViewSize.setOnValueChangedListener { _, _, _ -> updateMultiPicker() }
 
         val options = listOf(
             "Select an item...",

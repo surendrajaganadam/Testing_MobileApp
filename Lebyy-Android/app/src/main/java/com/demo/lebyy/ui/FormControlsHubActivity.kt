@@ -26,6 +26,7 @@ class FormControlsHubActivity : AppCompatActivity() {
             Topic("Switches", "Default, labeled, checkbox-style", "test-FormTopic-switches", "switches"),
             Topic("Sliders", "Continuous & stepped values", "test-FormTopic-sliders", "sliders"),
             Topic("Date & Time", "Date picker & time picker", "test-FormTopic-pickers", "pickers"),
+            Topic("PickerView", "Wheel picker & multi-column", "test-FormTopic-pickerView", "pickerView"),
             Topic("Selection Controls", "Dropdown, checkboxes, radios", "test-FormTopic-selection", "selection"),
             Topic("Validation", "Inline errors on submit", "test-FormTopic-validation", "validation"),
             Topic("OTP / PIN", "4-digit PIN entry", "test-FormTopic-otp", "otp"),

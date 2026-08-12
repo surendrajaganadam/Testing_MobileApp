@@ -18,6 +18,7 @@ struct FormControlTopicView: View {
                 case .switches: switchesSection
                 case .sliders: slidersSection
                 case .pickers: pickersSection
+                case .pickerView: pickerViewSection
                 case .selection: selectionSection
                 case .validation: validationSection
                 case .otp: otpSection
@@ -134,6 +135,8 @@ struct FormControlTopicView: View {
                 .accessibilityLabel("Disabled")
 
             sectionHeader("Checkbox-style toggles")
+            // Custom checkboxes (not Switch). iOS has no public Checkbox a11y type;
+            // XCUITest sees these as Buttons with value Checked/Unchecked.
             LebyyCheckbox(title: "Option A", isOn: $checkA, accessibilityId: "test-Checkbox-1")
                 .onChange(of: checkA) { _, _ in updateChecks() }
             LebyyCheckbox(title: "Option B", isOn: $checkB, accessibilityId: "test-Checkbox-2")
@@ -229,6 +232,63 @@ struct FormControlTopicView: View {
                 .font(.caption)
                 .foregroundStyle(LebyyTheme.muted)
                 .accessibilityIdentifier("test-TimeValue")
+        }
+    }
+
+    // MARK: PickerView (wheel / UIPickerView)
+
+    @State private var wheelFruit = "Apple"
+    @State private var multiColor = 0
+    @State private var multiSize = 1
+
+    private let fruits = ["Apple", "Banana", "Cherry", "Dragonfruit", "Elderberry", "Fig", "Grape"]
+    private let pickerColors = ["Red", "Green", "Blue", "Yellow", "Purple"]
+    private let pickerSizes = ["S", "M", "L", "XL"]
+
+    private var pickerViewSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            sectionHeader("Single wheel (PickerView)")
+            Text("Use app.pickerWheels in XCUITest / Appium")
+                .font(.caption)
+                .foregroundStyle(LebyyTheme.muted)
+
+            Picker("Fruit", selection: $wheelFruit) {
+                ForEach(fruits, id: \.self) { Text($0).tag($0) }
+            }
+            .pickerStyle(.wheel)
+            .frame(maxWidth: .infinity)
+            .frame(height: 148)
+            .accessibilityIdentifier("test-PickerView")
+            .accessibilityLabel("Fruit picker")
+            .onChange(of: wheelFruit) { _, v in
+                result = "Result: PickerView \(v)"
+            }
+
+            Text("Selected: \(wheelFruit)")
+                .foregroundStyle(LebyyTheme.text)
+                .accessibilityIdentifier("test-PickerViewValue")
+                .accessibilityLabel("Selected: \(wheelFruit)")
+
+            sectionHeader("Multi-column UIPickerView")
+            MultiColumnPickerRepresentable(
+                colors: pickerColors,
+                sizes: pickerSizes,
+                colorIndex: $multiColor,
+                sizeIndex: $multiSize
+            ) {
+                let value = "\(pickerColors[multiColor]) / \(pickerSizes[multiSize])"
+                result = "Result: PickerView \(value)"
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 148)
+            .accessibilityIdentifier("test-PickerView-Multi")
+
+            Text("Selected: \(pickerColors[multiColor]) / \(pickerSizes[multiSize])")
+                .foregroundStyle(LebyyTheme.text)
+                .accessibilityIdentifier("test-PickerViewMultiValue")
+                .accessibilityLabel(
+                    "Selected: \(pickerColors[multiColor]) / \(pickerSizes[multiSize])"
+                )
         }
     }
 
@@ -393,5 +453,73 @@ struct FormControlTopicView: View {
             .foregroundStyle(LebyyTheme.primary)
             .accessibilityAddTraits(.isHeader)
             .padding(.top, 4)
+    }
+}
+
+/// Classic UIPickerView (multi-column) so XCUITest sees `app.pickerWheels`.
+struct MultiColumnPickerRepresentable: UIViewRepresentable {
+    let colors: [String]
+    let sizes: [String]
+    @Binding var colorIndex: Int
+    @Binding var sizeIndex: Int
+    var onChange: () -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    func makeUIView(context: Context) -> UIPickerView {
+        let picker = UIPickerView()
+        picker.dataSource = context.coordinator
+        picker.delegate = context.coordinator
+        picker.accessibilityIdentifier = "test-PickerView-Multi"
+        picker.selectRow(colorIndex, inComponent: 0, animated: false)
+        picker.selectRow(sizeIndex, inComponent: 1, animated: false)
+        return picker
+    }
+
+    func updateUIView(_ picker: UIPickerView, context: Context) {
+        context.coordinator.parent = self
+        if picker.selectedRow(inComponent: 0) != colorIndex {
+            picker.selectRow(colorIndex, inComponent: 0, animated: false)
+        }
+        if picker.selectedRow(inComponent: 1) != sizeIndex {
+            picker.selectRow(sizeIndex, inComponent: 1, animated: false)
+        }
+    }
+
+    final class Coordinator: NSObject, UIPickerViewDataSource, UIPickerViewDelegate {
+        var parent: MultiColumnPickerRepresentable
+
+        init(_ parent: MultiColumnPickerRepresentable) {
+            self.parent = parent
+        }
+
+        func numberOfComponents(in pickerView: UIPickerView) -> Int { 2 }
+
+        func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+            component == 0 ? parent.colors.count : parent.sizes.count
+        }
+
+        func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+            component == 0 ? parent.colors[row] : parent.sizes[row]
+        }
+
+        func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+            if component == 0 {
+                parent.colorIndex = row
+            } else {
+                parent.sizeIndex = row
+            }
+            parent.onChange()
+        }
+
+        func pickerView(_ pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
+            let title = component == 0 ? parent.colors[row] : parent.sizes[row]
+            return NSAttributedString(
+                string: title,
+                attributes: [.foregroundColor: UIColor(LebyyTheme.text)]
+            )
+        }
     }
 }

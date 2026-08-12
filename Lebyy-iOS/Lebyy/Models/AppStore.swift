@@ -203,7 +203,7 @@ enum ComponentCategory: String, CaseIterable, Identifiable, Hashable {
 
 /// Nested form-control demos (UIKitCatalog Switches-style).
 enum FormControlTopic: String, CaseIterable, Identifiable, Hashable {
-    case textFields, switches, sliders, pickers, selection, validation, otp
+    case textFields, switches, sliders, pickers, pickerView, selection, validation, otp
 
     var id: String { rawValue }
 
@@ -213,6 +213,7 @@ enum FormControlTopic: String, CaseIterable, Identifiable, Hashable {
         case .switches: return "Switches"
         case .sliders: return "Sliders"
         case .pickers: return "Date & Time"
+        case .pickerView: return "PickerView"
         case .selection: return "Selection Controls"
         case .validation: return "Validation"
         case .otp: return "OTP / PIN"
@@ -225,6 +226,7 @@ enum FormControlTopic: String, CaseIterable, Identifiable, Hashable {
         case .switches: return "Default, labeled, checkbox-style"
         case .sliders: return "Continuous & stepped values"
         case .pickers: return "Date picker & time picker"
+        case .pickerView: return "Wheel picker & multi-column"
         case .selection: return "Dropdown, checkboxes, radios"
         case .validation: return "Inline errors on submit"
         case .otp: return "4-digit PIN entry"

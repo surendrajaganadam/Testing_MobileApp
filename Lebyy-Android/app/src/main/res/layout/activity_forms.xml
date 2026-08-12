@@ -379,6 +379,79 @@
                         android:textColor="@color/lebyy_muted" />
                 </LinearLayout>
 
+                <!-- PickerView (wheel NumberPickers) -->
+                <LinearLayout
+                    android:id="@+id/sectionPickerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="Single wheel (PickerView)"
+                        android:textColor="@color/lebyy_primary"
+                        android:textStyle="bold" />
+
+                    <NumberPicker
+                        android:id="@+id/pickerView"
+                        android:layout_width="match_parent"
+                        android:layout_height="148dp"
+                        android:layout_marginBottom="8dp"
+                        android:contentDescription="test-PickerView" />
+
+                    <TextView
+                        android:id="@+id/pickerViewValue"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="14dp"
+                        android:contentDescription="test-PickerViewValue"
+                        android:text="Selected: Apple"
+                        android:textColor="@color/lebyy_text" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="Multi-column (color / size)"
+                        android:textColor="@color/lebyy_primary"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:id="@+id/pickerViewMulti"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="test-PickerView-Multi"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <NumberPicker
+                            android:id="@+id/pickerViewColor"
+                            android:layout_width="0dp"
+                            android:layout_height="148dp"
+                            android:layout_weight="1"
+                            android:contentDescription="test-PickerView-Color" />
+
+                        <NumberPicker
+                            android:id="@+id/pickerViewSize"
+                            android:layout_width="0dp"
+                            android:layout_height="148dp"
+                            android:layout_weight="1"
+                            android:contentDescription="test-PickerView-Size" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/pickerViewMultiValue"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:contentDescription="test-PickerViewMultiValue"
+                        android:text="Selected: Red / M"
+                        android:textColor="@color/lebyy_text" />
+                </LinearLayout>
+
                 <!-- Selection -->
                 <LinearLayout
                     android:id="@+id/sectionSelection"

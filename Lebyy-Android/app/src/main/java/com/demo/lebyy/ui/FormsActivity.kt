@@ -44,6 +44,7 @@ class FormsActivity : AppCompatActivity() {
             "selection" -> "Selection Controls"
             "validation" -> "Validation"
             "otp" -> "OTP / PIN"
+            "duplicates" -> "Duplicate Locators"
             "text" -> "Text Fields"
             else -> "Forms"
         }
@@ -57,6 +58,7 @@ class FormsActivity : AppCompatActivity() {
             "selection" -> "selection"
             "validation" -> "validation"
             "otp" -> "otp"
+            "duplicates" -> "duplicates"
             else -> "textFields"
         }
         binding.formsScroll.contentDescription = "test-FormTopicScreen-$screenId"
@@ -69,6 +71,7 @@ class FormsActivity : AppCompatActivity() {
         binding.sectionSelection.visibility = visibleIf(topic, "selection")
         binding.sectionValidation.visibility = visibleIf(topic, "validation")
         binding.sectionOtp.visibility = visibleIf(topic, "otp")
+        binding.sectionDuplicates.visibility = visibleIf(topic, "duplicates")
     }
 
     private fun visibleIf(topic: String, key: String): Int =
@@ -270,6 +273,19 @@ class FormsActivity : AppCompatActivity() {
                 code == "1234" -> "Result: OTP success"
                 else -> "Result: OTP wrong"
             }
+        }
+
+        binding.duplicateFieldA.addTextChangedListener(simpleWatcher {
+            binding.formsResult.text = "Result: FieldA ${binding.duplicateFieldA.text}"
+        })
+        binding.duplicateFieldB.addTextChangedListener(simpleWatcher {
+            binding.formsResult.text = "Result: FieldB ${binding.duplicateFieldB.text}"
+        })
+        binding.duplicateButtonA.setOnClickListener {
+            binding.formsResult.text = "Result: DuplicateButton boundBy:0"
+        }
+        binding.duplicateButtonB.setOnClickListener {
+            binding.formsResult.text = "Result: DuplicateButton boundBy:1"
         }
     }
 

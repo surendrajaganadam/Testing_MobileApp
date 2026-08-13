@@ -719,6 +719,104 @@
                         app:backgroundTint="@color/lebyy_accent"
                         app:cornerRadius="12dp" />
                 </LinearLayout>
+
+                <!-- Duplicate Locators: same contentDescription twice for boundBy / nth practice -->
+                <LinearLayout
+                    android:id="@+id/sectionDuplicates"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/duplicateHint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="test-DuplicateHint"
+                        android:text="Both fields use the same accessibility id/label. Pick by index (boundBy / nth)."
+                        android:textColor="@color/lebyy_muted"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="8dp"
+                        android:text="Field A — boundBy: 0 / nth(0)"
+                        android:textColor="@color/lebyy_primary"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Lebyy.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="14dp"
+                        android:hint="Duplicate Field">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/duplicateFieldA"
+                            style="@style/Widget.Lebyy.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="test-DuplicateField"
+                            android:inputType="text" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="Field B — boundBy: 1 / nth(1)"
+                        android:textColor="@color/lebyy_primary"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Lebyy.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="14dp"
+                        android:hint="Duplicate Field">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/duplicateFieldB"
+                            style="@style/Widget.Lebyy.TextInputEditText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="test-DuplicateField"
+                            android:inputType="text" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="Buttons — same id (boundBy 0 then 1)"
+                        android:textColor="@color/lebyy_primary"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/duplicateButtonA"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginBottom="8dp"
+                        android:contentDescription="test-DuplicateButton"
+                        android:text="DUPLICATE ACTION"
+                        android:textAllCaps="true"
+                        android:textColor="@color/lebyy_bg"
+                        app:backgroundTint="@color/lebyy_primary"
+                        app:cornerRadius="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/duplicateButtonB"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:contentDescription="test-DuplicateButton"
+                        android:text="DUPLICATE ACTION"
+                        android:textAllCaps="true"
+                        android:textColor="@color/lebyy_bg"
+                        app:backgroundTint="@color/lebyy_accent"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
             </LinearLayout>
         </ScrollView>
     </LinearLayout>

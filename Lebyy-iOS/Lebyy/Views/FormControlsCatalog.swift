@@ -22,6 +22,7 @@ struct FormControlTopicView: View {
                 case .selection: selectionSection
                 case .validation: validationSection
                 case .otp: otpSection
+                case .duplicates: duplicatesSection
                 }
             }
             .padding(16)
@@ -30,6 +31,80 @@ struct FormControlTopicView: View {
         .navigationTitle(topic.title)
         .navigationBarTitleDisplayMode(.inline)
         .accessibilityIdentifier("test-FormTopicScreen-\(topic.rawValue)")
+    }
+
+    // MARK: Duplicate locators (XCUITest matching / boundBy practice)
+
+    @State private var duplicateFieldA = ""
+    @State private var duplicateFieldB = ""
+
+    /// Two text fields share `test-DuplicateField`; two buttons share `test-DuplicateButton`.
+    /// XCUITest: `app.textFields["test-DuplicateField"].element(boundBy: 0)`
+    /// MobileWright: `screen.getByTestId('test-DuplicateField').nth(0)`
+    private var duplicatesSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Both fields use the same accessibility id/label. Pick by index (boundBy / nth).")
+                .font(.caption)
+                .foregroundStyle(LebyyTheme.muted)
+                .accessibilityIdentifier("test-DuplicateHint")
+
+            sectionHeader("Field A — boundBy: 0 / nth(0)")
+            TextField("", text: $duplicateFieldA, prompt: Text("Duplicate Field"))
+                .padding()
+                .background(LebyyTheme.surface)
+                .foregroundStyle(LebyyTheme.text)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .accessibilityIdentifier("test-DuplicateField")
+                .accessibilityLabel("test-DuplicateField")
+                .onChange(of: duplicateFieldA) { _, v in
+                    result = "Result: FieldA \(v)"
+                }
+
+            sectionHeader("Field B — boundBy: 1 / nth(1)")
+            TextField("", text: $duplicateFieldB, prompt: Text("Duplicate Field"))
+                .padding()
+                .background(LebyyTheme.surface)
+                .foregroundStyle(LebyyTheme.text)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .accessibilityIdentifier("test-DuplicateField")
+                .accessibilityLabel("test-DuplicateField")
+                .onChange(of: duplicateFieldB) { _, v in
+                    result = "Result: FieldB \(v)"
+                }
+
+            sectionHeader("Buttons — same id (boundBy 0 then 1)")
+            Button {
+                result = "Result: DuplicateButton boundBy:0"
+            } label: {
+                Text("DUPLICATE ACTION")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(LebyyTheme.primary)
+                    .foregroundStyle(LebyyTheme.bg)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("test-DuplicateButton")
+            .accessibilityLabel("test-DuplicateButton")
+
+            Button {
+                result = "Result: DuplicateButton boundBy:1"
+            } label: {
+                Text("DUPLICATE ACTION")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(LebyyTheme.accent)
+                    .foregroundStyle(LebyyTheme.bg)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("test-DuplicateButton")
+            .accessibilityLabel("test-DuplicateButton")
+        }
     }
 
     // MARK: Text Fields

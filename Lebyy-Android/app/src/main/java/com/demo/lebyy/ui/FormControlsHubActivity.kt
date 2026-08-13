@@ -30,6 +30,12 @@ class FormControlsHubActivity : AppCompatActivity() {
             Topic("Selection Controls", "Dropdown, checkboxes, radios", "test-FormTopic-selection", "selection"),
             Topic("Validation", "Inline errors on submit", "test-FormTopic-validation", "validation"),
             Topic("OTP / PIN", "4-digit PIN entry", "test-FormTopic-otp", "otp"),
+            Topic(
+                "Duplicate Locators",
+                "Same id twice — use matching / boundBy / nth",
+                "test-FormTopic-duplicates",
+                "duplicates",
+            ),
         )
 
         binding.formTopicsList.layoutManager = LinearLayoutManager(this)

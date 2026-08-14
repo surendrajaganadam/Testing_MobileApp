@@ -417,6 +417,16 @@ struct FormControlTopicView: View {
             Button("Inactive") { result = "Result: Inactive tapped" }
                 .buttonStyle(LebyyMutedButton())
                 .accessibilityIdentifier("test-Inactive")
+
+            sectionHeader("Nil value (assert value == nil)")
+            Text("XCUITest: XCTAssertNil(app.buttons[\"test-NilValue\"].value)")
+                .font(.caption)
+                .foregroundStyle(LebyyTheme.muted)
+            NilValueButton {
+                result = "Result: Nil value tapped"
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
         }
     }
 
@@ -528,6 +538,40 @@ struct FormControlTopicView: View {
             .foregroundStyle(LebyyTheme.primary)
             .accessibilityAddTraits(.isHeader)
             .padding(.top, 4)
+    }
+}
+
+/// UIButton with identifier + label, but `accessibilityValue` left unset so XCUITest `.value` is nil.
+struct NilValueButton: UIViewRepresentable {
+    var onTap: () -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onTap: onTap)
+    }
+
+    func makeUIView(context: Context) -> UIButton {
+        var config = UIButton.Configuration.filled()
+        config.title = "NIL VALUE"
+        config.baseBackgroundColor = UIColor(LebyyTheme.surface2)
+        config.baseForegroundColor = UIColor(LebyyTheme.text)
+        config.cornerStyle = .medium
+        let button = UIButton(configuration: config)
+        button.accessibilityIdentifier = "test-NilValue"
+        button.accessibilityLabel = "Nil value"
+        button.accessibilityValue = nil
+        button.addTarget(context.coordinator, action: #selector(Coordinator.tapped), for: .touchUpInside)
+        return button
+    }
+
+    func updateUIView(_ button: UIButton, context: Context) {
+        context.coordinator.onTap = onTap
+        button.accessibilityValue = nil
+    }
+
+    final class Coordinator: NSObject {
+        var onTap: () -> Void
+        init(onTap: @escaping () -> Void) { self.onTap = onTap }
+        @objc func tapped() { onTap() }
     }
 }
 

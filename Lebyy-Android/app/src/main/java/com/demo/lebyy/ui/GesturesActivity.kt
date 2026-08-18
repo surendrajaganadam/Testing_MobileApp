@@ -64,9 +64,9 @@ class GesturesActivity : AppCompatActivity() {
     }
 
     private fun setupDragAndDrop() {
-        // iOS accepts a drop when the translation stays inside ±120 x ±80 of the start point.
-        val toleranceX = 120 * resources.displayMetrics.density
-        val toleranceY = 80 * resources.displayMetrics.density
+        // Drop succeeds when the item is moved onto the adjacent target (to the right).
+        val minDropX = 60 * resources.displayMetrics.density
+        val maxDropY = 100 * resources.displayMetrics.density
         var startX = 0f
         var startY = 0f
 
@@ -81,9 +81,9 @@ class GesturesActivity : AppCompatActivity() {
                     view.translationY = event.rawY - startY
                 }
                 MotionEvent.ACTION_UP -> {
-                    val dx = abs(event.rawX - startX)
+                    val dx = event.rawX - startX
                     val dy = abs(event.rawY - startY)
-                    setDropped(dx < toleranceX && dy < toleranceY)
+                    setDropped(dx > minDropX && dy < maxDropY)
                     view.animate().translationX(0f).translationY(0f).setDuration(180).start()
                 }
                 MotionEvent.ACTION_CANCEL -> {

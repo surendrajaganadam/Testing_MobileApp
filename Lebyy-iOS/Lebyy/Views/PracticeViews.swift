@@ -629,28 +629,26 @@ struct GesturesView: View {
                     .foregroundStyle(LebyyTheme.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(dropped ? LebyyTheme.success.opacity(0.3) : LebyyTheme.surface)
-                        .frame(height: 140)
-                        .overlay(
-                            Text(dropped ? "Dropped!" : "Drop here")
-                                .foregroundStyle(LebyyTheme.muted)
-                        )
-                        .accessibilityIdentifier("test-DropTarget")
-                        .accessibilityLabel(dropped ? "Dropped" : "Drop here")
-
+                // Side-by-side so UI tests can drag from one element onto another
+                // (stacked/overlapping targets share the same hit area and break drag-and-drop).
+                HStack(spacing: 16) {
                     Text("Drag me")
                         .padding()
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 140)
                         .background(LebyyTheme.accent)
                         .foregroundStyle(LebyyTheme.bg)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                         .offset(dragOffset)
+                        .zIndex(1)
                         .gesture(
                             DragGesture()
                                 .onChanged { dragOffset = $0.translation }
                                 .onEnded { value in
-                                    if abs(value.translation.height) < 80, abs(value.translation.width) < 120 {
+                                    // Drop succeeds when the item is moved onto the adjacent target (to the right).
+                                    let movedOntoDrop = value.translation.width > 60
+                                        && abs(value.translation.height) < 100
+                                    if movedOntoDrop {
                                         dropped = true
                                         result = "Result: Drag Dropped"
                                     } else {
@@ -662,6 +660,17 @@ struct GesturesView: View {
                         )
                         .accessibilityIdentifier("test-DragItem")
                         .accessibilityLabel("Drag me")
+
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(dropped ? LebyyTheme.success.opacity(0.3) : LebyyTheme.surface)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 140)
+                        .overlay(
+                            Text(dropped ? "Dropped!" : "Drop here")
+                                .foregroundStyle(LebyyTheme.muted)
+                        )
+                        .accessibilityIdentifier("test-DropTarget")
+                        .accessibilityLabel(dropped ? "Dropped" : "Drop here")
                 }
                 .frame(height: 160)
 

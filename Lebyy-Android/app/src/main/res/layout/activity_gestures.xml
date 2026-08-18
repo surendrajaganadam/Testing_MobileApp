@@ -93,34 +93,44 @@
                         android:textColor="@color/lebyy_primary"
                         android:textStyle="bold" />
 
-                    <FrameLayout
-                        android:id="@+id/dropTarget"
+                    <!-- Side-by-side so UI tests can drag from one element onto another -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="140dp"
                         android:layout_marginBottom="8dp"
-                        android:background="@color/lebyy_surface"
                         android:clipChildren="false"
-                        android:contentDescription="test-DropTarget">
-
-                        <TextView
-                            android:id="@+id/dropLabel"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:text="Drop here"
-                            android:textColor="@color/lebyy_muted" />
+                        android:orientation="horizontal">
 
                         <TextView
                             android:id="@+id/dragItem"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1"
                             android:background="@color/lebyy_accent"
                             android:contentDescription="test-DragItem"
+                            android:gravity="center"
                             android:padding="14dp"
                             android:text="Drag me"
                             android:textColor="@color/lebyy_bg" />
-                    </FrameLayout>
+
+                        <FrameLayout
+                            android:id="@+id/dropTarget"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@color/lebyy_surface"
+                            android:contentDescription="test-DropTarget">
+
+                            <TextView
+                                android:id="@+id/dropLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="Drop here"
+                                android:textColor="@color/lebyy_muted" />
+                        </FrameLayout>
+                    </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/resetDragDrop"

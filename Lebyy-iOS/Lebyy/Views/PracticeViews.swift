@@ -631,9 +631,9 @@ struct GesturesView: View {
 
                 // Side-by-side so UI tests can drag from one element onto another
                 // (stacked/overlapping targets share the same hit area and break drag-and-drop).
+                // Both are Text views so XCUITest exposes them as staticTexts (not Other).
                 HStack(spacing: 16) {
                     Text("Drag me")
-                        .padding()
                         .frame(maxWidth: .infinity)
                         .frame(height: 140)
                         .background(LebyyTheme.accent)
@@ -658,19 +658,21 @@ struct GesturesView: View {
                                     withAnimation { dragOffset = .zero }
                                 }
                         )
+                        .accessibilityElement(children: .ignore)
                         .accessibilityIdentifier("test-DragItem")
                         .accessibilityLabel("Drag me")
+                        .accessibilityAddTraits(.isStaticText)
 
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(dropped ? LebyyTheme.success.opacity(0.3) : LebyyTheme.surface)
+                    Text(dropped ? "Dropped!" : "Drop here")
                         .frame(maxWidth: .infinity)
                         .frame(height: 140)
-                        .overlay(
-                            Text(dropped ? "Dropped!" : "Drop here")
-                                .foregroundStyle(LebyyTheme.muted)
-                        )
+                        .background(dropped ? LebyyTheme.success.opacity(0.3) : LebyyTheme.surface)
+                        .foregroundStyle(LebyyTheme.muted)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .accessibilityElement(children: .ignore)
                         .accessibilityIdentifier("test-DropTarget")
                         .accessibilityLabel(dropped ? "Dropped" : "Drop here")
+                        .accessibilityAddTraits(.isStaticText)
                 }
                 .frame(height: 160)
 

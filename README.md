@@ -8,6 +8,7 @@ Branding from [lebyy.com](https://lebyy.com).
 |------|--------|
 | App name | **Lebyy** |
 | Android package | `com.demo.lebyy` |
+| Android launcher activity | `com.demo.lebyy.ui.MainActivity` |
 | iOS bundle ID | `com.demo.lebyy` |
 | Login username | `demo_user` |
 | Login password | `demo_pass` |
@@ -52,7 +53,21 @@ No source needed for testers who only want to install:
 3. Enable **Install unknown apps** for Files / Chrome / Drive
 4. Open the APK → Install → Open **Lebyy**
 
-**Package name:** `com.demo.lebyy`
+**Package name:** `com.demo.lebyy`  
+**Launcher activity:** `com.demo.lebyy.ui.MainActivity`
+
+Appium / capability example:
+
+```text
+appPackage: com.demo.lebyy
+appActivity: com.demo.lebyy.ui.MainActivity
+```
+
+adb launch (package + activity):
+
+```bash
+adb shell am start -n com.demo.lebyy/com.demo.lebyy.ui.MainActivity
+```
 
 ### Build Android from source (optional)
 
@@ -228,7 +243,7 @@ Side menu:
 ```ts
 // Android
 platform: 'android',
-bundleId: 'com.demo.lebyy',
+bundleId: 'com.demo.lebyy', // package; launcher activity: com.demo.lebyy.ui.MainActivity
 installApps: './releases/Lebyy-debug.apk',
 
 // iOS

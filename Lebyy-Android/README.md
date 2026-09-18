@@ -26,4 +26,11 @@ cd "Mobile App/Lebyy-Android"
 ./gradlew assembleDebug
 ```
 
-Package: `com.demo.lebyy`
+| Item | Value |
+|------|--------|
+| Package name | `com.demo.lebyy` |
+| Launcher activity | `com.demo.lebyy.ui.MainActivity` |
+
+```bash
+adb shell am start -n com.demo.lebyy/com.demo.lebyy.ui.MainActivity
+```

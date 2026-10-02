@@ -40,6 +40,12 @@ struct LoginView: View {
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(LebyyTheme.line, lineWidth: 1))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
+                Text("Manager: manager_user / manager_pass")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(LebyyTheme.muted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityIdentifier("test-ManagerCredentials")
+
                 TextField("", text: $username, prompt: Text("Username"))
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()

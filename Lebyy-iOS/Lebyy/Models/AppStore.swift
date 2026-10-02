@@ -86,7 +86,7 @@ enum ShopSort: String, CaseIterable, Identifiable {
 
 /// Main bottom tabs (WebdriverIO-style).
 enum AppTab: String, CaseIterable, Identifiable {
-    case home, components, shop, account
+    case home, components, shop, bank, account
     var id: String { rawValue }
 
     var title: String {
@@ -94,6 +94,7 @@ enum AppTab: String, CaseIterable, Identifiable {
         case .home: return "Home"
         case .components: return "Components"
         case .shop: return "Shop"
+        case .bank: return "Bank"
         case .account: return "Account"
         }
     }
@@ -103,6 +104,7 @@ enum AppTab: String, CaseIterable, Identifiable {
         case .home: return "house.fill"
         case .components: return "square.grid.2x2.fill"
         case .shop: return "cart.fill"
+        case .bank: return "building.columns.fill"
         case .account: return "person.fill"
         }
     }
@@ -112,6 +114,7 @@ enum AppTab: String, CaseIterable, Identifiable {
         case .home: return "test-Tab-Home"
         case .components: return "test-Tab-Components"
         case .shop: return "test-Tab-Shop"
+        case .bank: return "test-Tab-Bank"
         case .account: return "test-Tab-Account"
         }
     }
@@ -184,6 +187,7 @@ enum ComponentCategory: String, CaseIterable, Identifiable, Hashable {
         case "home": return (.home, nil)
         case "components", "catalog": return (.components, nil)
         case "shop": return (.shop, nil)
+        case "bank": return (.bank, nil)
         case "account", "login": return (.account, nil)
         case "alerts": return (.components, .alerts)
         case "forms", "formcontrols": return (.components, .formControls)
@@ -268,6 +272,8 @@ final class AppStore: ObservableObject {
     @Published var productRatings: [String: Int] = [:]
 
     @Published var displayName = "Demo User"
+    let bank = BankStore()
+    private var cancellables = Set<AnyCancellable>()
     @Published var sessionTimeoutEnabled = false
     @Published var sessionTimeoutSeconds = 60
     @Published var sessionSecondsRemaining = 0
@@ -276,6 +282,13 @@ final class AppStore: ObservableObject {
 
     static let defaultCouponPercent = 10
     private var sessionTimer: AnyCancellable?
+
+    init() {
+        bank.objectWillChange.sink { [weak self] _ in
+            self?.objectWillChange.send()
+        }
+        .store(in: &cancellables)
+    }
 
     let savedAddresses: [SavedAddress] = [
         .init(id: "home", label: "Home — Demo City", firstName: "Demo", lastName: "User", zipCode: "560001"),
@@ -341,12 +354,18 @@ final class AppStore: ObservableObject {
     }
 
     func login(username: String, password: String) -> Bool {
-        username == "demo_user" && password == "demo_pass"
+        let trimmed = username.trimmingCharacters(in: .whitespaces)
+        guard let role = bank.authenticate(username: trimmed, password: password) else { return false }
+        bank.startSession(username: trimmed, newRole: role)
+        displayName = bank.sessionDisplayName()
+        return true
     }
 
     func loginSuccess() {
         isLoggedIn = true
-        if selectedTab == .account {
+        if bank.isManager {
+            selectedTab = .bank
+        } else if selectedTab == .account {
             selectedTab = .shop
         }
         applyPendingDeepLinkNavigation()
@@ -525,6 +544,8 @@ final class AppStore: ObservableObject {
         sessionTimer = nil
         sessionSecondsRemaining = 0
         isLoggedIn = false
+        bank.endSession()
+        displayName = "Demo User"
         selectedTab = .account
         clearCartOnly()
         clearCheckoutFields()

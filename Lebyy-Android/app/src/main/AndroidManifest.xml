@@ -69,5 +69,9 @@
         <activity android:name=".ui.SystemActivity" android:exported="false" />
         <activity android:name=".ui.NavigationActivity" android:exported="false" />
         <activity android:name=".ui.SettingsActivity" android:exported="false" />
+        <activity
+            android:name=".ui.BankActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 </manifest>

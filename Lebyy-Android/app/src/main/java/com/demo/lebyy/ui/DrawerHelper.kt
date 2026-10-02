@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.demo.lebyy.R
+import com.demo.lebyy.data.BankState
 import com.demo.lebyy.data.ShopState
 import com.demo.lebyy.databinding.DrawerHeaderBinding
 import com.google.android.material.navigation.NavigationView
@@ -121,6 +122,7 @@ object DrawerHelper {
         header.drawerLogout.setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
             ShopState.resetSession()
+            BankState.endSession()
             activity.startActivity(
                 Intent(activity, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

@@ -2,7 +2,7 @@
 //  LebyyUITestsLaunchTests.swift
 //  LebyyUITests
 //
-//  Created by Lucky on 05/08/26.
+//  Created by Lucky on 28/08/26.
 //
 
 import XCTest
@@ -17,7 +17,7 @@ final class LebyyUITestsLaunchTests: XCTestCase {
         continueAfterFailure = false
     }
 
-    
+    @MainActor
     func testLaunch() throws {
         let app = XCUIApplication()
         app.launch()

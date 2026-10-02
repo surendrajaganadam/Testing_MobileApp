@@ -10,6 +10,7 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.demo.lebyy.R
+import com.demo.lebyy.data.BankState
 import com.demo.lebyy.data.ShopState
 import com.demo.lebyy.databinding.ActivityLoginBinding
 
@@ -42,8 +43,9 @@ class LoginActivity : AppCompatActivity() {
         binding.buttonLogin.setOnClickListener {
             val user = binding.inputUsername.text?.toString()?.trim().orEmpty()
             val pass = binding.inputPassword.text?.toString().orEmpty()
-            if (user == "demo_user" && pass == "demo_pass") {
-                goHomeAfterLogin()
+            val role = BankState.authenticate(user, pass)
+            if (role != null) {
+                goHomeAfterLogin(user, role)
             } else {
                 binding.loginError.visibility = View.VISIBLE
                 binding.loginError.text = getString(R.string.login_error)
@@ -90,8 +92,10 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun goHomeAfterLogin() {
+    private fun goHomeAfterLogin(username: String, role: String) {
         ShopState.resetSession()
+        BankState.startSession(username, role)
+        ShopState.displayName = BankState.sessionDisplayName()
         ShopState.loginSuccess()
         val dest = ShopState.destinationFromDeepLinkHost(
             intent?.data?.host ?: "",
@@ -108,7 +112,7 @@ class LoginActivity : AppCompatActivity() {
         startActivity(
             Intent(this, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                putExtra("open_tab", "shop")
+                putExtra("open_tab", if (role == "manager") "bank" else "shop")
             },
         )
         finish()

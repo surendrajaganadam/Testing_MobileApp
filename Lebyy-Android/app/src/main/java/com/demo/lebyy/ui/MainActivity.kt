@@ -15,8 +15,10 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.demo.lebyy.R
+import com.demo.lebyy.data.BankState
 import com.demo.lebyy.data.ShopState
 import com.demo.lebyy.databinding.ActivityMainBinding
+import com.demo.lebyy.databinding.TabBankBinding
 import com.demo.lebyy.databinding.ItemComponentBinding
 import com.demo.lebyy.databinding.TabAccountLoggedInBinding
 import com.demo.lebyy.databinding.TabComponentsBinding
@@ -77,6 +79,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.bottomNav.selectedItemId = when (intent.getStringExtra("open_tab")) {
             "shop" -> R.id.tabShop
+            "bank" -> R.id.tabBank
             "account" -> R.id.tabAccount
             "components" -> R.id.tabComponents
             else -> R.id.tabHome
@@ -89,6 +92,7 @@ class MainActivity : AppCompatActivity() {
         setIntent(intent)
         when (intent.getStringExtra("open_tab")) {
             "shop" -> selectTab(R.id.tabShop)
+            "bank" -> selectTab(R.id.tabBank)
             "account" -> selectTab(R.id.tabAccount)
             "components" -> selectTab(R.id.tabComponents)
             "home" -> selectTab(R.id.tabHome)
@@ -99,7 +103,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         // Refresh account/shop gate after returning from login/catalog
-        if (currentTab == R.id.tabAccount || currentTab == R.id.tabShop) {
+        if (currentTab == R.id.tabAccount || currentTab == R.id.tabShop || currentTab == R.id.tabBank) {
             showTab(currentTab)
         }
     }
@@ -154,6 +158,7 @@ class MainActivity : AppCompatActivity() {
         "system", "navigation", "nav", "webview", "web",
         -> R.id.tabComponents
         "shop", "orders", "orderhistory" -> R.id.tabShop
+        "bank" -> R.id.tabBank
         "account", "login", "settings" -> R.id.tabAccount
         else -> null
     }
@@ -167,12 +172,14 @@ class MainActivity : AppCompatActivity() {
             R.id.tabHome -> showHome()
             R.id.tabComponents -> showComponents()
             R.id.tabShop -> showShop()
+            R.id.tabBank -> showBank()
             R.id.tabAccount -> showAccount()
         }
         binding.mainToolbar.title = when (id) {
             R.id.tabHome -> ""
             R.id.tabComponents -> "Components"
             R.id.tabShop -> "Shop"
+            R.id.tabBank -> "Bank"
             else -> "Account"
         }
         binding.mainToolbar.visibility = if (id == R.id.tabHome) View.GONE else View.VISIBLE
@@ -268,6 +275,68 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, CatalogActivity::class.java))
     }
 
+    private fun showBank() {
+        val tab = TabBankBinding.inflate(layoutInflater, binding.tabContainer, true)
+        val root = tab.bankContent
+        if (!ShopState.isLoggedIn) {
+            addBankText(root, "Bank needs login", "test-BankLoginGateTitle")
+            addBankButton(root, "Go to Login", "test-BankGoLogin") { selectTab(R.id.tabAccount) }
+            return
+        }
+        if (BankState.isManager()) {
+            root.contentDescription = "test-ManagerHome"
+            addBankText(root, BankState.MANAGER_NAME, "test-ManagerName")
+            addBankText(root, "Role: Manager", "test-BankRole")
+            addBankText(root, "Pending: ${BankState.pendingTransfers().size}", "test-PendingCount")
+            addBankText(root, "Customers: ${BankState.customers().size}", "test-CustomerCount")
+            addBankButton(root, "Pending queue", "test-Bank-Pending") { BankActivity.open(this, "pending") }
+            addBankButton(root, "Customers", "test-Bank-Customers") { BankActivity.open(this, "customers") }
+            addBankButton(root, "Decision history", "test-Bank-Decisions") { BankActivity.open(this, "decisions") }
+        } else {
+            root.contentDescription = "test-BankHome"
+            val customer = BankState.currentCustomer()
+            addBankText(root, customer?.displayName.orEmpty(), "test-BankCustomerName")
+            addBankText(root, "Role: Customer", "test-BankRole")
+            customer?.accounts?.forEach { account ->
+                addBankText(
+                    root,
+                    "${account.name} ${account.masked} · ${BankState.money(account.balance)}",
+                    "test-Account-${account.name}",
+                )
+            }
+            addBankButton(root, "Transfer", "test-Bank-Transfer") { BankActivity.open(this, "transfer") }
+            addBankButton(root, "Payees", "test-Bank-Payees") { BankActivity.open(this, "payees") }
+            addBankButton(root, "Pay a bill", "test-Bank-Bills") { BankActivity.open(this, "bills") }
+            addBankButton(root, "Cards", "test-Bank-Cards") { BankActivity.open(this, "cards") }
+            addBankButton(root, "Activity", "test-Bank-Activity") { BankActivity.open(this, "activity") }
+        }
+    }
+
+    private fun addBankText(root: android.widget.LinearLayout, value: String, id: String) {
+        root.addView(
+            android.widget.TextView(this).apply {
+                text = value
+                contentDescription = id
+                setTextColor(getColor(R.color.lebyy_text))
+                textSize = 16f
+                setPadding(0, 12, 0, 4)
+            },
+        )
+    }
+
+    private fun addBankButton(root: android.widget.LinearLayout, label: String, id: String, onClick: () -> Unit) {
+        root.addView(
+            android.widget.Button(this).apply {
+                text = label
+                contentDescription = id
+                isAllCaps = false
+                setTextColor(getColor(R.color.lebyy_bg))
+                setBackgroundColor(getColor(R.color.lebyy_accent))
+                setOnClickListener { onClick() }
+            },
+        )
+    }
+
     private fun showAccount() {
         if (ShopState.isLoggedIn) {
             val logged = TabAccountLoggedInBinding.inflate(layoutInflater, binding.tabContainer, true)
@@ -277,6 +346,7 @@ class MainActivity : AppCompatActivity() {
             }
             logged.accountLogout.setOnClickListener {
                 ShopState.resetSession()
+                BankState.endSession()
                 currentTab = R.id.tabAccount
                 showTab(R.id.tabAccount)
             }
@@ -307,8 +377,9 @@ class MainActivity : AppCompatActivity() {
         login.buttonLogin.setOnClickListener {
             val user = login.inputUsername.text?.toString()?.trim().orEmpty()
             val pass = login.inputPassword.text?.toString().orEmpty()
-            if (user == "demo_user" && pass == "demo_pass") {
-                completeLogin()
+            val role = BankState.authenticate(user, pass)
+            if (role != null) {
+                completeLogin(user, role)
             } else {
                 login.loginError.visibility = View.VISIBLE
                 login.loginError.text = getString(R.string.login_error)
@@ -360,13 +431,17 @@ class MainActivity : AppCompatActivity() {
         login.gestureResultRow.visibility = View.VISIBLE
     }
 
-    private fun completeLogin() {
+    private fun completeLogin(username: String, role: String) {
         val pendingHost = ShopState.pendingDeepLinkHost
         ShopState.resetSession()
+        BankState.startSession(username, role)
+        ShopState.displayName = BankState.sessionDisplayName()
         ShopState.loginSuccess()
         if (pendingHost != null) {
             ShopState.pendingDeepLinkHost = null
             navigateForDeepLinkHost(pendingHost)
+        } else if (role == "manager") {
+            selectTab(R.id.tabBank)
         } else {
             selectTab(R.id.tabShop)
         }

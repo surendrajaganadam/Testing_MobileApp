@@ -28,6 +28,11 @@ struct TabRootView: View {
             .accessibilityIdentifier(AppTab.shop.accessibilityId)
             .badge(store.isLoggedIn && store.cartCount > 0 ? store.cartCount : 0)
 
+            BankTabView()
+            .tabItem { Label(AppTab.bank.title, systemImage: AppTab.bank.systemImage) }
+            .tag(AppTab.bank)
+            .accessibilityIdentifier(AppTab.bank.accessibilityId)
+
             NavigationStack {
                 AccountTabView()
             }

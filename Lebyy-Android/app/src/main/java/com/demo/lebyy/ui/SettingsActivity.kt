@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
+import com.demo.lebyy.data.BankState
 import com.demo.lebyy.data.ShopState
 import com.demo.lebyy.databinding.ActivitySettingsBinding
 
@@ -93,6 +94,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun logoutNow() {
         handler.removeCallbacks(tick)
         ShopState.resetSession()
+        BankState.endSession()
         startActivity(
             Intent(this, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

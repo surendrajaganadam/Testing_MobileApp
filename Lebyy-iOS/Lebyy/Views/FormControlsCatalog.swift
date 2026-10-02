@@ -418,15 +418,16 @@ struct FormControlTopicView: View {
                 .buttonStyle(LebyyMutedButton())
                 .accessibilityIdentifier("test-Inactive")
 
-            sectionHeader("Nil value (assert value == nil)")
-            Text("XCUITest: XCTAssertNil(app.buttons[\"test-NilValue\"].value)")
+            sectionHeader("Empty value (XCUITest never returns Swift nil)")
+            Text("On this iOS, every element.value is Optional(\"\"), not nil. Assert empty string:")
                 .font(.caption)
                 .foregroundStyle(LebyyTheme.muted)
-            NilValueButton {
-                result = "Result: Nil value tapped"
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 52)
+            Text("XCTAssertEqual(app.otherElements[\"test-NilValue\"].value as? String, \"\")")
+                .font(.caption.monospaced())
+                .foregroundStyle(LebyyTheme.muted)
+            NilValueElement()
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
         }
     }
 
@@ -541,37 +542,50 @@ struct FormControlTopicView: View {
     }
 }
 
-/// UIButton with identifier + label, but `accessibilityValue` left unset so XCUITest `.value` is nil.
-struct NilValueButton: UIViewRepresentable {
-    var onTap: () -> Void
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(onTap: onTap)
+/// Non-button AX element so XCUITest omits `value` (Buttons always snapshot an empty value).
+/// Query: `app.otherElements["test-NilValue"]` — not `app.buttons`.
+struct NilValueElement: UIViewRepresentable {
+    func makeUIView(context: Context) -> AXNilValueView {
+        AXNilValueView()
     }
 
-    func makeUIView(context: Context) -> UIButton {
-        var config = UIButton.Configuration.filled()
-        config.title = "NIL VALUE"
-        config.baseBackgroundColor = UIColor(LebyyTheme.surface2)
-        config.baseForegroundColor = UIColor(LebyyTheme.text)
-        config.cornerStyle = .medium
-        let button = UIButton(configuration: config)
-        button.accessibilityIdentifier = "test-NilValue"
-        button.accessibilityLabel = "Nil value"
-        button.accessibilityValue = nil
-        button.addTarget(context.coordinator, action: #selector(Coordinator.tapped), for: .touchUpInside)
-        return button
+    func updateUIView(_ view: AXNilValueView, context: Context) {}
+}
+
+final class AXNilValueView: UIView {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = UIColor(LebyyTheme.surface2)
+        layer.cornerRadius = 12
+        isAccessibilityElement = true
+        accessibilityIdentifier = "test-NilValue"
+        accessibilityLabel = "Nil value"
+        accessibilityTraits = []
+
+        let title = UILabel()
+        title.text = "NIL VALUE"
+        title.textColor = UIColor(LebyyTheme.text)
+        title.font = .preferredFont(forTextStyle: .headline)
+        title.textAlignment = .center
+        title.isAccessibilityElement = false
+        title.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(title)
+        NSLayoutConstraint.activate([
+            title.centerXAnchor.constraint(equalTo: centerXAnchor),
+            title.centerYAnchor.constraint(equalTo: centerYAnchor),
+        ])
     }
 
-    func updateUIView(_ button: UIButton, context: Context) {
-        context.coordinator.onTap = onTap
-        button.accessibilityValue = nil
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override var accessibilityValue: String? {
+        get { nil }
+        set { }
     }
 
-    final class Coordinator: NSObject {
-        var onTap: () -> Void
-        init(onTap: @escaping () -> Void) { self.onTap = onTap }
-        @objc func tapped() { onTap() }
+    override var accessibilityAttributedValue: NSAttributedString? {
+        get { nil }
+        set { }
     }
 }
 

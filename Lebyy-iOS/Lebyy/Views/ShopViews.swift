@@ -686,6 +686,7 @@ struct ReviewOrderView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                         .accessibilityIdentifier("test-CouponApplied")
                         .accessibilityLabel("test-CouponApplied")
+                        .accessibilityValue("Coupon applied: \(code) (−\(store.appliedCouponPercent)%)")
                 }
 
                 Text("Shipping").font(.headline).foregroundStyle(LebyyTheme.text)
@@ -819,6 +820,7 @@ struct OrderDetailsView: View {
                         .foregroundStyle(LebyyTheme.text)
                         .accessibilityIdentifier("test-OrderId")
                         .accessibilityLabel("test-OrderId")
+                        .accessibilityValue(order.id)
 
                     Text(dateText)
                         .font(.caption)

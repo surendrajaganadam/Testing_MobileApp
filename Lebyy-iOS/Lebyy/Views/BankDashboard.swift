@@ -11,6 +11,13 @@ enum BankDash {
     static let brandBlue = Color(red: 0.05, green: 0.30, blue: 0.70)
     static let accent = Color(red: 0.05, green: 0.40, blue: 0.85)
     static let banner = Color(red: 0.94, green: 0.94, blue: 0.95)
+    /// High-contrast selected / unselected for Accounts·Dashboard + footer.
+    static let tabSelected = Color(red: 0.04, green: 0.28, blue: 0.72) // #0A47B8
+    static let tabUnselected = Color(red: 0.18, green: 0.22, blue: 0.28) // dark, readable on white
+    static let footerAccounts = Color(red: 0.05, green: 0.35, blue: 0.85)
+    static let footerPay = Color(red: 0.42, green: 0.18, blue: 0.78)
+    static let footerDeposit = Color(red: 0.0, green: 0.52, blue: 0.55)
+    static let footerInvest = Color(red: 0.90, green: 0.42, blue: 0.08)
 }
 
 struct BankAccountsDashboard: View {
@@ -22,10 +29,8 @@ struct BankAccountsDashboard: View {
     @State private var cardsExpanded = true
     @State private var assistantText = ""
 
-    private var isManager: Bool { store.bank.isManager }
     private var fullName: String {
-        if isManager { return BankStore.managerName }
-        return store.bank.currentCustomer()?.displayName ?? store.displayName
+        store.bank.currentCustomer()?.displayName ?? store.displayName
     }
     private var firstName: String {
         fullName.split(separator: " ").first.map(String.init) ?? fullName
@@ -55,7 +60,7 @@ struct BankAccountsDashboard: View {
         }
         .background(BankDash.paper.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
-        .accessibilityIdentifier(isManager ? "test-ManagerHome" : "test-BankHome")
+        .accessibilityIdentifier("test-BankHome")
     }
 
     // MARK: - Header
@@ -118,23 +123,25 @@ struct BankAccountsDashboard: View {
     }
 
     private func topTabButton(_ title: String, id: String) -> some View {
-        Button {
+        let selected = topTab == title
+        return Button {
             topTab = title
         } label: {
             VStack(spacing: 8) {
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(topTab == title ? BankDash.brandRed : BankDash.muted)
+                    .font(.system(size: 16, weight: selected ? .bold : .semibold))
+                    .foregroundStyle(selected ? BankDash.tabSelected : BankDash.tabUnselected)
                     .frame(maxWidth: .infinity)
                 Rectangle()
-                    .fill(topTab == title ? BankDash.brandRed : Color.clear)
-                    .frame(height: 3)
+                    .fill(selected ? BankDash.tabSelected : BankDash.line)
+                    .frame(height: selected ? 4 : 2)
             }
             .padding(.top, 10)
+            .background(selected ? BankDash.tabSelected.opacity(0.08) : Color.clear)
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(id)
-        .accessibilityAddTraits(topTab == title ? .isSelected : [])
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
     // MARK: - Center
@@ -147,17 +154,8 @@ struct BankAccountsDashboard: View {
         assistantBar
         greetingBlock
         rewardsRow
-        if isManager {
-            managerSections
-        } else {
-            bankingSection
-            creditCardsSection
-            quickActions
-        }
-        Text("Role: \(isManager ? "Manager" : "Customer")")
-            .font(.caption)
-            .foregroundStyle(BankDash.muted)
-            .accessibilityIdentifier("test-BankRole")
+        bankingSection
+        creditCardsSection
     }
 
     private var dashboardCenter: some View {
@@ -173,19 +171,6 @@ struct BankAccountsDashboard: View {
             dashCard(title: "This month spent", value: "₹12,450.00", id: "test-Dash-Spent")
             dashCard(title: "Rewards points", value: "2,480", id: "test-Dash-Points")
             dashCard(title: "Upcoming bills", value: "2", id: "test-Dash-Bills")
-            if !isManager {
-                NavigationLink(value: BankRoute.activity) {
-                    Text("View activity")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(BankDash.accent)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("test-Dash-Activity")
-            }
         }
         .accessibilityIdentifier("test-BankDashboardPanel")
     }
@@ -290,8 +275,12 @@ struct BankAccountsDashboard: View {
                     Text(fullName)
                         .font(.caption)
                         .foregroundStyle(BankDash.muted)
-                        .accessibilityIdentifier(isManager ? "test-ManagerName" : "test-BankCustomerName")
+                        .accessibilityIdentifier("test-BankCustomerName")
                         .accessibilityLabel(fullName)
+                    Text("Role: Customer")
+                        .font(.caption2)
+                        .foregroundStyle(BankDash.muted)
+                        .accessibilityIdentifier("test-BankRole")
                     Text("Lebyy Rewards member")
                         .font(.subheadline)
                         .foregroundStyle(BankDash.muted)
@@ -373,14 +362,14 @@ struct BankAccountsDashboard: View {
                     ForEach(customer.accounts, id: \.id) { account in
                         let line = "\(account.name) \(account.masked) · \(store.bank.money(account.balance))"
                         NavigationLink(value: BankRoute.activity) {
-                            accountRow(
+                            accountRowContent(
                                 title: "\(account.name) - \(String(account.number.suffix(4)))",
-                                balance: store.bank.money(account.balance),
-                                id: "test-Account-\(account.name)",
-                                a11yLabel: line
+                                balance: store.bank.money(account.balance)
                             )
                         }
                         .buttonStyle(.plain)
+                        .accessibilityIdentifier("test-Account-\(account.name)")
+                        .accessibilityLabel(line)
                         if account.id != customer.accounts.last?.id {
                             Divider().padding(.leading, 14)
                         }
@@ -415,55 +404,21 @@ struct BankAccountsDashboard: View {
             .accessibilityIdentifier("test-CreditCardsToggle")
 
             if cardsExpanded, let card = store.bank.currentCustomer()?.card {
-                NavigationLink(value: BankRoute.cards) {
-                    accountRow(
+                NavigationLink(value: BankRoute.payTransfer) {
+                    accountRowContent(
                         title: "\(card.network) ending \(card.last4)",
-                        balance: card.frozen ? "Frozen" : store.bank.money(card.limit),
-                        id: "test-HomeCard-\(card.network)",
-                        a11yLabel: "\(card.network) ••\(card.last4)"
+                        balance: card.frozen ? "Frozen" : store.bank.money(card.limit)
                     )
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("test-HomeCard-\(card.network)")
+                .accessibilityLabel("\(card.network) ••\(card.last4)")
             }
         }
         .background(BankDash.paper)
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(BankDash.line, lineWidth: 1))
         .accessibilityIdentifier("test-CreditCardsSection")
-    }
-
-    private var quickActions: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Quick actions")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(BankDash.muted)
-                .accessibilityIdentifier("test-BankQuickActionsTitle")
-            bankLink("Transfer", "test-Bank-Transfer", .transfer)
-            bankLink("Payees", "test-Bank-Payees", .payees)
-            bankLink("Pay a bill", "test-Bank-Bills", .bills)
-            bankLink("Cards", "test-Bank-Cards", .cards)
-            bankLink("Activity", "test-Bank-Activity", .activity)
-        }
-        .accessibilityIdentifier("test-BankQuickActions")
-    }
-
-    private var managerSections: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Pending: \(store.bank.pendingTransfers().count)")
-                .foregroundStyle(BankDash.ink)
-                .accessibilityIdentifier("test-PendingCount")
-            Text("Customers: \(store.bank.customers.count)")
-                .foregroundStyle(BankDash.ink)
-                .accessibilityIdentifier("test-CustomerCount")
-            bankLink("Pending queue", "test-Bank-Pending", .pending)
-            bankLink("Customers", "test-Bank-Customers", .customers)
-            bankLink("Decision history", "test-Bank-Decisions", .decisions)
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(BankDash.paper)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(BankDash.line, lineWidth: 1))
     }
 
     private var brandStripe: some View {
@@ -474,6 +429,13 @@ struct BankAccountsDashboard: View {
     }
 
     private func accountRow(title: String, balance: String, id: String, a11yLabel: String) -> some View {
+        accountRowContent(title: title, balance: balance)
+            .accessibilityElement(children: .ignore)
+            .accessibilityIdentifier(id)
+            .accessibilityLabel(a11yLabel)
+    }
+
+    private func accountRowContent(title: String, balance: String) -> some View {
         HStack {
             Text(title)
                 .font(.system(size: 16))
@@ -490,32 +452,30 @@ struct BankAccountsDashboard: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 14)
         .contentShape(Rectangle())
-        .accessibilityElement(children: .ignore)
-        .accessibilityIdentifier(id)
-        .accessibilityLabel(a11yLabel)
     }
 
     // MARK: - Footer
 
     private var footerBar: some View {
-        HStack(spacing: 0) {
-            footerItem("Accounts", "dollarsign.circle", "test-BankFooter-Accounts") {
+        HStack(spacing: 4) {
+            footerItem("Accounts", "dollarsign.circle", "test-BankFooter-Accounts", accent: BankDash.footerAccounts) {
                 footerTab = "Accounts"
                 topTab = "Accounts"
             }
-            footerItem("Pay & Transfer", "arrow.left.arrow.right.circle", "test-BankFooter-PayTransfer") {
+            footerItem("Pay & Transfer", "arrow.left.arrow.right.circle", "test-BankFooter-PayTransfer", accent: BankDash.footerPay) {
                 footerTab = "Pay & Transfer"
             } destination: { .payTransfer }
-            footerItem("Deposit Checks", "camera.viewfinder", "test-BankFooter-Deposit") {
+            footerItem("Deposit Checks", "camera.viewfinder", "test-BankFooter-Deposit", accent: BankDash.footerDeposit) {
                 footerTab = "Deposit Checks"
             } destination: { .deposit }
-            footerItem("Invest", "chart.pie", "test-BankFooter-Invest") {
+            footerItem("Invest", "chart.pie", "test-BankFooter-Invest", accent: BankDash.footerInvest) {
                 footerTab = "Invest"
             } destination: { .invest }
         }
-        .padding(.top, 8)
-        .padding(.bottom, 6)
-        .background(BankDash.paper)
+        .padding(.horizontal, 6)
+        .padding(.top, 10)
+        .padding(.bottom, 8)
+        .background(BankDash.canvas)
         .overlay(alignment: .top) { BankDash.line.frame(height: 1) }
         .accessibilityIdentifier("test-BankFooter")
     }
@@ -525,6 +485,7 @@ struct BankAccountsDashboard: View {
         _ title: String,
         _ system: String,
         _ id: String,
+        accent: Color,
         select: @escaping () -> Void,
         destination: (() -> BankRoute)? = nil
     ) -> some View {
@@ -532,34 +493,51 @@ struct BankAccountsDashboard: View {
         Group {
             if let destination {
                 NavigationLink(value: destination()) {
-                    footerLabel(title, system, selected)
+                    footerLabel(title, system, selected: selected, accent: accent)
                 }
                 .simultaneousGesture(TapGesture().onEnded { select() })
             } else {
                 Button(action: select) {
-                    footerLabel(title, system, selected)
+                    footerLabel(title, system, selected: selected, accent: accent)
                 }
             }
         }
         .buttonStyle(.plain)
+        .tint(accent)
         .frame(maxWidth: .infinity)
         .accessibilityIdentifier(id)
         .accessibilityLabel(title)
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
-    private func footerLabel(_ title: String, _ system: String, _ selected: Bool) -> some View {
-        VStack(spacing: 4) {
+    private func footerLabel(_ title: String, _ system: String, selected: Bool, accent: Color) -> some View {
+        VStack(spacing: 5) {
             Image(systemName: system)
-                .font(.system(size: 20))
+                .font(.system(size: 22, weight: .semibold))
+                .symbolRenderingMode(.monochrome)
+                .foregroundStyle(accent)
+                .frame(width: 40, height: 40)
+                .background(
+                    Circle()
+                        .fill(selected ? accent.opacity(0.22) : accent.opacity(0.10))
+                )
+                .overlay(
+                    Circle()
+                        .stroke(accent, lineWidth: selected ? 2 : 0)
+                )
             Text(title)
-                .font(.system(size: 10, weight: .medium))
+                .font(.system(size: 10, weight: selected ? .bold : .semibold))
+                .foregroundStyle(selected ? accent : BankDash.tabUnselected)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
         }
-        .foregroundStyle(selected ? BankDash.accent : BankDash.muted)
+        .padding(.vertical, 4)
         .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(selected ? accent.opacity(0.12) : Color.clear)
+        )
     }
 }
 

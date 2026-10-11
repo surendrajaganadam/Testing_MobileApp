@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/lebyy_bg_2"
+        android:contentDescription="test-BankExitBar"
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
         app:titleTextColor="@color/lebyy_text" />
 

@@ -382,10 +382,13 @@ struct FormControlTopicView: View {
 
     private var selectionSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            sectionHeader("Dropdown / menu")
+            sectionHeader("Dropdown / menu", id: "test-FormHeader-Dropdown")
             Menu {
                 ForEach(options.filter { $0 != "Select an item..." }, id: \.self) { option in
                     Button(option) { dropdown = option }
+                        .accessibilityIdentifier(
+                            "test-DropdownOption-\(option.replacingOccurrences(of: " ", with: ""))"
+                        )
                 }
             } label: {
                 HStack {
@@ -401,14 +404,24 @@ struct FormControlTopicView: View {
             .accessibilityValue(dropdown)
             .onChange(of: dropdown) { _, v in result = "Result: Dropdown \(v)" }
 
-            sectionHeader("Radio / segmented")
-            Picker("Radio", selection: $radio) {
-                Text("Radio 1").tag(1)
-                Text("Radio 2").tag(2)
+            sectionHeader("Radio / segmented", id: "test-FormHeader-Radio")
+            HStack(spacing: 0) {
+                ForEach([(1, "Radio 1"), (2, "Radio 2")], id: \.0) { value, title in
+                    Button(title) {
+                        radio = value
+                        result = "Result: Radio \(value)"
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(radio == value ? LebyyTheme.accent : LebyyTheme.surface)
+                    .foregroundStyle(radio == value ? LebyyTheme.bg : LebyyTheme.text)
+                    .accessibilityIdentifier("test-Radio-\(value)")
+                    .accessibilityAddTraits(radio == value ? .isSelected : [])
+                }
             }
-            .pickerStyle(.segmented)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(LebyyTheme.line, lineWidth: 1))
             .accessibilityIdentifier("test-RadioGroup")
-            .onChange(of: radio) { _, v in result = "Result: Radio \(v)" }
 
             sectionHeader("Buttons")
             Button("Active") { result = "Result: Active tapped (\(plain))" }
@@ -533,11 +546,18 @@ struct FormControlTopicView: View {
         }
     }
 
-    private func sectionHeader(_ text: String) -> some View {
-        Text(text)
+    private func sectionHeader(_ text: String, id: String? = nil) -> some View {
+        let slug = text
+            .replacingOccurrences(of: " ", with: "")
+            .replacingOccurrences(of: "—", with: "")
+            .replacingOccurrences(of: "/", with: "")
+            .replacingOccurrences(of: "(", with: "")
+            .replacingOccurrences(of: ")", with: "")
+        return Text(text)
             .font(.headline)
             .foregroundStyle(LebyyTheme.primary)
             .accessibilityAddTraits(.isHeader)
+            .accessibilityIdentifier(id ?? "test-FormHeader-\(slug)")
             .padding(.top, 4)
     }
 }

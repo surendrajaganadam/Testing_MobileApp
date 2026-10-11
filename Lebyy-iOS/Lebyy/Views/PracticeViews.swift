@@ -18,6 +18,7 @@ struct AlertsView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     Text("Practice native iOS alerts")
                         .foregroundStyle(LebyyTheme.muted)
+                        .accessibilityIdentifier("test-AlertsIntro")
 
                     Button("Show Alert") { showAlert = true }
                         .buttonStyle(LebyyPrimaryButton())
@@ -36,6 +37,7 @@ struct AlertsView: View {
                     Text("Custom dialogs")
                         .font(.headline)
                         .foregroundStyle(LebyyTheme.primary)
+                        .accessibilityIdentifier("test-AlertsCustomHeader")
 
                     Button("Show Custom Modal") { showCustomModal = true }
                         .buttonStyle(LebyyPrimaryButton())
@@ -84,12 +86,15 @@ struct AlertsView: View {
         .accessibilityIdentifier("test-AlertsScreen")
         .alert("Alert", isPresented: $showAlert) {
             Button("OK") { result = "Result: Alert OK" }
+                .accessibilityIdentifier("test-AlertOK")
         } message: {
             Text("This is a simple Lebyy alert")
         }
         .alert("Confirm", isPresented: $showConfirm) {
             Button("OK") { result = "Result: Confirm OK" }
+                .accessibilityIdentifier("test-ConfirmOK")
             Button("CANCEL", role: .cancel) { result = "Result: Confirm CANCEL" }
+                .accessibilityIdentifier("test-ConfirmCancel")
         } message: {
             Text("Do you want to continue?")
         }
@@ -97,7 +102,9 @@ struct AlertsView: View {
             TextField("Enter text", text: $promptText)
                 .accessibilityIdentifier("test-PromptInput")
             Button("OK") { result = "Result: Prompt \(promptText)" }
+                .accessibilityIdentifier("test-PromptOK")
             Button("CANCEL", role: .cancel) { result = "Result: Prompt CANCEL" }
+                .accessibilityIdentifier("test-PromptCancel")
         } message: {
             Text("Please type something")
         }
@@ -109,6 +116,7 @@ struct AlertsView: View {
                     .accessibilityIdentifier("test-BottomSheetTitle")
                 Text("Practice sheet dismiss & actions")
                     .foregroundStyle(LebyyTheme.muted)
+                    .accessibilityIdentifier("test-BottomSheetCaption")
                 Button("Confirm Sheet") {
                     result = "Result: Bottom Sheet Confirm"
                     showBottomSheet = false
@@ -247,6 +255,9 @@ struct FormsView: View {
                 Menu {
                     ForEach(options.filter { $0 != "Select an item..." }, id: \.self) { option in
                         Button(option) { dropdown = option }
+                            .accessibilityIdentifier(
+                                "test-DropdownOption-\(option.replacingOccurrences(of: " ", with: ""))"
+                            )
                     }
                 } label: {
                     HStack {
@@ -279,15 +290,22 @@ struct FormsView: View {
                     .onChange(of: checkB) { _, _ in updateChecks() }
 
                 Text("Radio buttons").font(.caption).foregroundStyle(LebyyTheme.muted)
-                Picker("Radio", selection: $radio) {
-                    Text("Radio 1").tag(1)
-                    Text("Radio 2").tag(2)
+                HStack(spacing: 0) {
+                    ForEach([(1, "Radio 1"), (2, "Radio 2")], id: \.0) { value, title in
+                        Button(title) {
+                            radio = value
+                            result = "Result: Radio \(value)"
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(radio == value ? LebyyTheme.accent : LebyyTheme.surface)
+                        .foregroundStyle(radio == value ? LebyyTheme.bg : LebyyTheme.text)
+                        .accessibilityIdentifier("test-Radio-\(value)")
+                        .accessibilityAddTraits(radio == value ? .isSelected : [])
+                    }
                 }
-                .pickerStyle(.segmented)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
                 .accessibilityIdentifier("test-RadioGroup")
-                .onChange(of: radio) { _, value in
-                    result = "Result: Radio \(value)"
-                }
 
                 Button("Active") {
                     result = "Result: Active tapped (\(input))"

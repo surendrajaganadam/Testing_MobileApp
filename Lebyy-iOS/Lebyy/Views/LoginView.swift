@@ -17,6 +17,8 @@ struct LoginView: View {
                     .scaledToFit()
                     .frame(width: 72, height: 72)
                     .padding(.top, 32)
+                    .accessibilityIdentifier("test-LoginLogo")
+                    .accessibilityLabel("Lebyy logo")
 
                 Text("Lebyy")
                     .font(.system(size: 30, weight: .bold))
@@ -26,6 +28,7 @@ struct LoginView: View {
                 Text("Learn by yourself")
                     .font(.subheadline)
                     .foregroundStyle(LebyyTheme.muted)
+                    .accessibilityIdentifier("test-LoginTagline")
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Currently accepted credentials\nUsername: demo_user\nPassword: demo_pass")
@@ -39,12 +42,6 @@ struct LoginView: View {
                 .background(LebyyTheme.surface)
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(LebyyTheme.line, lineWidth: 1))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                Text("Manager: manager_user / manager_pass")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(LebyyTheme.muted)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .accessibilityIdentifier("test-ManagerCredentials")
 
                 TextField("", text: $username, prompt: Text("Username"))
                     .textInputAutocapitalization(.never)

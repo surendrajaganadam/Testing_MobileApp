@@ -22,7 +22,6 @@ final class BankStore: ObservableObject {
     var draftAmount = 0.0
     var draftAmountText = ""
     var draftBillId = ""
-    var closeBankFlow = false
 
     /// BofA-style Pay Bills / account Transfer drafts
     var payFromAccountId = "checking"
@@ -63,8 +62,40 @@ final class BankStore: ObservableObject {
     var bpDeliverBy = ""
     var bpMemoOn = false
     var bpMemo = ""
+    /// Set true after Add Payee success DONE — Recipients/Bill Pay home opens the payee list.
+    @Published var showBillPayListAfterAdd = false
+    /// Set true to dismiss Bill Pay payment success and return to the payee list.
+    @Published var closeBillPayPayment = false
+    /// Set true to pop the whole bank NavigationStack back to the dashboard (Zelle / Deposit / Transfer DONE).
+    @Published var closeBankFlow = false
+
+    // Deposit Checks draft
+    var depositAccountId = ""
+    var depositAmountText = ""
+    var depositFrontSource = ""
+    var depositBackSource = ""
+    var depositFrontReady = false
+    var depositBackReady = false
+
+    // Zelle
+    @Published var zelleRecipients: [ZelleRecipient] = []
+    var zelleShowAddedBanner = false
+    var zelleWhoType = "Person" // Person | Business
+    var zelleAddMethod = "Mobile number or email"
+    var zelleContact = ""
+    var zelleFirstName = ""
+    var zelleLastName = ""
+    var zelleNickname = ""
+    var zelleAuthChannel = "Text message"
+    var zelleAuthCode = ""
+    var zelleSelectedRecipientId = ""
+    var zelleFromAccountId = "checking"
+    var zelleAmountText = ""
+    var zelleMessage = ""
+    var zelleDailyLimitLeft = 500.0
 
     private var txnSeq = 1001
+    private var zelleSeq = 1
     private var decisionSeq = 1
     private var payeeSeq = 1
     private var confirmSeq = 1
@@ -93,7 +124,6 @@ final class BankStore: ObservableObject {
 
     func authenticate(username: String, password: String) -> String? {
         let user = username.trimmingCharacters(in: .whitespaces)
-        if user == Self.managerUser && password == Self.managerPass { return "manager" }
         if customers.contains(where: { $0.username == user && $0.password == password }) { return "customer" }
         return nil
     }
@@ -396,21 +426,11 @@ final class BankStore: ObservableObject {
     private func seed() {
         let demo = makeCustomer(username: "demo_user", password: "demo_pass", displayName: "Demo User", checkingBalance: 50_000, builtIn: true)
         demo.activity = [
-            BankTxn(id: "TX-9001", title: "Transfer to Landlord", amount: 15_000, kind: "Debit", status: "Pending"),
             BankTxn(id: "TX-8001", title: "Salary", amount: 20_000, kind: "Credit", status: "Completed"),
             BankTxn(id: "TX-8002", title: "Coffee", amount: 120, kind: "Debit", status: "Completed"),
         ]
         customers = [demo]
-        pending = [
-            PendingTransfer(
-                id: "TX-9001",
-                customerUsername: "demo_user",
-                fromAccountId: "checking",
-                payeeName: "Landlord",
-                amount: 15_000,
-                status: "Pending"
-            ),
-        ]
+        pending = []
         payTransferHistory = [
             PayTransferHistoryItem(
                 id: "H-1",
@@ -434,6 +454,12 @@ final class BankStore: ObservableObject {
             BillPayee(id: "bp-citi", name: "Citi Cards - 3318", nickname: "kittucitibankcreditcard", kind: "company", section: "Other payees"),
             BillPayee(id: "bp-macys", name: "Macy's - 8770", nickname: "muralimacy", kind: "company", section: "Other payees"),
         ]
+        zelleRecipients = [
+            ZelleRecipient(id: "z-1", firstName: "Sujatha", lastName: "personal NJ", contact: "201-280-2017", enrolled: true),
+            ZelleRecipient(id: "z-2", firstName: "Kushal", lastName: "US Number", contact: "rajpuduru@gmail.com", enrolled: true),
+            ZelleRecipient(id: "z-3", firstName: "keerthi", lastName: "yerragudi", contact: "gourilabalaji@gmail.com", enrolled: true),
+        ]
+        zelleSeq = 4
         refreshPayDates()
         bpDeliverBy = defaultDeliverBy()
     }
@@ -682,11 +708,26 @@ final class BankStore: ObservableObject {
         return ""
     }
 
+    /// Field-keyed errors for red highlights (empty = valid).
+    func billPayeeFieldErrors() -> [String: String] {
+        var errors: [String: String] = [:]
+        if bpFirstName.trimmingCharacters(in: .whitespaces).isEmpty { errors["firstName"] = "First name is required" }
+        if bpLastName.trimmingCharacters(in: .whitespaces).isEmpty { errors["lastName"] = "Last name is required" }
+        if bpAddress.trimmingCharacters(in: .whitespaces).isEmpty { errors["address"] = "Address is required" }
+        if bpCity.trimmingCharacters(in: .whitespaces).isEmpty { errors["city"] = "City is required" }
+        if bpState.isEmpty { errors["state"] = "State is required" }
+        if bpZip.trimmingCharacters(in: .whitespaces).isEmpty { errors["zip"] = "ZIP Code is required" }
+        if bpPhone.trimmingCharacters(in: .whitespaces).isEmpty { errors["phone"] = "Phone Number is required" }
+        if !bpTermsScrolledToEnd { errors["terms"] = "Scroll the page to the end of Terms & Conditions" }
+        return errors
+    }
+
     func saveBillPayee() -> String {
-        let message = validateBillPayeeStep3()
-        if !message.isEmpty {
-            lastResult = message
-            return message
+        let fieldErrors = billPayeeFieldErrors()
+        if !fieldErrors.isEmpty {
+            let first = fieldErrors.values.first ?? "Fix required fields"
+            lastResult = "Result: \(first)"
+            return lastResult
         }
         let full = "\(bpFirstName.trimmingCharacters(in: .whitespaces)) \(bpLastName.trimmingCharacters(in: .whitespaces))"
         let id = "bp-\(billPayeeSeq)"
@@ -713,6 +754,175 @@ final class BankStore: ObservableObject {
 
     func selectedBillPayee() -> BillPayee? {
         billPayees.first { $0.id == bpSelectedPayeeId }
+    }
+
+    func requestOpenBillPayList() {
+        showBillPayListAfterAdd = true
+        objectWillChange.send()
+        NotificationCenter.default.post(name: .lebyyOpenBillPayList, object: nil)
+    }
+
+    func requestCloseBillPayPayment() {
+        closeBillPayPayment = true
+        objectWillChange.send()
+    }
+
+    func requestCloseBankFlow() {
+        closeBankFlow = true
+        objectWillChange.send()
+    }
+
+    func resetDepositDraft() {
+        depositAccountId = ""
+        depositAmountText = ""
+        depositFrontSource = ""
+        depositBackSource = ""
+        depositFrontReady = false
+        depositBackReady = false
+        lastResult = ""
+    }
+
+    func validateDeposit() -> String {
+        if !depositFrontReady { return "Result: Capture front of check" }
+        if !depositBackReady { return "Result: Capture back of check" }
+        if depositAccountId.isEmpty { return "Result: Select account" }
+        guard let amount = Double(depositAmountText.trimmingCharacters(in: .whitespaces)), amount > 0 else {
+            return "Result: Enter amount"
+        }
+        return ""
+    }
+
+    /// Practice apps accept any 6-digit code (not a fixed OTP).
+    static let zelleOtpSuccess = "any 6-digit code"
+
+    func resetZelleAddDraft() {
+        zelleWhoType = "Person"
+        zelleAddMethod = "Mobile number or email"
+        zelleContact = ""
+        zelleFirstName = ""
+        zelleLastName = ""
+        zelleNickname = ""
+        zelleAuthChannel = "Text message"
+        zelleAuthCode = ""
+        lastResult = ""
+    }
+
+    func resetZellePayDraft() {
+        zelleFromAccountId = "checking"
+        zelleAmountText = ""
+        zelleMessage = ""
+        lastResult = ""
+    }
+
+    func validateZelleRecipientInfo() -> String {
+        if zelleContact.trimmingCharacters(in: .whitespaces).isEmpty {
+            return "Result: Mobile number or email is required"
+        }
+        if zelleFirstName.trimmingCharacters(in: .whitespaces).isEmpty {
+            return "Result: First name is required"
+        }
+        if zelleLastName.trimmingCharacters(in: .whitespaces).isEmpty {
+            return "Result: Last name is required"
+        }
+        return ""
+    }
+
+    func submitZelleAuthCode(_ code: String) -> String {
+        let trimmed = code.trimmingCharacters(in: .whitespaces)
+        guard trimmed.count == 6, trimmed.allSatisfy(\.isNumber) else {
+            lastResult = "Result: Enter a 6-digit authorization code"
+            return lastResult
+        }
+        let id = "z-\(zelleSeq)"
+        zelleSeq += 1
+        objectWillChange.send()
+        // Practice app: newly added recipients are enrolled so send-payment works immediately.
+        let recipient = ZelleRecipient(
+            id: id,
+            firstName: zelleFirstName.trimmingCharacters(in: .whitespaces),
+            lastName: zelleLastName.trimmingCharacters(in: .whitespaces),
+            contact: zelleContact.trimmingCharacters(in: .whitespaces),
+            nickname: zelleNickname,
+            enrolled: true
+        )
+        zelleRecipients.insert(recipient, at: 0)
+        zelleSelectedRecipientId = id
+        zelleShowAddedBanner = true
+        lastResult = "Result: Recipient added"
+        return lastResult
+    }
+
+    func requestOpenZellePayList() {
+        NotificationCenter.default.post(name: .lebyyOpenZellePayList, object: nil)
+    }
+
+    func selectedZelleRecipient() -> ZelleRecipient? {
+        zelleRecipients.first { $0.id == zelleSelectedRecipientId }
+    }
+
+    func confirmZellePayment() -> String {
+        guard let customer = currentCustomer() else { return "Result: Not signed in" }
+        guard let recipient = selectedZelleRecipient() else { return "Result: Select recipient" }
+        guard let amount = Double(zelleAmountText.trimmingCharacters(in: .whitespaces)), amount > 0 else {
+            return "Result: Enter amount"
+        }
+        if amount > zelleDailyLimitLeft { return "Result: Exceeds daily limit" }
+        guard let from = customer.accounts.first(where: { $0.id == zelleFromAccountId }) else {
+            return "Result: Select From account"
+        }
+        if amount > from.balance { return "Result: Insufficient funds" }
+        objectWillChange.send()
+        from.balance = roundMoney(from.balance - amount)
+        zelleDailyLimitLeft = roundMoney(zelleDailyLimitLeft - amount)
+        let conf = nextConfirmation()
+        lastConfirmation = conf
+        let id = nextTxnId()
+        customer.activity.insert(
+            BankTxn(id: id, title: "Zelle \(recipient.displayName)", amount: amount, kind: "Debit", status: "Completed"),
+            at: 0
+        )
+        payTransferHistory.insert(
+            PayTransferHistoryItem(
+                id: conf,
+                title: recipient.displayName,
+                subtitle: recipient.contact,
+                date: "Today",
+                amount: amount,
+                status: "You paid"
+            ),
+            at: 0
+        )
+        zelleShowAddedBanner = false
+        lastReceipt = "Receipt: Zelle payment \(conf)"
+        lastResult = lastReceipt
+        return lastReceipt
+    }
+
+    func confirmDeposit() -> String {
+        guard let customer = currentCustomer() else { return "Result: Not signed in" }
+        let message = validateDeposit()
+        if !message.isEmpty {
+            lastResult = message
+            return message
+        }
+        guard let amount = Double(depositAmountText.trimmingCharacters(in: .whitespaces)) else {
+            return "Result: Enter amount"
+        }
+        guard let account = customer.accounts.first(where: { $0.id == depositAccountId }) else {
+            return "Result: Select account"
+        }
+        objectWillChange.send()
+        account.balance = roundMoney(account.balance + amount)
+        let conf = nextConfirmation()
+        lastConfirmation = conf
+        let id = nextTxnId()
+        customer.activity.insert(
+            BankTxn(id: id, title: "Mobile check deposit", amount: amount, kind: "Credit", status: "Completed"),
+            at: 0
+        )
+        lastReceipt = "Receipt: Deposit submitted \(conf)"
+        lastResult = lastReceipt
+        return lastReceipt
     }
 
     func confirmBillPayment() -> String {
@@ -839,6 +1049,27 @@ struct BillPayee: Identifiable, Hashable {
     var state: String = ""
     var zip: String = ""
     var phone: String = ""
+}
+
+struct ZelleRecipient: Identifiable, Hashable {
+    let id: String
+    var firstName: String
+    var lastName: String
+    var contact: String
+    var nickname: String = ""
+    var enrolled: Bool = true
+
+    var displayName: String {
+        let nick = nickname.trimmingCharacters(in: .whitespaces)
+        if !nick.isEmpty { return "\(nick) \(lastName)".trimmingCharacters(in: .whitespaces) }
+        return "\(firstName) \(lastName)".trimmingCharacters(in: .whitespaces)
+    }
+
+    var initials: String {
+        let a = firstName.first.map(String.init) ?? ""
+        let b = lastName.first.map(String.init) ?? ""
+        return (a + b).uppercased()
+    }
 }
 
 final class BankTxn: Identifiable {

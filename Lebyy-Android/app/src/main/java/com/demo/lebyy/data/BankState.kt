@@ -72,6 +72,37 @@ object BankState {
     var bpMemoOn = false
     var bpMemo = ""
     var closeToBillPay = false
+    var closeToZellePay = false
+    /** When true, leave bank stack and return MainActivity to Home (app tabs). */
+    var exitBankToApp = false
+
+    var depositAccountId = ""
+    var depositAmountText = ""
+    var depositFrontSource = ""
+    var depositBackSource = ""
+    var depositFrontReady = false
+    var depositBackReady = false
+
+    // Zelle
+    /** Practice apps accept any 6-digit code (not a fixed OTP). */
+    const val ZELLE_OTP_SUCCESS = "any 6-digit code"
+    private val zelleRecipients = mutableListOf<ZelleRecipient>()
+    private var zelleSeq = 1
+    var zelleShowAddedBanner = false
+    var zelleWhoType = "Person"
+    var zelleAddMethod = "Mobile number or email"
+    var zelleContact = ""
+    var zelleFirstName = ""
+    var zelleLastName = ""
+    var zelleNickname = ""
+    var zelleAuthChannel = "Text message"
+    var zelleAuthCode = ""
+    var zelleSelectedRecipientId = ""
+    var zelleFromAccountId = "checking"
+    var zelleAmountText = ""
+    var zelleMessage = ""
+    var zelleDailyLimitLeft = 500.0
+    var zelleSearchQuery = ""
 
     val usStateEntries: List<Pair<String, String>> = listOf(
         "Alabama" to "AL", "Alaska" to "AK", "Arizona" to "AZ", "Arkansas" to "AR", "California" to "CA",
@@ -129,7 +160,6 @@ object BankState {
 
     fun authenticate(username: String, password: String): String? {
         val user = username.trim()
-        if (user == MANAGER_USER && password == MANAGER_PASS) return "manager"
         if (customers.any { it.username == user && it.password == password }) return "customer"
         return null
     }
@@ -423,18 +453,8 @@ object BankState {
         val demo = newCustomer("demo_user", "demo_pass", "Demo User", 50_000.0, builtIn = true)
         demo.activity.add(BankTxn("TX-8001", "Salary", 20_000.0, "Credit", "Completed"))
         demo.activity.add(BankTxn("TX-8002", "Coffee", 120.0, "Debit", "Completed"))
-        demo.activity.add(0, BankTxn("TX-9001", "Transfer to Landlord", 15_000.0, "Debit", "Pending"))
         customers.add(demo)
-        pending.add(
-            PendingTransfer(
-                id = "TX-9001",
-                customerUsername = "demo_user",
-                fromAccountId = "checking",
-                payeeName = "Landlord",
-                amount = 15_000.0,
-                status = "Pending",
-            ),
-        )
+        pending.clear()
         payTransferHistory.clear()
         payTransferHistory.add(
             PayTransferHistoryItem(
@@ -463,6 +483,20 @@ object BankState {
             ),
         )
         billPayeeSeq = 1
+        zelleRecipients.clear()
+        zelleRecipients.addAll(
+            listOf(
+                ZelleRecipient("z-1", "Sujatha", "personal NJ", "201-280-2017", enrolled = true),
+                ZelleRecipient("z-2", "Kushal", "US Number", "rajpuduru@gmail.com", enrolled = true),
+                ZelleRecipient("z-3", "keerthi", "yerragudi", "gourilabalaji@gmail.com", enrolled = true),
+            ),
+        )
+        zelleSeq = 4
+        zelleShowAddedBanner = false
+        zelleSelectedRecipientId = ""
+        zelleDailyLimitLeft = 500.0
+        resetZelleAddDraft()
+        resetZellePayDraft()
         refreshPayDates()
         bpDeliverBy = defaultDeliverBy()
     }
@@ -649,11 +683,24 @@ object BankState {
         return ""
     }
 
+    fun billPayeeFieldErrors(): Map<String, String> {
+        val errors = linkedMapOf<String, String>()
+        if (bpFirstName.trim().isEmpty()) errors["firstName"] = "First name is required"
+        if (bpLastName.trim().isEmpty()) errors["lastName"] = "Last name is required"
+        if (bpAddress.trim().isEmpty()) errors["address"] = "Address is required"
+        if (bpCity.trim().isEmpty()) errors["city"] = "City is required"
+        if (bpState.isEmpty()) errors["state"] = "State is required"
+        if (bpZip.trim().isEmpty()) errors["zip"] = "ZIP Code is required"
+        if (bpPhone.trim().isEmpty()) errors["phone"] = "Phone Number is required"
+        if (!bpTermsScrolledToEnd) errors["terms"] = "Scroll the page to the end of Terms & Conditions"
+        return errors
+    }
+
     fun saveBillPayee(): String {
-        val message = validateBillPayeeStep3()
-        if (message.isNotEmpty()) {
-            lastResult = message
-            return message
+        val fieldErrors = billPayeeFieldErrors()
+        if (fieldErrors.isNotEmpty()) {
+            lastResult = "Result: ${fieldErrors.values.first()}"
+            return lastResult
         }
         val full = "${bpFirstName.trim()} ${bpLastName.trim()}"
         val id = "bp-$billPayeeSeq"
@@ -679,6 +726,45 @@ object BankState {
 
     fun selectedBillPayee(): BillPayee? = billPayees.firstOrNull { it.id == bpSelectedPayeeId }
 
+    fun resetDepositDraft() {
+        depositAccountId = ""
+        depositAmountText = ""
+        depositFrontSource = ""
+        depositBackSource = ""
+        depositFrontReady = false
+        depositBackReady = false
+        lastResult = ""
+    }
+
+    fun validateDeposit(): String {
+        if (!depositFrontReady) return "Result: Capture front of check"
+        if (!depositBackReady) return "Result: Capture back of check"
+        if (depositAccountId.isBlank()) return "Result: Select account"
+        val amount = depositAmountText.trim().toDoubleOrNull()
+        if (amount == null || amount <= 0.0) return "Result: Enter amount"
+        return ""
+    }
+
+    fun confirmDeposit(): String {
+        val customer = currentCustomer() ?: return "Result: Not signed in"
+        val message = validateDeposit()
+        if (message.isNotEmpty()) {
+            lastResult = message
+            return message
+        }
+        val amount = depositAmountText.trim().toDoubleOrNull() ?: return "Result: Enter amount"
+        val account = customer.accounts.firstOrNull { it.id == depositAccountId }
+            ?: return "Result: Select account"
+        account.balance = roundMoney(account.balance + amount)
+        val conf = nextConfirmation()
+        lastConfirmation = conf
+        val id = nextTxnId()
+        customer.activity.add(0, BankTxn(id, "Mobile check deposit", amount, "Credit", "Completed"))
+        lastReceipt = "Receipt: Deposit submitted $conf"
+        lastResult = lastReceipt
+        return lastReceipt
+    }
+
     fun confirmBillPayment(): String {
         val customer = currentCustomer() ?: return "Result: Not signed in"
         val payee = selectedBillPayee() ?: return "Result: Select a payee"
@@ -697,6 +783,95 @@ object BankState {
             PayTransferHistoryItem(conf, payee.name, bpFrequency, bpDeliverBy, amount, "You paid"),
         )
         lastReceipt = "Receipt: Payment scheduled $conf"
+        lastResult = lastReceipt
+        return lastReceipt
+    }
+
+    fun zelleRecipients(): List<ZelleRecipient> = zelleRecipients.toList()
+
+    fun filteredZelleRecipients(): List<ZelleRecipient> {
+        val q = zelleSearchQuery.trim().lowercase(Locale.US)
+        if (q.isEmpty()) return zelleRecipients()
+        return zelleRecipients.filter {
+            it.displayName.lowercase(Locale.US).contains(q) ||
+                it.contact.lowercase(Locale.US).contains(q)
+        }
+    }
+
+    fun resetZelleAddDraft() {
+        zelleWhoType = "Person"
+        zelleAddMethod = "Mobile number or email"
+        zelleContact = ""
+        zelleFirstName = ""
+        zelleLastName = ""
+        zelleNickname = ""
+        zelleAuthChannel = "Text message"
+        zelleAuthCode = ""
+        lastResult = ""
+    }
+
+    fun resetZellePayDraft() {
+        zelleFromAccountId = "checking"
+        zelleAmountText = ""
+        zelleMessage = ""
+        lastResult = ""
+    }
+
+    fun validateZelleRecipientInfo(): String {
+        if (zelleContact.trim().isEmpty()) return "Result: Mobile number or email is required"
+        if (zelleFirstName.trim().isEmpty()) return "Result: First name is required"
+        if (zelleLastName.trim().isEmpty()) return "Result: Last name is required"
+        return ""
+    }
+
+    fun submitZelleAuthCode(code: String): String {
+        val trimmed = code.trim()
+        if (trimmed.length != 6 || !trimmed.all { it.isDigit() }) {
+            lastResult = "Result: Enter a 6-digit authorization code"
+            return lastResult
+        }
+        val id = "z-$zelleSeq"
+        zelleSeq += 1
+        // Practice app: newly added recipients are enrolled so send-payment works immediately.
+        val recipient = ZelleRecipient(
+            id = id,
+            firstName = zelleFirstName.trim(),
+            lastName = zelleLastName.trim(),
+            contact = zelleContact.trim(),
+            nickname = zelleNickname,
+            enrolled = true,
+        )
+        zelleRecipients.add(0, recipient)
+        zelleSelectedRecipientId = id
+        zelleShowAddedBanner = true
+        lastResult = "Result: Recipient added"
+        return lastResult
+    }
+
+    fun selectedZelleRecipient(): ZelleRecipient? =
+        zelleRecipients.firstOrNull { it.id == zelleSelectedRecipientId }
+
+    fun confirmZellePayment(): String {
+        val customer = currentCustomer() ?: return "Result: Not signed in"
+        val recipient = selectedZelleRecipient() ?: return "Result: Select recipient"
+        val amount = zelleAmountText.trim().toDoubleOrNull()
+        if (amount == null || amount <= 0.0) return "Result: Enter amount"
+        if (amount > zelleDailyLimitLeft) return "Result: Exceeds daily limit"
+        val from = customer.accounts.firstOrNull { it.id == zelleFromAccountId }
+            ?: return "Result: Select From account"
+        if (amount > from.balance) return "Result: Insufficient funds"
+        from.balance = roundMoney(from.balance - amount)
+        zelleDailyLimitLeft = roundMoney(zelleDailyLimitLeft - amount)
+        val conf = nextConfirmation()
+        lastConfirmation = conf
+        val id = nextTxnId()
+        customer.activity.add(0, BankTxn(id, "Zelle ${recipient.displayName}", amount, "Debit", "Completed"))
+        payTransferHistory.add(
+            0,
+            PayTransferHistoryItem(conf, recipient.displayName, recipient.contact, "Today", amount, "You paid"),
+        )
+        zelleShowAddedBanner = false
+        lastReceipt = "Receipt: Zelle payment $conf"
         lastResult = lastReceipt
         return lastReceipt
     }
@@ -756,6 +931,32 @@ class BillPayee(
     var zip: String = "",
     var phone: String = "",
 )
+
+class ZelleRecipient(
+    val id: String,
+    var firstName: String,
+    var lastName: String,
+    var contact: String,
+    var nickname: String = "",
+    var enrolled: Boolean = true,
+) {
+    val displayName: String
+        get() {
+            val nick = nickname.trim()
+            return if (nick.isNotEmpty()) {
+                "$nick $lastName".trim()
+            } else {
+                "$firstName $lastName".trim()
+            }
+        }
+
+    val initials: String
+        get() {
+            val a = firstName.firstOrNull()?.uppercaseChar()?.toString().orEmpty()
+            val b = lastName.firstOrNull()?.uppercaseChar()?.toString().orEmpty()
+            return a + b
+        }
+}
 
 class BankTxn(
     val id: String,

@@ -12,6 +12,7 @@
         android:id="@+id/bankGate"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:contentDescription="test-BankLoginGate"
         android:gravity="center"
         android:orientation="vertical"
         android:padding="24dp"
@@ -43,6 +44,42 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:visibility="gone">
+
+        <!-- Exit Bank — hides app tabs while in bank; returns to Home -->
+        <LinearLayout
+            android:id="@+id/bankExitBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#F6F7F9"
+            android:contentDescription="test-BankExitBar"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:contentDescription="test-BankExitBarTitle"
+                android:text="Bank"
+                android:textColor="#1A1F29"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/bankExitBank"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#DB2626"
+                android:contentDescription="test-ExitBank"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="7dp"
+                android:text="Exit Bank"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <!-- Header -->
         <LinearLayout
@@ -182,16 +219,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Accounts"
-                    android:textColor="#DB2626"
+                    android:textColor="@color/bank_tab_selected"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <View
                     android:id="@+id/bankTopTabAccountsUnderline"
                     android:layout_width="match_parent"
-                    android:layout_height="3dp"
+                    android:layout_height="4dp"
                     android:layout_marginTop="8dp"
-                    android:background="#DB2626" />
+                    android:background="@color/bank_tab_selected" />
             </LinearLayout>
 
             <LinearLayout
@@ -209,14 +246,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Dashboard"
-                    android:textColor="#6B7280"
+                    android:textColor="@color/bank_tab_unselected"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <View
                     android:id="@+id/bankTopTabDashboardUnderline"
                     android:layout_width="match_parent"
-                    android:layout_height="3dp"
+                    android:layout_height="4dp"
                     android:layout_marginTop="8dp"
                     android:background="@android:color/transparent" />
             </LinearLayout>
@@ -251,11 +288,13 @@
             android:id="@+id/bankFooter"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#FFFFFF"
+            android:background="#F6F7F9"
             android:contentDescription="test-BankFooter"
             android:orientation="horizontal"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp">
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp">
 
             <LinearLayout
                 android:id="@+id/bankFooterAccounts"
@@ -264,13 +303,14 @@
                 android:layout_weight="1"
                 android:contentDescription="test-BankFooter-Accounts"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="4dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="$"
-                    android:textColor="#0D66D9"
+                    android:textColor="@color/bank_footer_accounts"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -279,8 +319,9 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="Accounts"
-                    android:textColor="#0D66D9"
-                    android:textSize="10sp" />
+                    android:textColor="@color/bank_footer_accounts"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -290,22 +331,25 @@
                 android:layout_weight="1"
                 android:contentDescription="test-BankFooter-PayTransfer"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="4dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="⇄"
-                    android:textColor="#6B7280"
-                    android:textSize="18sp" />
+                    android:textColor="@color/bank_footer_pay"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="Pay &amp; Transfer"
-                    android:textColor="#6B7280"
-                    android:textSize="10sp" />
+                    android:textColor="@color/bank_tab_unselected"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -315,13 +359,14 @@
                 android:layout_weight="1"
                 android:contentDescription="test-BankFooter-Deposit"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="4dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="📷"
-                    android:textColor="#6B7280"
+                    android:textColor="@color/bank_footer_deposit"
                     android:textSize="16sp" />
 
                 <TextView
@@ -329,8 +374,9 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="Deposit Checks"
-                    android:textColor="#6B7280"
-                    android:textSize="10sp" />
+                    android:textColor="@color/bank_tab_unselected"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -340,22 +386,25 @@
                 android:layout_weight="1"
                 android:contentDescription="test-BankFooter-Invest"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="4dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="◔"
-                    android:textColor="#6B7280"
-                    android:textSize="18sp" />
+                    android:textColor="@color/bank_footer_invest"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="Invest"
-                    android:textColor="#6B7280"
-                    android:textSize="10sp" />
+                    android:textColor="@color/bank_tab_unselected"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

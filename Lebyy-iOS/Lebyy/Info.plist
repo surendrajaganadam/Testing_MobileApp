@@ -31,5 +31,9 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Lebyy needs camera access to capture the front and back of your check for mobile deposit.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Lebyy needs photo library access so you can upload check images from your gallery.</string>
 </dict>
 </plist>

@@ -16,5 +16,12 @@
     <color name="lebyy_danger">#FF6B6B</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    <!-- Bank Accounts / Dashboard + footer selection (high contrast on white) -->
+    <color name="bank_tab_selected">#0A47B8</color>
+    <color name="bank_tab_unselected">#2E3742</color>
+    <color name="bank_footer_accounts">#0D59D9</color>
+    <color name="bank_footer_pay">#6B2EC7</color>
+    <color name="bank_footer_deposit">#00858C</color>
+    <color name="bank_footer_invest">#E66B14</color>
 
 </resources>

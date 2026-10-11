@@ -1,6 +1,7 @@
 package com.demo.lebyy.ui
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
@@ -9,19 +10,32 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.setPadding
 import com.demo.lebyy.R
 import com.demo.lebyy.data.BankCustomer
 import com.demo.lebyy.data.BankState
 import com.demo.lebyy.databinding.ActivityBankBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class BankActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBankBinding
     private var screen: String = "transfer"
+    private var pendingCheckSide: String? = null
+    private var depositFrontUri: Uri? = null
+    private var depositBackUri: Uri? = null
+
+    private val pickCheckGallery = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            applyCheckPhoto(uri, "Gallery")
+        }
+        pendingCheckSide = null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +44,27 @@ class BankActivity : AppCompatActivity() {
         setSupportActionBar(binding.bankToolbar)
         binding.bankToolbar.setNavigationOnClickListener { finish() }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding.bankToolbar.menu.clear()
+        val exitBank = TextView(this).apply {
+            text = "Exit Bank"
+            contentDescription = "test-ExitBank"
+            setTextColor(0xFFFFFFFF.toInt())
+            textSize = 13f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setBackgroundColor(0xFFDB2626.toInt())
+            setPadding(36, 20, 36, 20)
+            setOnClickListener {
+                BankState.exitBankToApp = true
+                BankState.closeBankFlow = true
+                finish()
+            }
+        }
+        binding.bankToolbar.menu.add(0, MENU_EXIT_BANK, 0, "Exit Bank").apply {
+            actionView = exitBank
+            setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
+        }
         screen = intent.getStringExtra(EXTRA_SCREEN) ?: "transfer"
+        if (screen == "deposit") BankState.resetDepositDraft()
         render()
     }
 
@@ -52,6 +86,21 @@ class BankActivity : AppCompatActivity() {
         }
         if (BankState.closeToBillPay && screen == "billPayList") {
             BankState.closeToBillPay = false
+        }
+        if (BankState.closeToZellePay) {
+            when (screen) {
+                "zellePay" -> {
+                    BankState.closeToZellePay = false
+                    render()
+                }
+                // Hub screens under the add stack — open the recipient list.
+                "zelle", "payTransfer", "payBills" -> {
+                    BankState.closeToZellePay = false
+                    open("zellePay")
+                }
+                else -> finish()
+            }
+            return
         }
         if (screen in listOf(
                 "payees", "pending", "customers", "decisions", "activity", "cards", "bills",
@@ -99,14 +148,26 @@ class BankActivity : AppCompatActivity() {
             "payReview" -> renderPayReview(root)
             "paySuccess" -> renderPaySuccess(root, "Your payment is confirmed", "test-PaySuccessScreen", account = false)
             "chooseAccount" -> renderChooseAccount(root)
-            "zelle" -> renderShell(root, "Zelle", "test-ZelleScreen", "Result: Zelle opened — send or receive practice screen")
+            "zelle" -> renderZelleHome(root)
+            "zellePay" -> renderZellePay(root)
+            "zelleWho" -> renderZelleWho(root)
+            "zelleHow" -> renderZelleHow(root)
+            "zelleInfo" -> renderZelleInfo(root)
+            "zelleReview" -> renderZelleReview(root)
+            "zelleEdit" -> renderZelleEdit(root)
+            "zelleAuthSend" -> renderZelleAuthSend(root)
+            "zelleAuthEnter" -> renderZelleAuthEnter(root)
+            "zellePayDetails" -> renderZellePayDetails(root)
+            "zellePayReview" -> renderZellePayReview(root)
+            "zelleSuccess" -> renderZelleSuccess(root)
             "wire" -> renderShell(root, "Wire", "test-WireScreen", "Result: Wire opened — U.S. or international practice screen")
             "menu" -> renderShell(root, "Menu", "test-BankMenuScreen", "Result: Menu opened")
             "inbox" -> renderShell(root, "Inbox", "test-BankInboxScreen", "Result: Inbox opened")
             "products" -> renderShell(root, "Products", "test-BankProductsScreen", "Result: Products opened")
             "rewards" -> renderShell(root, "Lebyy Rewards", "test-BankRewardsScreen", "Result: Rewards opened")
             "profile" -> renderShell(root, "Profile", "test-BankProfileScreen", "Result: Profile opened")
-            "deposit" -> renderShell(root, "Deposit Checks", "test-BankDepositScreen", "Result: Deposit Checks opened")
+            "deposit" -> renderDepositChecks(root)
+            "depositSuccess" -> renderDepositSuccess(root)
             "invest" -> renderShell(root, "Invest", "test-BankInvestScreen", "Result: Invest opened")
             "assistant" -> renderShell(root, "Lebyy Assistant", "test-BankAssistantScreen", "Result: Assistant opened")
             else -> finish()
@@ -118,22 +179,611 @@ class BankActivity : AppCompatActivity() {
         text(result, "test-BankShellResult")
     }
 
+    private fun renderZelleHome(root: LinearLayout) {
+        title("Zelle®", "test-ZelleScreen")
+        text("Zelle®", "test-ZelleTitle")
+        text("Send or receive money with Zelle®", "test-Zelle-Heading")
+        text("or send to other Lebyy accounts you've added", "test-Zelle-Subheading")
+        text("Keep contact info private", "test-Zelle-PrivacyTitle")
+        text(
+            "You can send or request money to a Zelle® tag. Right now, only Business Banking clients can create and receive money to a Zelle® tag.",
+            "test-Zelle-PrivacyBody",
+        )
+        root.addView(button("SEE THE LATEST SCAMS", "test-Zelle-Scams") {})
+        root.addView(button("Pay", "test-Zelle-Pay") { open("zellePay") })
+        root.addView(button("Request", "test-Zelle-Request") {
+            BankState.lastResult = "Result: Request opened"
+            render()
+        })
+        root.addView(button("Scan", "test-Zelle-Scan") {
+            BankState.lastResult = "Result: Scan opened"
+            render()
+        })
+        root.addView(button("SETTINGS", "test-Zelle-Settings") {})
+        root.addView(button("RECIPIENTS", "test-Zelle-Recipients") { open("zellePay") })
+        text("Pay again", "test-Zelle-PayAgainTitle")
+        text("RECENT", "test-Zelle-RecentLabel")
+        BankState.zelleRecipients().take(6).forEach { r ->
+            text(r.displayName, "test-Zelle-Recent-${r.id}")
+        }
+        if (BankState.lastResult.isNotBlank()) {
+            text(BankState.lastResult, "test-Zelle-Result")
+        }
+        resultLine()
+    }
+
+    private fun renderZellePay(root: LinearLayout) {
+        title("Pay", "test-ZellePayScreen")
+        text("Pay", "test-ZellePayTitle")
+        if (BankState.zelleShowAddedBanner) {
+            text("Recipient added", "test-ZellePay-AddedTitle")
+            text(
+                "Be sure to double-check the contact information of the Zelle® recipient before sending a payment.",
+                "test-ZellePay-AddedBanner",
+            )
+            root.addView(button("Send a payment", "test-ZellePay-SendPayment") {
+                BankState.resetZellePayDraft()
+                open("zellePayDetails")
+            })
+            root.addView(button("Dismiss", "test-ZellePay-DismissBanner") {
+                BankState.zelleShowAddedBanner = false
+                render()
+            })
+        }
+        text("Who are you paying?", "test-ZellePay-WhoTitle")
+        val search = field("Search", "test-ZellePay-Search", InputType.TYPE_CLASS_TEXT)
+        search.setText(BankState.zelleSearchQuery)
+        root.addView(search)
+        root.addView(button("Apply search", "test-ZellePay-SearchApply") {
+            BankState.zelleSearchQuery = search.text.toString()
+            render()
+        })
+        BankState.filteredZelleRecipients().forEach { r ->
+            val selected = r.id == BankState.zelleSelectedRecipientId
+            root.addView(button(
+                "${r.displayName}\n${r.contact}${if (selected) "\n✓ selected" else ""}",
+                "test-ZellePay-Recipient-${r.id}",
+            ) {
+                BankState.zelleSelectedRecipientId = r.id
+                BankState.resetZellePayDraft()
+                open("zellePayDetails")
+            })
+        }
+        root.addView(button("Add new recipient", "test-ZellePay-AddNew") {
+            BankState.resetZelleAddDraft()
+            open("zelleWho")
+        })
+        zelleLegal(root)
+        resultLine()
+    }
+
+    private fun renderZelleWho(root: LinearLayout) {
+        title("Who are you adding?", "test-ZelleWhoScreen")
+        text("Who are you adding?", "test-ZelleWho-Title")
+        root.addView(button(
+            "Person${if (BankState.zelleWhoType == "Person") " ✓" else ""}",
+            "test-ZelleWho-Person",
+        ) {
+            BankState.zelleWhoType = "Person"
+            render()
+        })
+        root.addView(button(
+            "Business${if (BankState.zelleWhoType == "Business") " ✓" else ""}",
+            "test-ZelleWho-Business",
+        ) {
+            BankState.zelleWhoType = "Business"
+            render()
+        })
+        zelleLegal(root)
+        root.addView(button("NEXT", "test-ZelleWho-Next") {
+            if (BankState.zelleWhoType == "Person") {
+                open("zelleHow")
+            } else {
+                BankState.lastResult = "Result: Business add is not in this practice path"
+                render()
+            }
+        })
+        resultLine()
+    }
+
+    private fun renderZelleHow(root: LinearLayout) {
+        title("How are you adding them?", "test-ZelleHowScreen")
+        text("How are you adding them?", "test-ZelleHow-Title")
+        root.addView(button(
+            "Mobile number or email${if (BankState.zelleAddMethod == "Mobile number or email") " ✓" else ""}",
+            "test-ZelleHow-MobileEmail",
+        ) {
+            BankState.zelleAddMethod = "Mobile number or email"
+            render()
+        })
+        root.addView(button(
+            "Lebyy account number${if (BankState.zelleAddMethod == "Lebyy account number") " ✓" else ""}",
+            "test-ZelleHow-Account",
+        ) {
+            BankState.zelleAddMethod = "Lebyy account number"
+            render()
+        })
+        zelleLegal(root)
+        root.addView(button("NEXT", "test-ZelleHow-Next") {
+            if (BankState.zelleAddMethod == "Mobile number or email") {
+                open("zelleInfo")
+            } else {
+                BankState.lastResult = "Result: Account number add is not in this practice path"
+                render()
+            }
+        })
+        resultLine()
+    }
+
+    private fun renderZelleInfo(root: LinearLayout) {
+        title("Enter their info", "test-ZelleInfoScreen")
+        text("Enter their info", "test-ZelleInfo-Title")
+        val contact = field("Mobile number or email*", "test-ZelleInfo-Contact", InputType.TYPE_CLASS_TEXT)
+        contact.setText(BankState.zelleContact)
+        root.addView(contact)
+        val first = field("First name*", "test-ZelleInfo-FirstName", InputType.TYPE_CLASS_TEXT)
+        first.setText(BankState.zelleFirstName)
+        root.addView(first)
+        val last = field("Last name*", "test-ZelleInfo-LastName", InputType.TYPE_CLASS_TEXT)
+        last.setText(BankState.zelleLastName)
+        root.addView(last)
+        root.addView(button("NEXT", "test-ZelleInfo-Next") {
+            BankState.zelleContact = contact.text.toString()
+            BankState.zelleFirstName = first.text.toString()
+            BankState.zelleLastName = last.text.toString()
+            val msg = BankState.validateZelleRecipientInfo()
+            if (msg.isEmpty()) {
+                BankState.lastResult = ""
+                open("zelleReview")
+            } else {
+                BankState.lastResult = msg
+                render()
+            }
+        })
+        if (BankState.lastResult.isNotBlank()) {
+            text(BankState.lastResult, "test-ZelleInfo-Result")
+        }
+        resultLine()
+    }
+
+    private fun renderZelleReview(root: LinearLayout) {
+        title("Review", "test-ZelleReviewScreen")
+        text("Review", "test-ZelleReviewTitle")
+        text("Review", "test-ZelleReview-Heading")
+        text(BankState.zelleContact, "test-ZelleReview-Contact")
+        text(BankState.zelleFirstName, "test-ZelleReview-FirstName")
+        text(BankState.zelleLastName, "test-ZelleReview-LastName")
+        root.addView(button("Edit", "test-ZelleReview-Edit") { open("zelleEdit") })
+        zelleLegal(root)
+        root.addView(button("Add recipient", "test-ZelleReview-AddRecipient") { open("zelleAuthSend") })
+        root.addView(button("Close", "test-ZelleReview-Close") {
+            BankState.closeBankFlow = true
+            finish()
+        })
+    }
+
+    private fun renderZelleEdit(root: LinearLayout) {
+        title("Edit info", "test-ZelleEditScreen")
+        val contact = field("Mobile number or email*", "test-ZelleEdit-Contact", InputType.TYPE_CLASS_TEXT)
+        contact.setText(BankState.zelleContact)
+        root.addView(contact)
+        val first = field("First name*", "test-ZelleEdit-FirstName", InputType.TYPE_CLASS_TEXT)
+        first.setText(BankState.zelleFirstName)
+        root.addView(first)
+        val last = field("Last name*", "test-ZelleEdit-LastName", InputType.TYPE_CLASS_TEXT)
+        last.setText(BankState.zelleLastName)
+        root.addView(last)
+        val nick = field("Nickname (Optional)", "test-ZelleEdit-Nickname", InputType.TYPE_CLASS_TEXT)
+        nick.setText(BankState.zelleNickname)
+        root.addView(nick)
+        root.addView(button("NEXT", "test-ZelleEdit-Next") {
+            BankState.zelleContact = contact.text.toString()
+            BankState.zelleFirstName = first.text.toString()
+            BankState.zelleLastName = last.text.toString()
+            BankState.zelleNickname = nick.text.toString()
+            val msg = BankState.validateZelleRecipientInfo()
+            if (msg.isEmpty()) {
+                BankState.lastResult = ""
+                finish()
+            } else {
+                BankState.lastResult = msg
+                render()
+            }
+        })
+        resultLine()
+    }
+
+    private fun renderZelleAuthSend(root: LinearLayout) {
+        title("Authorize", "test-ZelleAuthSendScreen")
+        text("We'll send a code to verify it's you", "test-ZelleAuthSend-Title")
+        text("••• •• ••67", "test-ZelleAuthSend-Phone")
+        root.addView(button(
+            "Text message${if (BankState.zelleAuthChannel == "Text message") " ✓" else ""}",
+            "test-ZelleAuthSend-Text",
+        ) {
+            BankState.zelleAuthChannel = "Text message"
+            render()
+        })
+        root.addView(button(
+            "Phone call${if (BankState.zelleAuthChannel == "Phone call") " ✓" else ""}",
+            "test-ZelleAuthSend-Call",
+        ) {
+            BankState.zelleAuthChannel = "Phone call"
+            render()
+        })
+        text("Practice: enter any 6-digit code", "test-ZelleAuthSend-Hint")
+        root.addView(button("Cancel", "test-ZelleAuthSend-Cancel") { finish() })
+        root.addView(button("Send", "test-ZelleAuthSend-Send") { open("zelleAuthEnter") })
+    }
+
+    private fun renderZelleAuthEnter(root: LinearLayout) {
+        title("Enter code", "test-ZelleAuthEnterScreen")
+        text("Enter the code we sent you", "test-ZelleAuthEnter-Title")
+        val code = field("Code *", "test-ZelleAuthEnter-Code", InputType.TYPE_CLASS_NUMBER)
+        root.addView(code)
+        root.addView(button("Resend code", "test-ZelleAuthEnter-Resend") {
+            BankState.lastResult = "Result: Code resent"
+            render()
+        })
+        root.addView(button("Cancel", "test-ZelleAuthEnter-Cancel") { finish() })
+        root.addView(button("Submit", "test-ZelleAuthEnter-Submit") {
+            val msg = BankState.submitZelleAuthCode(code.text.toString())
+            if (msg == "Result: Recipient added") {
+                // Pop add/OTP stack back to the Zelle recipient list.
+                BankState.closeToZellePay = true
+                finish()
+            } else {
+                render()
+            }
+        })
+        if (BankState.lastResult.isNotBlank()) {
+            text(BankState.lastResult, "test-ZelleAuthEnter-Result")
+        }
+        resultLine()
+    }
+
+    private fun renderZellePayDetails(root: LinearLayout) {
+        title("Pay", "test-ZellePayDetailsScreen")
+        text("Pay", "test-ZellePayDetailsTitle")
+        text(
+            "You have ${BankState.money(BankState.zelleDailyLimitLeft)} left of your daily limit to send to this recipient.",
+            "test-ZellePayDetails-Limit",
+        )
+        val recipient = BankState.selectedZelleRecipient()
+        if (recipient != null) {
+            text("${recipient.displayName}\n${recipient.contact}", "test-ZellePayDetails-To")
+            if (!recipient.enrolled) {
+                text("${recipient.contact} isn't enrolled with Zelle®", "test-ZellePayDetails-NotEnrolled")
+            }
+        }
+        text(BankState.accountTitle(BankState.zelleFromAccountId), "test-ZellePayDetails-From")
+        BankState.currentCustomer()?.accounts?.forEach { account ->
+            root.addView(button(
+                "${account.name}${if (account.id == BankState.zelleFromAccountId) " ✓" else ""}",
+                "test-ZellePayDetails-Account-${account.id.replaceFirstChar { it.uppercase() }}",
+            ) {
+                BankState.zelleFromAccountId = account.id
+                render()
+            })
+        }
+        val amount = field("Amount", "test-ZellePayDetails-Amount", InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+        amount.setText(BankState.zelleAmountText)
+        root.addView(amount)
+        text("Today", "test-ZellePayDetails-Date")
+        val message = field("Add a message (Optional)", "test-ZellePayDetails-Message", InputType.TYPE_CLASS_TEXT)
+        message.setText(BankState.zelleMessage)
+        root.addView(message)
+        zelleLegal(root)
+        root.addView(button("NEXT", "test-ZellePayDetails-Next") {
+            BankState.zelleAmountText = amount.text.toString()
+            BankState.zelleMessage = message.text.toString().take(140)
+            when {
+                BankState.selectedZelleRecipient() == null -> {
+                    BankState.lastResult = "Result: Select recipient"
+                    render()
+                }
+                BankState.zelleAmountText.toDoubleOrNull() == null ||
+                    (BankState.zelleAmountText.toDoubleOrNull() ?: 0.0) <= 0.0 -> {
+                    BankState.lastResult = "Result: Enter amount"
+                    render()
+                }
+                else -> {
+                    BankState.lastResult = ""
+                    open("zellePayReview")
+                }
+            }
+        })
+        root.addView(button("Close", "test-ZellePayDetails-Close") {
+            BankState.closeBankFlow = true
+            finish()
+        })
+        if (BankState.lastResult.isNotBlank()) {
+            text(BankState.lastResult, "test-ZellePayDetails-Result")
+        }
+        resultLine()
+    }
+
+    private fun renderZellePayReview(root: LinearLayout) {
+        title("Review", "test-ZellePayReviewScreen")
+        text("Review", "test-ZellePayReviewTitle")
+        text("Review your payment", "test-ZellePayReview-Heading")
+        val recipient = BankState.selectedZelleRecipient()
+        if (recipient != null) {
+            text("${recipient.displayName}\n${recipient.contact}", "test-ZellePayReview-To")
+        }
+        text(BankState.accountTitle(BankState.zelleFromAccountId), "test-ZellePayReview-From")
+        text(BankState.money(BankState.zelleAmountText.toDoubleOrNull() ?: 0.0), "test-ZellePayReview-Amount")
+        text("Today", "test-ZellePayReview-Date")
+        root.addView(button("Edit", "test-ZellePayReview-Edit") { finish() })
+        root.addView(button("Pay", "test-ZellePayReview-Pay") {
+            val msg = BankState.confirmZellePayment()
+            if (msg.startsWith("Receipt:")) {
+                open("zelleSuccess")
+            } else {
+                BankState.lastResult = msg
+                render()
+            }
+        })
+        root.addView(button("Close", "test-ZellePayReview-Close") {
+            BankState.closeBankFlow = true
+            finish()
+        })
+        if (BankState.lastResult.isNotBlank()) {
+            text(BankState.lastResult, "test-ZellePayReview-Result")
+        }
+        resultLine()
+    }
+
+    private fun renderZelleSuccess(root: LinearLayout) {
+        title("Success", "test-ZelleSuccessScreen")
+        text("Success", "test-ZelleSuccessTitle")
+        text("Your Zelle® payment was sent.", "test-ZelleSuccessMessage")
+        BankState.selectedZelleRecipient()?.let {
+            text(it.displayName, "test-ZelleSuccess-To")
+        }
+        text("Amount ${BankState.money(BankState.zelleAmountText.toDoubleOrNull() ?: 0.0)}", "test-ZelleSuccess-Amount")
+        text("Confirmation ${BankState.lastConfirmation}", "test-ZelleSuccess-Confirmation")
+        root.addView(button("DONE", "test-ZelleSuccess-Done") {
+            BankState.closeBankFlow = true
+            finish()
+        })
+    }
+
+    private fun zelleLegal(root: LinearLayout) {
+        text("Legal info and disclosures", "test-Zelle-Legal")
+        text(
+            "Investment, insurance and annuity products:\n• Are Not FDIC Insured\n• Are Not Bank Guaranteed\n• May Lose Value\n• Are Not Deposits",
+            "test-Zelle-LegalBody",
+        )
+    }
+
+    private fun renderDepositChecks(root: LinearLayout) {
+        title("Deposit Checks", "test-BankDepositScreen")
+        chromeRow(
+            menuId = "test-Deposit-Menu",
+            titleText = "Deposit Checks",
+            titleId = "test-DepositTitle",
+            inboxId = "test-Deposit-Inbox",
+            productsId = "test-Deposit-Products",
+            logOutId = "test-Deposit-LogOut",
+        )
+        text("Hi, I'm Erica. How can I help?", "test-Deposit-Assistant")
+        text(
+            "Lebyy deposit products. Member FDIC. Investment products are not FDIC-insured.",
+            "test-Deposit-FdicBanner",
+        )
+        text(
+            "Sign and write \"for deposit only at Lebyy Bank\" on the back of your check.",
+            "test-Deposit-Instruction",
+        )
+
+        val tiles = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            )
+        }
+        tiles.addView(checkTile("Front of Check", BankState.depositFrontReady, BankState.depositFrontSource, "test-Deposit-Front", depositFrontUri) {
+            showCheckPhotoOptions("front")
+        })
+        tiles.addView(checkTile("Back of Check", BankState.depositBackReady, BankState.depositBackSource, "test-Deposit-Back", depositBackUri) {
+            showCheckPhotoOptions("back")
+        })
+        root.addView(tiles)
+
+        val accountLabel = if (BankState.depositAccountId.isBlank()) {
+            "Select account"
+        } else {
+            BankState.accountTitle(BankState.depositAccountId)
+        }
+        root.addView(button("Deposit to  $accountLabel", "test-Deposit-Account") {
+            val accounts = BankState.currentCustomer()?.accounts.orEmpty()
+            val labels = accounts.map { "${it.name} - ${it.number.takeLast(4)}" }.toTypedArray()
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Select account")
+                .setItems(labels) { _, which ->
+                    BankState.depositAccountId = accounts[which].id
+                    render()
+                }
+                .show()
+        })
+        accountsForDepositButtons(root)
+
+        val amount = field("Enter amount", "test-Deposit-Amount", InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+        amount.setText(BankState.depositAmountText)
+        root.addView(amount)
+        text(
+            if (BankState.depositAmountText.isBlank()) "₹0.00"
+            else BankState.money(BankState.depositAmountText.toDoubleOrNull() ?: 0.0),
+            "test-Deposit-AmountDisplay",
+        )
+
+        root.addView(button("CANCEL", "test-Deposit-Cancel") { finish() })
+        val next = button("NEXT", "test-Deposit-Next") {
+            BankState.depositAmountText = amount.text.toString()
+            val message = BankState.confirmDeposit()
+            if (message.startsWith("Receipt:")) open("depositSuccess") else render()
+        }
+        next.isEnabled = BankState.validateDeposit().isEmpty()
+        root.addView(next)
+        legal(root, titleId = "test-Deposit-LegalTitle", bodyId = "test-Deposit-LegalBody")
+        resultLine("test-Deposit-Result")
+    }
+
+    private fun accountsForDepositButtons(root: LinearLayout) {
+        BankState.currentCustomer()?.accounts?.forEach { account ->
+            root.addView(button(
+                "${account.name} - ${account.number.takeLast(4)} · ${BankState.money(account.balance)}",
+                "test-Deposit-Account-${account.id.replaceFirstChar { it.uppercase() }}",
+            ) {
+                BankState.depositAccountId = account.id
+                render()
+            })
+        }
+    }
+
+    private fun checkTile(
+        titleText: String,
+        ready: Boolean,
+        source: String,
+        id: String,
+        uri: Uri?,
+        onClick: () -> Unit,
+    ): LinearLayout {
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            contentDescription = id
+            setPadding(dp(8))
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            setOnClickListener { onClick() }
+            addView(ImageView(this@BankActivity).apply {
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(110))
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                setBackgroundColor(getColor(R.color.lebyy_surface))
+                if (uri != null) {
+                    setImageURI(uri)
+                } else if (ready) {
+                    setImageResource(R.drawable.course_1)
+                } else {
+                    setImageResource(android.R.drawable.ic_menu_camera)
+                }
+            })
+            addView(TextView(this@BankActivity).apply {
+                text = titleText
+                setTextColor(getColor(R.color.lebyy_text))
+                textSize = 12f
+            })
+            addView(TextView(this@BankActivity).apply {
+                text = if (ready) "Added · $source" else "Tap to add photo"
+                setTextColor(getColor(R.color.lebyy_muted))
+                textSize = 11f
+            })
+        }
+    }
+
+    private fun showCheckPhotoOptions(side: String) {
+        pendingCheckSide = side
+        val panel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(16), dp(8), dp(16), dp(8))
+        }
+        panel.addView(button("Take Photo", "test-Deposit-TakePhoto") {
+            applyCheckPhoto(null, "Camera")
+        })
+        panel.addView(button("Upload from Gallery", "test-Deposit-UploadGallery") {
+            pickCheckGallery.launch("image/*")
+        })
+        panel.addView(button("Cancel", "test-Deposit-DialogCancel") {
+            pendingCheckSide = null
+        })
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(if (side == "front") "Front of Check" else "Back of Check")
+            .setView(panel)
+            .setOnCancelListener { pendingCheckSide = null }
+            .create()
+        // Re-wire buttons so they dismiss the dialog after action
+        (panel.getChildAt(0) as Button).setOnClickListener {
+            dialog.dismiss()
+            applyCheckPhoto(null, "Camera")
+        }
+        (panel.getChildAt(1) as Button).setOnClickListener {
+            dialog.dismiss()
+            pickCheckGallery.launch("image/*")
+        }
+        (panel.getChildAt(2) as Button).setOnClickListener {
+            pendingCheckSide = null
+            dialog.dismiss()
+        }
+        dialog.show()
+    }
+
+    private fun applyCheckPhoto(uri: Uri?, source: String) {
+        val side = pendingCheckSide ?: return
+        when (side) {
+            "front" -> {
+                BankState.depositFrontReady = true
+                BankState.depositFrontSource = source
+                depositFrontUri = uri
+            }
+            "back" -> {
+                BankState.depositBackReady = true
+                BankState.depositBackSource = source
+                depositBackUri = uri
+            }
+        }
+        BankState.lastResult = "Result: ${side.replaceFirstChar { it.uppercase() }} photo from $source"
+        pendingCheckSide = null
+        if (screen == "deposit") render()
+    }
+
+    private fun renderDepositSuccess(root: LinearLayout) {
+        title("Success", "test-DepositSuccessScreen")
+        text("Success", "test-DepositSuccessTitle")
+        text("Your check deposit was submitted.", "test-DepositSuccessMessage")
+        text("Deposit to ${BankState.accountTitle(BankState.depositAccountId)}", "test-DepositSuccess-Account")
+        text(
+            "Amount ${BankState.money(BankState.depositAmountText.toDoubleOrNull() ?: 0.0)}",
+            "test-DepositSuccess-Amount",
+        )
+        text("Front ${BankState.depositFrontSource}", "test-DepositSuccess-Front")
+        text("Back ${BankState.depositBackSource}", "test-DepositSuccess-Back")
+        text("Confirmation ${BankState.lastConfirmation}", "test-DepositSuccess-Confirmation")
+        root.addView(button("DONE", "test-DepositSuccess-Done") {
+            BankState.closeBankFlow = true
+            finish()
+        })
+    }
+
     private fun renderPayTransfer(root: LinearLayout) {
         title("Pay & Transfer", "test-PayTransferScreen")
-        text("Pay & Transfer", "test-PayTransferTitle")
+        chromeRow(
+            menuId = "test-PT-Menu",
+            titleText = "Pay & Transfer",
+            titleId = "test-PayTransferTitle",
+            inboxId = "test-PT-Inbox",
+            productsId = "test-PT-Products",
+            logOutId = "test-PT-LogOut",
+        )
         text("Hi, I'm Lebyy. How can I help?", "test-PT-Assistant")
-        root.addView(button("Transfer\nbetween my accounts", "test-PT-Transfer") {
+        val grid = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            contentDescription = "test-PT-ActionGrid"
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+        }
+        grid.addView(button("Transfer\nbetween my accounts", "test-PT-Transfer") {
             BankState.resetAcctTransferDraft()
             open("acctTransfer")
         })
-        root.addView(button("Zelle\nsend or receive", "test-PT-Zelle") { open("zelle") })
-        root.addView(button("Pay Bills\npay now or schedule", "test-PT-PayBills") {
+        grid.addView(button("Zelle\nsend or receive", "test-PT-Zelle") { open("zelle") })
+        grid.addView(button("Pay Bills\npay now or schedule", "test-PT-PayBills") {
             BankState.bpSelectedPayeeId = ""
             BankState.lastResult = ""
             BankState.closeToBillPay = false
             open("payBills")
         })
-        root.addView(button("Wire\nU.S. or international", "test-PT-Wire") { open("wire") })
+        grid.addView(button("Wire\nU.S. or international", "test-PT-Wire") { open("wire") })
+        root.addView(grid)
         text("Activity", "test-PT-ActivityTitle")
         text("ACTION NEEDED", "test-PT-ActionNeededTitle")
         text(
@@ -248,9 +898,23 @@ class BankActivity : AppCompatActivity() {
 
     private fun renderBillPayList(root: LinearLayout) {
         title("Bill Pay", "test-BillPayScreen")
+        root.addView(button("Back", "test-BillPay-Back") { finish() })
         text("Bill Pay", "test-BillPayTitle")
         text("Hi, I'm Erica. How can I help?", "test-BillPay-Assistant")
-        text("Pay", "test-BillPay-TabPay")
+        val tab = intent.getStringExtra("billPayTab") ?: "Pay"
+        root.addView(button("Pay${if (tab == "Pay") " ✓" else ""}", "test-BillPay-TabPay") {
+            intent.putExtra("billPayTab", "Pay")
+            render()
+        })
+        root.addView(button("Activity${if (tab == "Activity") " ✓" else ""}", "test-BillPay-TabActivity") {
+            intent.putExtra("billPayTab", "Activity")
+            render()
+        })
+        if (tab == "Activity") {
+            text("No recent Bill Pay activity.", "test-BillPay-ActivityEmpty")
+            resultLine("test-BillPay-Result")
+            return
+        }
         text("MY EBILLS & REMINDERS", "test-BillPay-EBillsTitle")
         text("You don't have any unpaid eBills or reminders right now.", "test-BillPay-EBillsEmpty")
         text("PAYEES", "test-BillPay-PayeesTitle")
@@ -279,11 +943,12 @@ class BankActivity : AppCompatActivity() {
                 open("billPayPayment")
             }
         })
-        resultLine()
+        resultLine("test-BillPay-Result")
     }
 
     private fun renderBillPayAddWho(root: LinearLayout) {
         title("Add Payee", "test-AddPayeeWhoScreen")
+        root.addView(button("Back", "test-AddPayee-Back") { finish() })
         text("Who do you want to add?", "test-AddPayee-WhoTitle")
         root.addView(button("Company", "test-AddPayee-Company") {
             BankState.lastResult = "Result: Company add is not in this practice path — use Bill Pay person"
@@ -294,8 +959,8 @@ class BankActivity : AppCompatActivity() {
             "Pay them with Zelle®\nSend money quickly using their US mobile # / email",
             "test-AddPayee-Zelle",
         ) {
-            BankState.lastResult = "Result: Use Bill Pay for this practice path"
-            render()
+            BankState.resetZelleAddDraft()
+            open("zelleWho")
         })
         root.addView(button(
             "Pay them with Bill Pay\nMail a check to their US address in 4-7 days",
@@ -305,156 +970,242 @@ class BankActivity : AppCompatActivity() {
             open("billPayPerson")
         })
         text("Learn when to use Zelle vs. Bill Pay", "test-AddPayee-LearnLink")
-        legal(root)
-        resultLine()
+        legal(root, titleId = "test-AddPayee-LegalTitle", bodyId = "test-AddPayee-LegalBody")
+        resultLine("test-AddPayee-WhoResult")
     }
 
     private fun renderBillPayPerson(root: LinearLayout) {
         title("Add Payee", "test-AddPayeePersonScreen")
-        text("Enter the person's information.", "test-AddPayee-PersonHint")
-        val first = field("First Name", "test-AddPayee-FirstName", InputType.TYPE_CLASS_TEXT)
-        first.setText(BankState.bpFirstName)
-        root.addView(first)
-        val last = field("Last Name", "test-AddPayee-LastName", InputType.TYPE_CLASS_TEXT)
-        last.setText(BankState.bpLastName)
-        root.addView(last)
-        val nick = field("Nickname (Optional)", "test-AddPayee-Nickname", InputType.TYPE_CLASS_TEXT)
-        nick.setText(BankState.bpNickname)
-        root.addView(nick)
-        val ident = field("Identifying Info (Optional)", "test-AddPayee-Identifying", InputType.TYPE_CLASS_TEXT)
-        ident.setText(BankState.bpIdentifying)
-        root.addView(ident)
-        val addr = field("Address", "test-AddPayee-Address", InputType.TYPE_CLASS_TEXT)
-        addr.setText(BankState.bpAddress)
-        root.addView(addr)
-        val addr2 = field("Address Two (Optional)", "test-AddPayee-Address2", InputType.TYPE_CLASS_TEXT)
-        addr2.setText(BankState.bpAddress2)
-        root.addView(addr2)
-        val city = field("City", "test-AddPayee-City", InputType.TYPE_CLASS_TEXT)
-        city.setText(BankState.bpCity)
-        root.addView(city)
-        root.addView(button("CANCEL", "test-AddPayee-PersonCancel") { finish() })
-        root.addView(button("SAVE", "test-AddPayee-PersonSave") {
-            BankState.bpFirstName = first.text.toString()
-            BankState.bpLastName = last.text.toString()
-            BankState.bpNickname = nick.text.toString()
-            BankState.bpIdentifying = ident.text.toString()
-            BankState.bpAddress = addr.text.toString()
-            BankState.bpAddress2 = addr2.text.toString()
-            BankState.bpCity = city.text.toString()
-            val message = BankState.validateBillPayeeStep2()
-            if (message.isEmpty()) {
-                BankState.lastResult = ""
-                open("billPayAddress")
-            } else {
-                BankState.lastResult = message
-                render()
-            }
+        // Legacy wait target — same form now includes address fields
+        root.addView(View(this).apply {
+            contentDescription = "test-AddPayeeAddressScreen"
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+            layoutParams = LinearLayout.LayoutParams(1, 1)
         })
-        resultLine()
-    }
+        text("Enter the person's information.", "test-AddPayee-PersonHint")
+        val errors = BankState.billPayeeFieldErrors().toMutableMap()
+        // Only show errors after a failed save attempt
+        val showErrors = BankState.lastResult.startsWith("Result:") &&
+            BankState.lastResult != "Result: Terms scrolled to end — Save enabled" &&
+            BankState.lastResult != "Result: Payee added"
 
-    private fun renderBillPayAddress(root: LinearLayout) {
-        title("Add Payee", "test-AddPayeeAddressScreen")
-        val city = field("City", "test-AddPayee-CityValue", InputType.TYPE_CLASS_TEXT)
-        city.setText(BankState.bpCity)
-        root.addView(city)
+        fun labeledField(
+            label: String,
+            id: String,
+            value: String,
+            inputType: Int,
+            errorKey: String? = null,
+        ): EditText {
+            text(label, "$id-Label")
+            val edit = field(label, id, inputType)
+            edit.setText(value)
+            val err = if (showErrors) errorKey?.let { errors[it] } else null
+            if (err != null) {
+                edit.setBackgroundColor(0x22FF0000)
+                edit.setHintTextColor(0xFFCC0000.toInt())
+            }
+            root.addView(edit)
+            if (err != null) {
+                root.addView(TextView(this).apply {
+                    text = err
+                    setTextColor(0xFFCC0000.toInt())
+                    textSize = 12f
+                    contentDescription = "$id-Error"
+                    setPadding(dp(4), 0, dp(4), dp(6))
+                })
+            }
+            return edit
+        }
+
+        val first = labeledField("First Name", "test-AddPayee-FirstName", BankState.bpFirstName, InputType.TYPE_CLASS_TEXT, "firstName")
+        val last = labeledField("Last Name", "test-AddPayee-LastName", BankState.bpLastName, InputType.TYPE_CLASS_TEXT, "lastName")
+        val nick = labeledField("Nickname (Optional)", "test-AddPayee-Nickname", BankState.bpNickname, InputType.TYPE_CLASS_TEXT)
+        val ident = labeledField("Identifying Info (Optional)", "test-AddPayee-Identifying", BankState.bpIdentifying, InputType.TYPE_CLASS_TEXT)
+        val addr = labeledField("Address", "test-AddPayee-Address", BankState.bpAddress, InputType.TYPE_CLASS_TEXT, "address")
+        val addr2 = labeledField("Address Two (Optional)", "test-AddPayee-Address2", BankState.bpAddress2, InputType.TYPE_CLASS_TEXT)
+        val city = labeledField("City", "test-AddPayee-City", BankState.bpCity, InputType.TYPE_CLASS_TEXT, "city")
+
+        text("State", "test-AddPayee-StateLabel")
+        val stateErr = if (showErrors) errors["state"] else null
         root.addView(button(
-            "State ${BankState.bpState.ifBlank { "Select" }}",
+            "State  ${BankState.bpState.ifBlank { "Select state" }}",
             "test-AddPayee-State",
         ) {
-            BankState.bpCity = city.text.toString()
+            persistPersonDraft(first, last, nick, ident, addr, addr2, city, null, null)
             open("billPaySelectState")
+        }.apply {
+            if (stateErr != null) setBackgroundColor(0xFFCC0000.toInt())
         })
-        val zip = field("ZIP Code", "test-AddPayee-Zip", InputType.TYPE_CLASS_TEXT)
-        zip.setText(BankState.bpZip)
-        root.addView(zip)
-        val phone = field("Phone Number", "test-AddPayee-Phone", InputType.TYPE_CLASS_PHONE)
-        phone.setText(BankState.bpPhone)
-        root.addView(phone)
-        text("Terms & Conditions", "test-AddPayee-TermsTitle")
-        val termsScroll = ScrollView(this).apply {
-            contentDescription = "test-AddPayee-TermsScroll"
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(160),
-            )
-            isFillViewport = false
-            val inner = LinearLayout(this@BankActivity).apply {
-                orientation = LinearLayout.VERTICAL
-                setPadding(dp(8))
-                addView(TextView(this@BankActivity).apply {
-                    text = BILL_PAY_LEGAL
-                    contentDescription = "test-AddPayee-TermsBody"
-                    setTextColor(getColor(R.color.lebyy_muted))
-                    textSize = 12f
-                })
-                addView(TextView(this@BankActivity).apply {
-                    text = "— End of Terms & Conditions —"
-                    contentDescription = "test-AddPayee-TermsEnd"
-                    setTextColor(getColor(R.color.lebyy_muted))
-                    textSize = 12f
-                    setPadding(0, dp(28), 0, 0)
-                })
-            }
-            addView(inner)
-            viewTreeObserver.addOnScrollChangedListener {
-                val child = getChildAt(0) ?: return@addOnScrollChangedListener
-                val atEnd = scrollY + height >= child.height - dp(8)
-                if (atEnd && !BankState.bpTermsScrolledToEnd) {
-                    BankState.bpTermsScrolledToEnd = true
-                    BankState.lastResult = "Result: Terms scrolled to end — Save enabled"
-                    (root.findViewWithTag("termsStatus") as? TextView)?.text = BankState.lastResult
-                    (root.findViewWithTag("saveBtn") as? Button)?.isEnabled = true
-                }
-            }
+        if (stateErr != null) {
+            root.addView(TextView(this).apply {
+                text = stateErr
+                setTextColor(0xFFCC0000.toInt())
+                textSize = 12f
+                contentDescription = "test-AddPayee-StateError"
+            })
         }
-        root.addView(termsScroll)
+
+        val zip = labeledField("ZIP Code", "test-AddPayee-Zip", BankState.bpZip, InputType.TYPE_CLASS_NUMBER, "zip")
+        val phone = labeledField("Phone Number", "test-AddPayee-Phone", BankState.bpPhone, InputType.TYPE_CLASS_PHONE, "phone")
+
+        text("Terms & Conditions", "test-AddPayee-TermsTitle")
+        // Inline in the page ScrollView (no nested terms box).
+        val termsBlock = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            contentDescription = "test-AddPayee-TermsScroll"
+            addView(TextView(this@BankActivity).apply {
+                text = BILL_PAY_LEGAL
+                contentDescription = "test-AddPayee-TermsBody"
+                setTextColor(getColor(R.color.lebyy_muted))
+                textSize = 12f
+            })
+            addView(TextView(this@BankActivity).apply {
+                text = "— End of Terms & Conditions —"
+                contentDescription = "test-AddPayee-TermsEnd"
+                tag = "termsEnd"
+                setTextColor(getColor(R.color.lebyy_muted))
+                textSize = 12f
+                setPadding(0, dp(28), 0, 0)
+            })
+        }
+        root.addView(termsBlock)
         root.addView(TextView(this).apply {
             tag = "termsStatus"
             text = if (BankState.bpTermsScrolledToEnd) {
                 "Result: Terms scrolled to end — Save enabled"
             } else {
-                "Result: Scroll Terms & Conditions to the end to enable Save"
+                "Result: Scroll the page to the end of Terms & Conditions to enable Save"
             }
             contentDescription = "test-AddPayee-TermsStatus"
-            setTextColor(getColor(R.color.lebyy_muted))
+            setTextColor(
+                if (showErrors && errors["terms"] != null) 0xFFCC0000.toInt()
+                else getColor(R.color.lebyy_muted),
+            )
             textSize = 12f
         })
-        root.addView(button("CANCEL", "test-AddPayee-AddressCancel") { finish() })
-        val save = button("SAVE", "test-AddPayee-Save") {
-            BankState.bpCity = city.text.toString()
-            BankState.bpZip = zip.text.toString()
-            BankState.bpPhone = phone.text.toString()
+        // Page ScrollView: mark terms complete when the end marker is visible.
+        val pageScroll = root.parent as? ScrollView
+        pageScroll?.viewTreeObserver?.addOnScrollChangedListener {
+            val end = root.findViewWithTag("termsEnd") ?: return@addOnScrollChangedListener
+            val visible = android.graphics.Rect()
+            val shown = end.getGlobalVisibleRect(visible)
+            if (shown && !BankState.bpTermsScrolledToEnd) {
+                BankState.bpTermsScrolledToEnd = true
+                BankState.lastResult = "Result: Terms scrolled to end — Save enabled"
+                (root.findViewWithTag("termsStatus") as? TextView)?.apply {
+                    text = BankState.lastResult
+                    setTextColor(getColor(R.color.lebyy_muted))
+                }
+            }
+        }
+        if (showErrors && errors["terms"] != null) {
+            root.addView(TextView(this).apply {
+                text = errors["terms"]
+                setTextColor(0xFFCC0000.toInt())
+                textSize = 12f
+                contentDescription = "test-AddPayee-TermsError"
+            })
+        }
+
+        root.addView(button("CANCEL", "test-AddPayee-PersonCancel") { finish() })
+        root.addView(button("CANCEL", "test-AddPayee-AddressCancel") { finish() }.apply {
+            visibility = View.GONE
+        })
+        root.addView(button("SAVE", "test-AddPayee-Save") {
+            persistPersonDraft(first, last, nick, ident, addr, addr2, city, zip, phone)
             val message = BankState.saveBillPayee()
             if (message == "Result: Payee added") open("billPayAddSuccess") else render()
-        }.apply {
-            tag = "saveBtn"
-            isEnabled = BankState.bpTermsScrolledToEnd
+        })
+        // Alias for older scripts
+        root.addView(View(this).apply {
+            contentDescription = "test-AddPayee-PersonSave"
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            layoutParams = LinearLayout.LayoutParams(1, 1)
+        })
+        if (BankState.lastResult.isNotBlank() && showErrors) {
+            root.addView(TextView(this).apply {
+                text = BankState.lastResult
+                setTextColor(0xFFCC0000.toInt())
+                textSize = 13f
+                contentDescription = "test-AddPayee-PersonResult"
+                setPadding(dp(4), dp(8), dp(4), dp(4))
+            })
+            root.addView(TextView(this).apply {
+                text = BankState.lastResult
+                setTextColor(0xFFCC0000.toInt())
+                textSize = 1f
+                contentDescription = "test-AddPayee-AddressResult"
+                layoutParams = LinearLayout.LayoutParams(1, 1)
+            })
         }
-        root.addView(save)
-        resultLine()
+    }
+
+    private fun persistPersonDraft(
+        first: EditText,
+        last: EditText,
+        nick: EditText,
+        ident: EditText,
+        addr: EditText,
+        addr2: EditText,
+        city: EditText,
+        zip: EditText?,
+        phone: EditText?,
+    ) {
+        BankState.bpFirstName = first.text.toString()
+        BankState.bpLastName = last.text.toString()
+        BankState.bpNickname = nick.text.toString()
+        BankState.bpIdentifying = ident.text.toString()
+        BankState.bpAddress = addr.text.toString()
+        BankState.bpAddress2 = addr2.text.toString()
+        BankState.bpCity = city.text.toString()
+        if (zip != null) BankState.bpZip = zip.text.toString()
+        if (phone != null) BankState.bpPhone = phone.text.toString()
+    }
+
+    private fun renderBillPayAddress(root: LinearLayout) {
+        // Address fields live on the person form now
+        screen = "billPayPerson"
+        renderBillPayPerson(root)
     }
 
     private fun renderBillPaySelectState(root: LinearLayout) {
         title("Select State", "test-SelectStateScreen")
+        root.addView(button("Back", "test-SelectState-Back") { finish() })
         text("Select State", "test-SelectStateTitle")
-        text("US States", "test-SelectState-USStates")
+        val list = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            contentDescription = "test-SelectStateList"
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+        }
+        list.addView(TextView(this).apply {
+            text = "US States"
+            contentDescription = "test-SelectState-USStates"
+            setTextColor(getColor(R.color.lebyy_text))
+            textSize = 16f
+            setPadding(dp(4), dp(4), dp(4), dp(4))
+        })
         BankState.usStateEntries.forEach { (name, code) ->
             val mark = if (BankState.bpState == code || BankState.bpState == name) " ✓" else ""
-            root.addView(button("$name$mark", "test-SelectState-${name.replace(" ", "")}") {
+            list.addView(button("$name$mark", "test-SelectState-${name.replace(" ", "")}") {
                 BankState.bpState = code
                 finish()
             })
         }
-        text("Countries", "test-SelectState-Countries")
+        list.addView(TextView(this).apply {
+            text = "Countries"
+            contentDescription = "test-SelectState-Countries"
+            setTextColor(getColor(R.color.lebyy_text))
+            textSize = 16f
+            setPadding(dp(4), dp(4), dp(4), dp(4))
+        })
         BankState.countries.forEach { region ->
             val mark = if (BankState.bpState == region) " ✓" else ""
-            root.addView(button("$region$mark", "test-SelectState-${region.replace(" ", "")}") {
+            list.addView(button("$region$mark", "test-SelectState-${region.replace(" ", "")}") {
                 BankState.bpState = region
                 finish()
             })
         }
+        root.addView(list)
     }
 
     private fun renderBillPayAddSuccess(root: LinearLayout) {
@@ -469,12 +1220,20 @@ class BankActivity : AppCompatActivity() {
         text("ZIP Code ${payee?.zip.orEmpty()}", "test-AddPayeeSuccess-Zip")
         root.addView(button("DONE", "test-AddPayeeSuccess-Done") {
             BankState.closeToBillPay = true
+            // Land on Bill Pay list (shows newly added payee); cascade-finish add stack via onResume
+            startActivity(
+                Intent(this, BankActivity::class.java).apply {
+                    putExtra(EXTRA_SCREEN, "billPayList")
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                },
+            )
             finish()
         })
     }
 
     private fun renderBillPayPayment(root: LinearLayout) {
         title("Payment Details", "test-PaymentDetailsScreen")
+        root.addView(button("Back", "test-PaymentDetails-Back") { finish() })
         text("Payment Details", "test-PaymentDetailsTitle")
         text("Investment products are not FDIC-insured.", "test-PaymentDetails-FDIC")
         val payee = BankState.selectedBillPayee()
@@ -522,7 +1281,7 @@ class BankActivity : AppCompatActivity() {
                 render()
             }
         })
-        resultLine()
+        resultLine("test-PaymentDetails-Result")
     }
 
     private fun renderBillPayPaySuccess(root: LinearLayout) {
@@ -653,11 +1412,60 @@ class BankActivity : AppCompatActivity() {
         root.addView(button("Close", "test-ChooseClose") { finish() })
     }
 
-    private fun legal(root: LinearLayout) {
-        text("Legal info and disclosures", "test-PT-Legal")
-        text("Are Not FDIC Insured", "test-PT-Legal-1")
-        text("Are Not Bank Guaranteed", "test-PT-Legal-2")
-        text("May Lose Value", "test-PT-Legal-3")
+    private fun legal(
+        root: LinearLayout,
+        titleId: String = "test-PT-Legal",
+        bodyId: String = "test-PT-LegalBody",
+    ) {
+        text("Legal info and disclosures", titleId)
+        text(
+            "Investment, insurance and annuity products:\n• Are Not FDIC Insured\n• Are Not Bank Guaranteed\n• May Lose Value\n• Are Not Deposits",
+            bodyId,
+        )
+    }
+
+    private fun chromeRow(
+        menuId: String,
+        titleText: String,
+        titleId: String,
+        inboxId: String,
+        productsId: String,
+        logOutId: String,
+    ) {
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(dp(4), dp(4), dp(4), dp(4))
+        }
+        row.addView(button("Menu", menuId) { open("menu") }.apply {
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginEnd = dp(4)
+            }
+        })
+        row.addView(TextView(this).apply {
+            text = titleText
+            contentDescription = titleId
+            setTextColor(getColor(R.color.lebyy_text))
+            textSize = 16f
+            gravity = android.view.Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 2f)
+        })
+        row.addView(button("Inbox", inboxId) { open("inbox") }.apply {
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginEnd = dp(4)
+            }
+        })
+        row.addView(button("Products", productsId) { open("products") }.apply {
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginEnd = dp(4)
+            }
+        })
+        row.addView(button("Log Out", logOutId) {
+            BankState.endSession()
+            finish()
+        }.apply {
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+        })
+        binding.bankScreen.addView(row)
     }
 
     private fun renderTransfer(root: LinearLayout) {
@@ -999,11 +1807,22 @@ class BankActivity : AppCompatActivity() {
     private fun title(title: String, screenId: String) {
         binding.bankToolbar.title = title
         binding.bankScreen.contentDescription = screenId
+        binding.bankToolbar.navigationContentDescription = when (screenId) {
+            "test-ZelleScreen" -> "test-Zelle-Back"
+            "test-ZellePayScreen" -> "test-ZellePay-Back"
+            "test-BillPayScreen" -> "test-BillPay-Back"
+            "test-PaymentDetailsScreen" -> "test-PaymentDetails-Back"
+            "test-SelectStateScreen" -> "test-SelectState-Back"
+            "test-AddPayeeWhoScreen", "test-AddPayeePersonScreen", "test-AddPayeeAddressScreen" -> "test-AddPayee-Back"
+            "test-BankDepositScreen" -> "test-Deposit-Cancel"
+            "test-PayTransferScreen" -> "test-PT-Menu"
+            else -> if (screenId.startsWith("test-Zelle")) "test-Zelle-NavBack" else "Navigate up"
+        }
     }
 
-    private fun resultLine() {
+    private fun resultLine(id: String = "test-BankResult") {
         if (BankState.lastResult.isNotBlank()) {
-            text(BankState.lastResult, "test-BankResult")
+            text(BankState.lastResult, id)
         }
     }
 
@@ -1066,6 +1885,7 @@ class BankActivity : AppCompatActivity() {
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     companion object {
+        private const val MENU_EXIT_BANK = 91001
         const val EXTRA_SCREEN = "screen"
         const val EXTRA_ID = "id"
         const val EXTRA_QUERY = "query"

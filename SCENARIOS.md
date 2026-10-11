@@ -297,12 +297,12 @@ test-Tab-Components → test-Components-Forms → test-FormControlsHub
 | # | Action | Assert (`test-FormsResult`) |
 |---|--------|------------------------------|
 | 1 | Open `test-Dropdown` → pick `lebyy is awesome` | `Result: Dropdown lebyy is awesome` |
-| 2 | Select radio 2 | Android: click `test-Radio-2` · iOS: segment in `test-RadioGroup` → Result contains `Radio 2` |
+| 2 | Select radio 2 | Click `test-Radio-2` (inside `test-RadioGroup`) → Result contains `Radio 2` |
 | 3 | Click `test-Active` | `Result: Active tapped (…)` |
 | 4 | Click `test-Inactive` | `Result: Inactive tapped` |
 | 5 | **iOS only:** find **Other** `test-NilValue` | `value` equals `""` (empty string; not nil) |
 
-Android radios: `test-Radio-1`, `test-Radio-2` inside `test-RadioGroup`.
+Radios (both platforms): `test-Radio-1`, `test-Radio-2` inside `test-RadioGroup`. Dropdown options also expose `test-DropdownOption-{OptionWithoutSpaces}` (visible text still works).
 
 ---
 

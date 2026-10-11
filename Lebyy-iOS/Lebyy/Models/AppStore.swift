@@ -363,11 +363,7 @@ final class AppStore: ObservableObject {
 
     func loginSuccess() {
         isLoggedIn = true
-        if bank.isManager {
-            selectedTab = .bank
-        } else if selectedTab == .account {
-            selectedTab = .shop
-        }
+        selectedTab = .bank
         applyPendingDeepLinkNavigation()
         restartSessionTimerIfNeeded()
     }

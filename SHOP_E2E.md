@@ -150,9 +150,13 @@ type test-Password = demo_pass
 click test-LOGIN
 ```
 
-Success leaves Account and opens Shop. Failure shows `test-LoginError`.
+Success lands on the Bank tab. Failure shows `test-LoginError`. For Shop flows, click `test-Tab-Shop` after login.
 
 ### Logged in — open catalog
+
+```
+click test-Tab-Shop
+```
 
 **iOS:** the Shop tab **is** the catalog.
 
@@ -378,7 +382,7 @@ test-Tab-Account → login demo_user / demo_pass → test-LOGIN
 wait catalog: test-ShopSearch
 ```
 
-Android may already be inside the catalog because Shop auto-opens after login. If `test-ShopReady` is what you see, click `test-ShopOpenCatalog`, then wait `test-ShopSearch`.
+After login the Bank tab is selected — click `test-Tab-Shop` first. On Android, if `test-ShopReady` is what you see, click `test-ShopOpenCatalog`, then wait `test-ShopSearch`.
 
 ---
 

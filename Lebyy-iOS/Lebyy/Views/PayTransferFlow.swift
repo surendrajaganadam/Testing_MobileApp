@@ -5,6 +5,7 @@ import SwiftUI
 struct PayTransferHubView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
+    @State private var goActivity = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -29,6 +30,7 @@ struct PayTransferHubView: View {
         .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("test-PayTransferScreen")
         .onAppear { store.bank.refreshPayDates() }
+        .navigationDestination(isPresented: $goActivity) { BankActivityListView() }
     }
 
     private var hubHeader: some View {
@@ -158,12 +160,10 @@ struct PayTransferHubView: View {
                 }
                 .accessibilityIdentifier("test-PT-History-\(item.id)")
             }
-            NavigationLink(value: BankRoute.activity) {
-                Text("MORE ACTIVITY")
-                    .font(.subheadline.weight(.bold))
-                    .foregroundStyle(BankDash.accent)
-            }
-            .accessibilityIdentifier("test-PT-MoreActivity")
+            Button("MORE ACTIVITY") { goActivity = true }
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(BankDash.accent)
+                .accessibilityIdentifier("test-PT-MoreActivity")
         }
     }
 }
@@ -427,6 +427,9 @@ struct AcctTransferFormView: View {
                     Button("Close") { pick = nil }.accessibilityIdentifier("test-ChooseClose")
                 }
             }
+            .accessibilityIdentifier(
+                kind == "from" || kind == "to" ? "test-ChooseAccountScreen" : "test-AcctTransferPickSheet"
+            )
         }
         .presentationDetents([.medium, .large])
     }
@@ -439,7 +442,6 @@ private struct PickSheet: Identifiable {
 struct AcctTransferReviewView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.popBankRoot) private var popBankRoot
     @State private var goSuccess = false
 
     var body: some View {
@@ -891,7 +893,6 @@ enum PaySuccessKind {
 
 struct PaymentSuccessView: View {
     @EnvironmentObject private var store: AppStore
-    @Environment(\.popBankRoot) private var popBankRoot
     let title: String
     let screenId: String
     var kind: PaySuccessKind = .cardPay
@@ -939,7 +940,7 @@ struct PaymentSuccessView: View {
                 }
                 .padding(16)
             }
-            Button("DONE") { popBankRoot() }
+            Button("DONE") { store.bank.requestCloseBankFlow() }
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(BankDash.brandBlue)
@@ -963,16 +964,6 @@ struct PaymentSuccessView: View {
             }
         }
         .accessibilityIdentifier(id)
-    }
-}
-
-struct ZelleScreen: View {
-    var body: some View {
-        BankSimpleScreen(
-            title: "Zelle",
-            screenId: "test-ZelleScreen",
-            bodyText: "Result: Zelle opened — send or receive practice screen"
-        )
     }
 }
 

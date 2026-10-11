@@ -29,6 +29,7 @@ struct TabRootView: View {
             .badge(store.isLoggedIn && store.cartCount > 0 ? store.cartCount : 0)
 
             BankTabView()
+            .toolbar(.hidden, for: .tabBar)
             .tabItem { Label(AppTab.bank.title, systemImage: AppTab.bank.systemImage) }
             .tag(AppTab.bank)
             .accessibilityIdentifier(AppTab.bank.accessibilityId)
@@ -83,6 +84,7 @@ struct HomeView: View {
                             .padding(.vertical, 9)
                             .background(LebyyTheme.accent)
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .accessibilityIdentifier("test-HomeAppBadge")
                     }
 
                     Text("Welcome to Lebyy Practice App")
@@ -390,6 +392,8 @@ struct ShopLoginGateView: View {
             Image(systemName: "cart.fill")
                 .font(.system(size: 48))
                 .foregroundStyle(LebyyTheme.primary)
+                .accessibilityIdentifier("test-ShopLoginGateIcon")
+                .accessibilityLabel("Shop cart")
             Text("Shop needs login")
                 .font(.title2.bold())
                 .foregroundStyle(LebyyTheme.text)
@@ -398,6 +402,7 @@ struct ShopLoginGateView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(LebyyTheme.muted)
                 .padding(.horizontal)
+                .accessibilityIdentifier("test-ShopLoginGateBlurb")
             Button("Go to Login") {
                 store.selectedTab = .account
             }
@@ -408,6 +413,7 @@ struct ShopLoginGateView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(LebyyTheme.bg.ignoresSafeArea())
         .navigationTitle("Shop")
+        .accessibilityIdentifier("test-ShopLoginGate")
     }
 }
 

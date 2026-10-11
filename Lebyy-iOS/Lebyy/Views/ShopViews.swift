@@ -102,20 +102,25 @@ struct ProductCard: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 160)
                         .clipped()
+                        .accessibilityIdentifier("test-CardImage-\(product.id)")
+                        .accessibilityLabel("\(product.name) image")
 
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
                             Text(product.name).font(.headline).foregroundStyle(LebyyTheme.text)
+                                .accessibilityIdentifier("test-CardName-\(product.id)")
                             Spacer()
                             Image(systemName: store.isWishlisted(product.id) ? "heart.fill" : "heart")
                                 .foregroundStyle(LebyyTheme.accent)
                                 .accessibilityHidden(true)
                         }
                         Text(String(format: "$%.2f", product.price)).foregroundStyle(LebyyTheme.accent)
+                            .accessibilityIdentifier("test-CardPrice-\(product.id)")
                         Text(product.description)
                             .font(.subheadline)
                             .foregroundStyle(LebyyTheme.muted)
                             .lineLimit(2)
+                            .accessibilityIdentifier("test-CardDesc-\(product.id)")
                         if store.rating(for: product.id) > 0 {
                             Text("Rating: \(store.rating(for: product.id))/5")
                                 .font(.caption)
@@ -193,6 +198,8 @@ struct ProductDetailView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 220)
                     .clipped()
+                    .accessibilityIdentifier("test-ProductImage")
+                    .accessibilityLabel("\(product.name) image")
 
                 Text(product.name)
                     .font(.title2.bold())
@@ -295,6 +302,7 @@ struct ProductDetailView: View {
         .background(LebyyTheme.bg.ignoresSafeArea())
         .navigationTitle("Product Details")
         .navigationBarTitleDisplayMode(.inline)
+        .accessibilityIdentifier("test-ProductDetailScreen")
     }
 }
 
@@ -355,8 +363,10 @@ struct CartView: View {
                                 .frame(width: 56, height: 56)
                                 .clipped()
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .accessibilityIdentifier("test-CartItemImage-\(line.product.id)")
                             VStack(alignment: .leading) {
                                 Text(line.product.name).foregroundStyle(LebyyTheme.text)
+                                    .accessibilityIdentifier("test-CartItemName-\(line.product.id)")
                                 Text(String(format: "Qty: %d | $%.2f", line.quantity, line.lineTotal))
                                     .font(.caption)
                                     .foregroundStyle(LebyyTheme.muted)
@@ -368,6 +378,7 @@ struct CartView: View {
                             }
                         }
                         .listRowBackground(LebyyTheme.surface)
+                        .accessibilityIdentifier("test-CartItem-\(line.product.id)")
                     }
                 }
                 .scrollContentBackground(.hidden)
@@ -376,6 +387,7 @@ struct CartView: View {
                     .font(.headline)
                     .foregroundStyle(LebyyTheme.text)
                     .padding()
+                    .accessibilityIdentifier("test-CartTotal")
 
                 NavigationLink("CHECKOUT") {
                     CheckoutInfoView()
@@ -392,6 +404,7 @@ struct CartView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(LebyyTheme.bg.ignoresSafeArea())
         .navigationTitle("Your Cart")
+        .accessibilityIdentifier("test-CartScreen")
     }
 }
 
@@ -456,6 +469,7 @@ struct CheckoutInfoView: View {
         .scrollContentBackground(.hidden)
         .background(LebyyTheme.bg.ignoresSafeArea())
         .navigationTitle("Shipping")
+        .accessibilityIdentifier("test-CheckoutScreen")
     }
 }
 
@@ -537,6 +551,7 @@ struct PaymentView: View {
         .scrollContentBackground(.hidden)
         .background(LebyyTheme.bg.ignoresSafeArea())
         .navigationTitle("Payment")
+        .accessibilityIdentifier("test-PaymentScreen")
     }
 
     /// Groups up to 16 digits as `4242 4242 4242 4242`.
@@ -734,6 +749,7 @@ struct ReviewOrderView: View {
         }
         .background(LebyyTheme.bg.ignoresSafeArea())
         .navigationTitle("Review Order")
+        .accessibilityIdentifier("test-ReviewScreen")
     }
 }
 
@@ -787,6 +803,7 @@ struct OrdersView: View {
         }
         .background(LebyyTheme.bg.ignoresSafeArea())
         .navigationTitle("Order History")
+        .accessibilityIdentifier("test-OrdersScreen")
     }
 }
 
@@ -901,11 +918,13 @@ struct OrderDetailsView: View {
                 Text("Order not found")
                     .foregroundStyle(LebyyTheme.muted)
                     .padding()
+                    .accessibilityIdentifier("test-OrderNotFound")
             }
         }
         .background(LebyyTheme.bg.ignoresSafeArea())
         .navigationTitle("Order Details")
         .navigationBarTitleDisplayMode(.inline)
+        .accessibilityIdentifier("test-OrderDetailsScreen")
         .navigationBarBackButtonHidden(fromCheckout)
     }
 }

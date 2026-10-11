@@ -3,8 +3,11 @@
 **Purpose:** Self-contained brief for the bank flows in Appium (Java/Python), XCUITest, or Mobilewright.  
 Same business path on both platforms. Prefer **accessibility id** `test-*` everywhere.
 
-**Two roles.** A customer moves money. A manager approves large transfers and creates customers who can then sign in.  
-**Companion:** Component practice flows live in `SCENARIOS.md`. Shop checkout lives in `SHOP_E2E.md`. This document is the bank path.
+**Accessibility contract (entire bank surface):** Every bank screen root, field, button, list row, dialog action, and result line exposes a stable `test-*` id on **both** platforms (iOS `accessibilityIdentifier` / Android `contentDescription`). Do not fall back to XPath/class-index for bank practice. Screen roots use `…Screen` suffix (e.g. `test-ZellePayScreen`, `test-BillPayScreen`, `test-BankDepositScreen`). Customer home is `test-BankHome`; role line is `test-BankRole` = `Role: Customer`.
+
+**Single customer login** (`demo_user` / `demo_pass`). Bank practice covers dashboard, Pay & Transfer, Bill Pay / Add Payee, Zelle, Deposit Checks, Activity, and account transfer.  
+**Removed:** manager login, pending approval, customer admin, old payee transfer + OTP, dashboard quick actions.  
+**Companion:** Component practice flows live in `SCENARIOS.md`. Shop checkout lives in `SHOP_E2E.md`. Older BK-* manager/OTP phases in this file are obsolete.
 
 ---
 
@@ -51,24 +54,17 @@ Run **BK-E2E-C** and **BK-E2E-M** as the two framework flows. Each one starts fr
 
 | Who | Username | Password | After `test-LOGIN` |
 |-----|----------|----------|--------------------|
-| Customer | `demo_user` | `demo_pass` | Shop opens. Click `test-Tab-Bank` yourself |
-| Manager | `manager_user` | `manager_pass` | Bank manager home opens |
-| Created customer | whatever the manager saved | whatever the manager saved | Shop opens. Click `test-Tab-Bank` |
+| Customer | `demo_user` | `demo_pass` | Bank dashboard (`test-BankHome`) |
 
 Invalid login contains `Invalid credentials` (id `test-LoginError`).  
-Login hint `test-ManagerCredentials` text: `Manager: manager_user / manager_pass`.  
-`test-DemoCredentials` still shows only `demo_user` / `demo_pass`.
+`test-DemoCredentials` shows `demo_user` / `demo_pass`.
 
 **Rules**
 
 | Rule | Value |
 |------|--------|
-| OTP success | `1234` (one digit per field) |
-| OTP failure | any other 4 digits, including `0000` → `Result: OTP wrong` |
-| Auto-complete limit | amount `<= 10000` debits immediately after OTP |
-| Manager queue | amount `> 10000` does **not** debit. Receipt `Receipt: Pending approval TX-…` |
-| Insufficient funds | amount greater than the selected account balance. No new completed row |
-| Built-in customer | `demo_user` can be edited, not deleted |
+| Insufficient funds | amount greater than the selected account balance |
+| Built-in customer | `demo_user` |
 
 **Common wait (customer bank home):**
 
@@ -180,6 +176,19 @@ After login, Bank is a light **Accounts** dashboard (header / scrollable center 
 
 Shell screens from chrome: `test-BankMenuScreen`, `test-BankInboxScreen`, `test-BankProductsScreen`, `test-BankRewardsScreen`, `test-BankProfileScreen`, `test-PayTransferScreen`, `test-BankDepositScreen`, `test-BankInvestScreen`, `test-BankAssistantScreen`. Dashboard tab panel: `test-BankDashboardPanel`.
 
+**Deposit Checks path:**
+
+```
+test-BankFooter-Deposit
+→ test-BankDepositScreen
+→ test-Deposit-Front (or test-Deposit-Back)
+   choose Take Photo or Upload from Gallery
+→ test-Deposit-Account / test-Deposit-Account-Checking (or Savings)
+→ type amount in test-Deposit-Amount
+→ test-Deposit-Next (enabled after front + back + account + amount)
+→ test-DepositSuccessScreen → test-DepositSuccess-Done
+```
+
 ### Pay & Transfer (footer → hub)
 
 Open with `test-BankFooter-PayTransfer`. Wait `test-PayTransferScreen`.
@@ -193,6 +202,33 @@ Open with `test-BankFooter-PayTransfer`. Wait `test-PayTransferScreen`.
 | History row | `test-PT-History-H-1` | Seeded “Sujathapersonal NJ … ₹500.00” |
 | More activity | `test-PT-MoreActivity` | Activity list |
 
+**Zelle path (add person → authorize → pay):**
+
+```
+test-PT-Zelle → test-ZelleScreen
+→ test-Zelle-Pay (or test-Zelle-Recipients) → test-ZellePayScreen
+→ test-ZellePay-AddNew → test-ZelleWhoScreen
+   → test-ZelleWho-Person → test-ZelleWho-Next
+→ test-ZelleHowScreen
+   → test-ZelleHow-MobileEmail → test-ZelleHow-Next
+→ test-ZelleInfoScreen
+   type test-ZelleInfo-Contact / FirstName / LastName → test-ZelleInfo-Next
+→ test-ZelleReviewScreen → test-ZelleReview-AddRecipient
+→ test-ZelleAuthSendScreen → test-ZelleAuthSend-Text → test-ZelleAuthSend-Send
+→ test-ZelleAuthEnterScreen
+   type practice code 123456 in test-ZelleAuthEnter-Code → test-ZelleAuthEnter-Submit
+→ test-ZellePayScreen (banner) → test-ZellePay-SendPayment
+   OR pick seeded recipient test-ZellePay-Recipient-z-1
+→ test-ZellePayDetailsScreen
+   amount in test-ZellePayDetails-Amount → test-ZellePayDetails-Next
+→ test-ZellePayReviewScreen → test-ZellePayReview-Pay
+→ test-ZelleSuccessScreen → test-ZelleSuccess-Done
+```
+
+Seeded recipients: `z-1` Sujatha personal NJ, `z-2` Kushal US Number, `z-3` keerthi yerragudi. Daily send limit starts at ₹500.00. OTP practice code is `123456` (shown on `test-ZelleAuthSend-Hint`).
+
+Alternate entry from Recipients: `test-AddPayee-Zelle` → `test-ZelleWhoScreen` (same add-person path).
+
 **Bill Pay / Add Payee path (screenshot order 1–10):**
 
 ```
@@ -200,23 +236,23 @@ Open with `test-BankFooter-PayTransfer`. Wait `test-PayTransferScreen`.
    (Bank of America + Other payees; test-Recipients-AddPayee; test-Recipients-GoBillPay)
 2. test-Recipients-AddPayee → test-AddPayeeWhoScreen
    → test-AddPayee-BillPayPerson
-3. test-AddPayeePersonScreen
-   First Name / Last Name / Nickname / Identifying Info / Address / Address Two / City
-   → test-AddPayee-PersonSave
-4. test-AddPayeeAddressScreen
+3. test-AddPayeePersonScreen (single form — name through phone + T&C)
+   First Name / Last Name / Nickname / Identifying Info / Address / Address Two /
    City / State / ZIP / Phone
-   test-AddPayee-State →
-5. test-SelectStateScreen — scrollable list of all US States + Countries; pick one
-   (e.g. test-SelectState-NorthCarolina → stores NC)
-   back on address: scroll test-AddPayee-TermsScroll (Terms & Conditions) until
-   test-AddPayee-TermsEnd → Save enables → test-AddPayee-Save
-6. test-AddPayeeSuccessScreen → test-AddPayeeSuccess-Done
-7. test-BillPayScreen (PAYEES with new person; radio select)
+   test-AddPayee-State → test-SelectStateScreen (sheet/list; pick e.g. test-SelectState-NorthCarolina)
+   scroll test-AddPayee-TermsScroll until test-AddPayee-TermsEnd
+   → test-AddPayee-Save
+   Validation: missing fields show red border + red caption (`test-AddPayee-*-Error`)
+4. test-AddPayeeSuccessScreen → test-AddPayeeSuccess-Done
+5. test-BillPayScreen (PAYEES with new person; radio select)
    → select test-BillPay-Payee-bp-N → test-BillPay-Pay
-8–9. test-PaymentDetailsScreen
+6–7. test-PaymentDetailsScreen
    Amount / Frequency (expand list) / Deliver by → test-PaymentDetails-Pay
-10. test-BillPaySuccessScreen → test-BillPaySuccess-Done
+8. test-BillPaySuccessScreen → test-BillPaySuccess-Done
 ```
+
+Note: Address is no longer a separate page. `test-AddPayeeAddressScreen` remains as a zero-size marker on the person form for older waits.
+
 
 Demo checking account displays as `Adv SafeBalance Banking - 1362`. Seeded recipients: BankAmericard (BoA section), Amex, Chase, Citi, Macy's.
 

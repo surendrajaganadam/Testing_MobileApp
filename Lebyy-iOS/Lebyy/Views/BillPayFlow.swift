@@ -16,8 +16,6 @@ extension EnvironmentValues {
 struct BillPayHomeView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
-    @State private var goAdd = false
-    @State private var goBillPay = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -43,10 +41,7 @@ struct BillPayHomeView: View {
                     recipientsSection("Bank of America", payees: store.bank.billPayees.filter { $0.section == "Bank of America" })
                     recipientsSection("Other payees", payees: store.bank.billPayees.filter { $0.section != "Bank of America" })
 
-                    Button {
-                        store.bank.resetBillPayeeDraft()
-                        goAdd = true
-                    } label: {
+                    NavigationLink(value: BankRoute.addPayeeWho) {
                         HStack(spacing: 12) {
                             Image(systemName: "plus")
                                 .font(.body.weight(.semibold))
@@ -58,19 +53,23 @@ struct BillPayHomeView: View {
                             Image(systemName: "chevron.right").foregroundStyle(BankDash.muted)
                         }
                         .padding(.vertical, 10)
+                        .contentShape(Rectangle())
                     }
+                    .simultaneousGesture(TapGesture().onEnded {
+                        store.bank.resetBillPayeeDraft()
+                    })
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("test-Recipients-AddPayee")
 
-                    Button {
-                        goBillPay = true
-                    } label: {
+                    NavigationLink(value: BankRoute.billPayList) {
                         Text("Go to Bill Pay")
                             .font(.body.weight(.semibold))
                             .foregroundStyle(BankDash.accent)
                             .frame(maxWidth: .infinity)
                             .padding(.top, 8)
+                            .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
                     .accessibilityIdentifier("test-Recipients-GoBillPay")
                 }
                 .padding(16)
@@ -79,14 +78,6 @@ struct BillPayHomeView: View {
         .background(BankDash.paper.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("test-RecipientsScreen")
-        .environment(\.popToBillPayList, {
-            goAdd = false
-            goBillPay = true
-            store.bank.lastResult = ""
-            store.bank.objectWillChange.send()
-        })
-        .navigationDestination(isPresented: $goAdd) { BillPayAddWhoView() }
-        .navigationDestination(isPresented: $goBillPay) { BillPayListView() }
     }
 
     private func recipientsSection(_ title: String, payees: [BillPayee]) -> some View {
@@ -127,7 +118,7 @@ struct BillPayHomeView: View {
 struct BillPayAddWhoView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
-    @State private var goPerson = false
+    @State private var goZelle = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -155,18 +146,29 @@ struct BillPayAddWhoView: View {
                         subtitle: "Send money quickly using their US mobile # / email",
                         id: "test-AddPayee-Zelle"
                     ) {
-                        store.bank.lastResult = "Result: Use Bill Pay for this practice path"
-                        store.bank.objectWillChange.send()
+                        store.bank.resetZelleAddDraft()
+                        goZelle = true
                     }
 
-                    whoRow(
-                        "Pay them with Bill Pay",
-                        subtitle: "Mail a check to their US address in 4-7 days",
-                        id: "test-AddPayee-BillPayPerson"
-                    ) {
-                        store.bank.resetBillPayeeDraft()
-                        goPerson = true
+                    NavigationLink(value: BankRoute.addPayeeForm) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Pay them with Bill Pay").font(.body).foregroundStyle(BankDash.ink)
+                                Text("Mail a check to their US address in 4-7 days")
+                                    .font(.caption)
+                                    .foregroundStyle(BankDash.muted)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right").foregroundStyle(BankDash.muted)
+                        }
+                        .padding(.vertical, 12)
+                        .contentShape(Rectangle())
                     }
+                    .simultaneousGesture(TapGesture().onEnded {
+                        store.bank.resetBillPayeeDraft()
+                    })
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("test-AddPayee-BillPayPerson")
 
                     Button("Learn when to use Zelle vs. Bill Pay") {}
                         .font(.subheadline)
@@ -188,7 +190,7 @@ struct BillPayAddWhoView: View {
         .background(BankDash.paper.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("test-AddPayeeWhoScreen")
-        .navigationDestination(isPresented: $goPerson) { BillPayPersonInfoView() }
+        .navigationDestination(isPresented: $goZelle) { ZelleWhoAddingView() }
     }
 
     private func whoRow(_ title: String, subtitle: String?, id: String, action: @escaping () -> Void) -> some View {
@@ -210,26 +212,36 @@ struct BillPayAddWhoView: View {
     }
 }
 
-// MARK: - 3. Enter person's information
+// MARK: - 3. Enter person's information (single form: name → phone + T&C)
 
 struct BillPayPersonInfoView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
-    @State private var goAddress = false
+    @State private var showStatePicker = false
+    @State private var fieldErrors: [String: String] = [:]
 
     var body: some View {
         VStack(spacing: 0) {
             navHeader(title: "Add Payee", back: { dismiss() }, step: 2, of: 3)
             ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text("Enter the person's information.")
                         .font(.subheadline)
                         .foregroundStyle(BankDash.muted)
-                        .padding(.bottom, 12)
                         .accessibilityIdentifier("test-AddPayee-PersonHint")
 
-                    draftField("First Name", text: bind(\.bpFirstName), id: "test-AddPayee-FirstName")
-                    draftField("Last Name", text: bind(\.bpLastName), id: "test-AddPayee-LastName")
+                    draftField(
+                        "First Name",
+                        text: bind(\.bpFirstName),
+                        id: "test-AddPayee-FirstName",
+                        error: fieldErrors["firstName"]
+                    )
+                    draftField(
+                        "Last Name",
+                        text: bind(\.bpLastName),
+                        id: "test-AddPayee-LastName",
+                        error: fieldErrors["lastName"]
+                    )
                     draftField(
                         "Nickname (Optional)",
                         text: bind(\.bpNickname),
@@ -242,38 +254,75 @@ struct BillPayPersonInfoView: View {
                         id: "test-AddPayee-Identifying",
                         placeholder: "Identifying Info"
                     )
-                    draftField("Address", text: bind(\.bpAddress), id: "test-AddPayee-Address")
+                    draftField(
+                        "Address",
+                        text: bind(\.bpAddress),
+                        id: "test-AddPayee-Address",
+                        error: fieldErrors["address"]
+                    )
                     draftField(
                         "Address Two (Optional)",
                         text: bind(\.bpAddress2),
                         id: "test-AddPayee-Address2",
                         placeholder: "Enter payee address..."
                     )
-                    draftField("City", text: bind(\.bpCity), id: "test-AddPayee-City")
+                    draftField(
+                        "City",
+                        text: bind(\.bpCity),
+                        id: "test-AddPayee-City",
+                        error: fieldErrors["city"]
+                    )
+
+                    stateRow
+
+                    draftField(
+                        "ZIP Code",
+                        text: bind(\.bpZip),
+                        id: "test-AddPayee-Zip",
+                        keyboard: .numberPad,
+                        error: fieldErrors["zip"]
+                    )
+                    draftField(
+                        "Phone Number",
+                        text: bind(\.bpPhone),
+                        id: "test-AddPayee-Phone",
+                        keyboard: .phonePad,
+                        error: fieldErrors["phone"]
+                    )
+
+                    termsBlock
 
                     if !store.bank.lastResult.isEmpty {
                         Text(store.bank.lastResult)
-                            .font(.caption)
-                            .foregroundStyle(BankDash.muted)
-                            .padding(.top, 8)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Color.red)
                             .accessibilityIdentifier("test-AddPayee-PersonResult")
+                        Text(store.bank.lastResult)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(Color.red)
+                            .accessibilityHidden(true)
+                            .accessibilityIdentifier("test-AddPayee-AddressResult")
+                            .frame(width: 0, height: 0)
+                            .clipped()
                     }
                 }
-                .padding(16)
+                .padding(.horizontal, 16)
+                .padding(.top, 4)
+                .padding(.bottom, 16)
             }
             cancelSaveBar(
                 cancelId: "test-AddPayee-PersonCancel",
-                saveId: "test-AddPayee-PersonSave",
+                saveId: "test-AddPayee-Save",
                 saveEnabled: true
             ) {
                 dismiss()
             } onSave: {
-                let msg = store.bank.validateBillPayeeStep2()
-                if msg.isEmpty {
-                    store.bank.lastResult = ""
-                    goAddress = true
+                fieldErrors = store.bank.billPayeeFieldErrors()
+                let msg = store.bank.saveBillPayee()
+                if msg == "Result: Payee added" {
+                    fieldErrors = [:]
+                    NotificationCenter.default.post(name: .lebyyPushBankRoute, object: BankRoute.addPayeeSuccess)
                 } else {
-                    store.bank.lastResult = msg
                     store.bank.objectWillChange.send()
                 }
             }
@@ -281,7 +330,94 @@ struct BillPayPersonInfoView: View {
         .background(BankDash.paper.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("test-AddPayeePersonScreen")
-        .navigationDestination(isPresented: $goAddress) { BillPayAddressTermsView() }
+        // Keep legacy screen id present for older scripts that wait on address screen
+        .background(
+            Color.clear
+                .accessibilityIdentifier("test-AddPayeeAddressScreen")
+                .frame(width: 0, height: 0)
+        )
+        .sheet(isPresented: $showStatePicker) { BillPaySelectRegionView() }
+    }
+
+    private var stateRow: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("State")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(fieldErrors["state"] == nil ? BankDash.muted : Color.red)
+            Button { showStatePicker = true } label: {
+                HStack {
+                    Text(store.bank.bpState.isEmpty ? "Select state" : store.bank.bpState)
+                        .foregroundStyle(store.bank.bpState.isEmpty ? BankDash.muted : BankDash.ink)
+                    Spacer()
+                    Image(systemName: "chevron.right").foregroundStyle(BankDash.muted)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+                .background(fieldErrors["state"] == nil ? BankDash.canvas : Color.red.opacity(0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(fieldErrors["state"] == nil ? BankDash.line : Color.red, lineWidth: fieldErrors["state"] == nil ? 1 : 1.5)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("test-AddPayee-State")
+            if let err = fieldErrors["state"] {
+                Text(err)
+                    .font(.caption)
+                    .foregroundStyle(Color.red)
+                    .accessibilityIdentifier("test-AddPayee-StateError")
+            }
+        }
+    }
+
+    private var termsBlock: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Terms & Conditions")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(fieldErrors["terms"] == nil ? BankDash.ink : Color.red)
+                .accessibilityIdentifier("test-AddPayee-TermsTitle")
+
+            // Inline in the page ScrollView (no nested terms box).
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Legal info and disclosures")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(BankDash.ink)
+                Text(billPayLegalBody)
+                    .font(.caption)
+                    .foregroundStyle(BankDash.muted)
+                    .accessibilityIdentifier("test-AddPayee-TermsBody")
+                Text(billPayLegalExtra)
+                    .font(.caption)
+                    .foregroundStyle(BankDash.muted)
+                Text(billPayTermsFooter)
+                    .font(.caption)
+                    .foregroundStyle(BankDash.muted)
+                Text("— End of Terms & Conditions —")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(BankDash.muted)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 28)
+                    .onAppear {
+                        if !store.bank.bpTermsScrolledToEnd {
+                            store.bank.bpTermsScrolledToEnd = true
+                            fieldErrors.removeValue(forKey: "terms")
+                            store.bank.objectWillChange.send()
+                        }
+                    }
+                    .accessibilityIdentifier("test-AddPayee-TermsEnd")
+            }
+            .accessibilityIdentifier("test-AddPayee-TermsScroll")
+
+            Text(store.bank.bpTermsScrolledToEnd
+                ? "Result: Terms scrolled to end — Save enabled"
+                : "Result: Scroll the page to the end of Terms & Conditions to enable Save")
+                .font(.caption)
+                .foregroundStyle(fieldErrors["terms"] == nil ? BankDash.muted : Color.red)
+                .accessibilityIdentifier("test-AddPayee-TermsStatus")
+        }
+        .padding(.top, 4)
     }
 
     private func bind(_ keyPath: ReferenceWritableKeyPath<BankStore, String>) -> Binding<String> {
@@ -292,125 +428,10 @@ struct BillPayPersonInfoView: View {
     }
 }
 
-// MARK: - 4. City / State / ZIP / Phone + Legal scroll
-
+/// Legacy address-only screen — redirects conceptually; kept for any old navigation.
 struct BillPayAddressTermsView: View {
-    @EnvironmentObject private var store: AppStore
-    @Environment(\.dismiss) private var dismiss
-    @State private var goState = false
-    @State private var goSuccess = false
-
     var body: some View {
-        VStack(spacing: 0) {
-            navHeader(title: "Add Payee", back: { dismiss() }, step: 2, of: 3)
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    draftField("City", text: Binding(
-                        get: { store.bank.bpCity },
-                        set: { store.bank.bpCity = $0; store.bank.objectWillChange.send() }
-                    ), id: "test-AddPayee-CityValue")
-
-                    Button { goState = true } label: {
-                        HStack {
-                            Text("State").foregroundStyle(BankDash.ink)
-                            Spacer()
-                            Text(store.bank.bpState.isEmpty ? "Select" : store.bank.bpState)
-                                .foregroundStyle(BankDash.accent)
-                            Image(systemName: "chevron.right").foregroundStyle(BankDash.muted)
-                        }
-                        .padding(.vertical, 14)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("test-AddPayee-State")
-                    Divider()
-
-                    draftField("ZIP Code", text: Binding(
-                        get: { store.bank.bpZip },
-                        set: { store.bank.bpZip = $0; store.bank.objectWillChange.send() }
-                    ), id: "test-AddPayee-Zip")
-                    draftField("Phone Number", text: Binding(
-                        get: { store.bank.bpPhone },
-                        set: { store.bank.bpPhone = $0; store.bank.objectWillChange.send() }
-                    ), id: "test-AddPayee-Phone", keyboard: .phonePad)
-
-                    Text("Terms & Conditions")
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.top, 20)
-                        .accessibilityIdentifier("test-AddPayee-TermsTitle")
-
-                    // Must scroll to the end before Save enables
-                    ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 12) {
-                            Text("Legal info and disclosures")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(BankDash.ink)
-                            Text(billPayLegalBody)
-                                .font(.caption)
-                                .foregroundStyle(BankDash.muted)
-                                .accessibilityIdentifier("test-AddPayee-TermsBody")
-                            Text(billPayLegalExtra)
-                                .font(.caption)
-                                .foregroundStyle(BankDash.muted)
-                            Text(billPayTermsFooter)
-                                .font(.caption)
-                                .foregroundStyle(BankDash.muted)
-                            Text("— End of Terms & Conditions —")
-                                .font(.caption2.weight(.semibold))
-                                .foregroundStyle(BankDash.muted)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 28)
-                                .onAppear {
-                                    if !store.bank.bpTermsScrolledToEnd {
-                                        store.bank.bpTermsScrolledToEnd = true
-                                        store.bank.objectWillChange.send()
-                                    }
-                                }
-                                .accessibilityIdentifier("test-AddPayee-TermsEnd")
-                        }
-                    }
-                    .frame(maxHeight: 160)
-                    .padding(8)
-                    .background(BankDash.canvas)
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(BankDash.line))
-                    .accessibilityIdentifier("test-AddPayee-TermsScroll")
-
-                    Text(store.bank.bpTermsScrolledToEnd
-                        ? "Result: Terms scrolled to end — Save enabled"
-                        : "Result: Scroll Terms & Conditions to the end to enable Save")
-                        .font(.caption)
-                        .foregroundStyle(BankDash.muted)
-                        .padding(.top, 8)
-                        .accessibilityIdentifier("test-AddPayee-TermsStatus")
-
-                    if !store.bank.lastResult.isEmpty {
-                        Text(store.bank.lastResult)
-                            .font(.caption)
-                            .foregroundStyle(BankDash.muted)
-                            .accessibilityIdentifier("test-AddPayee-AddressResult")
-                    }
-                }
-                .padding(16)
-            }
-            cancelSaveBar(
-                cancelId: "test-AddPayee-AddressCancel",
-                saveId: "test-AddPayee-Save",
-                saveEnabled: store.bank.bpTermsScrolledToEnd
-            ) {
-                dismiss()
-            } onSave: {
-                let msg = store.bank.saveBillPayee()
-                if msg == "Result: Payee added" {
-                    goSuccess = true
-                } else {
-                    store.bank.objectWillChange.send()
-                }
-            }
-        }
-        .background(BankDash.paper.ignoresSafeArea())
-        .toolbar(.hidden, for: .navigationBar)
-        .accessibilityIdentifier("test-AddPayeeAddressScreen")
-        .navigationDestination(isPresented: $goState) { BillPaySelectRegionView() }
-        .navigationDestination(isPresented: $goSuccess) { BillPayAddSuccessView() }
+        BillPayPersonInfoView()
     }
 }
 
@@ -422,20 +443,24 @@ struct BillPaySelectRegionView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
+            HStack(spacing: 8) {
                 Button { dismiss() } label: {
-                    Image(systemName: "chevron.left").foregroundStyle(BankDash.ink)
+                    Image(systemName: "chevron.left")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(BankDash.ink)
+                        .frame(width: 32, height: 32)
+                        .contentShape(Rectangle())
                 }
                 .accessibilityIdentifier("test-SelectState-Back")
-                Spacer()
                 Text("Select State")
                     .font(.headline)
                     .foregroundStyle(BankDash.ink)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .accessibilityIdentifier("test-SelectStateTitle")
-                Spacer()
-                Color.clear.frame(width: 24)
+                Color.clear.frame(width: 32, height: 32)
             }
-            .padding(12)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
 
             List {
                 Section("US States") {
@@ -488,7 +513,6 @@ struct BillPaySelectRegionView: View {
 
 struct BillPayAddSuccessView: View {
     @EnvironmentObject private var store: AppStore
-    @Environment(\.popToBillPayList) private var popToBillPayList
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -520,15 +544,22 @@ struct BillPayAddSuccessView: View {
             }
 
             Spacer()
-            Button("DONE") { popToBillPayList() }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(BankDash.accent)
-                .foregroundStyle(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 28))
-                .accessibilityIdentifier("test-AddPayeeSuccess-Done")
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+            Button {
+                store.bank.requestOpenBillPayList()
+            } label: {
+                Text("DONE")
+                    .font(.body.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(BankDash.accent)
+                    .foregroundStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 28))
+            }
+            .buttonStyle(.plain)
+            .contentShape(Rectangle())
+            .accessibilityIdentifier("test-AddPayeeSuccess-Done")
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
         }
         .padding(.top, 24)
         .padding(.horizontal, 16)
@@ -669,11 +700,15 @@ struct BillPayListView: View {
         .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("test-BillPayScreen")
         .environment(\.popToBillPayList, {
+            store.bank.requestCloseBillPayPayment()
+        })
+        .onChange(of: store.bank.closeBillPayPayment) { _, close in
+            guard close else { return }
+            store.bank.closeBillPayPayment = false
+            store.bank.lastResult = ""
             goAdd = false
             goPay = false
-            store.bank.lastResult = ""
-            store.bank.objectWillChange.send()
-        })
+        }
         .navigationDestination(isPresented: $goAdd) { BillPayAddWhoView() }
         .navigationDestination(isPresented: $goPay) { BillPayPaymentDetailsView() }
     }
@@ -890,7 +925,6 @@ struct BillPayPaymentDetailsView: View {
 
 struct BillPayPaymentSuccessView: View {
     @EnvironmentObject private var store: AppStore
-    @Environment(\.popToBillPayList) private var popToBillPayList
 
     var body: some View {
         ScrollView {
@@ -924,7 +958,7 @@ struct BillPayPaymentSuccessView: View {
                 detailRow("Payment Type", "Check", "test-BillPaySuccess-Type")
                 detailRow("Confirmation", store.bank.lastConfirmation, "test-BillPaySuccess-Confirmation")
 
-                Button("DONE") { popToBillPayList() }
+                Button("DONE") { store.bank.requestCloseBillPayPayment() }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
                     .background(BankDash.accent)
@@ -953,22 +987,27 @@ struct BillPayPaymentSuccessView: View {
 // MARK: - Shared chrome
 
 private func navHeader(title: String, back: @escaping () -> Void, step: Int, of total: Int) -> some View {
-    VStack(spacing: 8) {
-        HStack {
+    VStack(spacing: 6) {
+        HStack(spacing: 8) {
             Button(action: back) {
-                Image(systemName: "chevron.left").foregroundStyle(BankDash.ink)
+                Image(systemName: "chevron.left")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(BankDash.ink)
+                    .frame(width: 32, height: 32)
+                    .contentShape(Rectangle())
             }
             .accessibilityIdentifier("test-AddPayee-Back")
-            Spacer()
-            Text(title).font(.headline).foregroundStyle(BankDash.ink)
-            Spacer()
-            Color.clear.frame(width: 24)
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(BankDash.ink)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Color.clear.frame(width: 32, height: 32)
         }
-        .padding(.horizontal, 12)
-        .padding(.top, 8)
+        .padding(.horizontal, 8)
+        .padding(.top, 4)
         progressDots(filled: step, total: total)
     }
-    .padding(.bottom, 8)
+    .padding(.bottom, 4)
     .background(BankDash.paper)
 }
 
@@ -1022,20 +1061,33 @@ private func draftField(
     text: Binding<String>,
     id: String,
     placeholder: String = "",
-    keyboard: UIKeyboardType = .default
+    keyboard: UIKeyboardType = .default,
+    error: String? = nil
 ) -> some View {
-    VStack(spacing: 0) {
-        HStack {
-            Text(label).foregroundStyle(BankDash.ink)
-            Spacer()
-            TextField(placeholder.isEmpty ? label : placeholder, text: text)
-                .multilineTextAlignment(.trailing)
-                .foregroundStyle(BankDash.accent)
-                .keyboardType(keyboard)
-                .accessibilityIdentifier(id)
+    let hasError = error != nil && !(error?.isEmpty ?? true)
+    return VStack(alignment: .leading, spacing: 4) {
+        Text(label)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(hasError ? Color.red : BankDash.muted)
+        TextField(placeholder.isEmpty ? label : placeholder, text: text)
+            .foregroundStyle(BankDash.ink)
+            .keyboardType(keyboard)
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .background(hasError ? Color.red.opacity(0.08) : BankDash.canvas)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(hasError ? Color.red : BankDash.line, lineWidth: hasError ? 1.5 : 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .accessibilityIdentifier(id)
+        if let error, !error.isEmpty {
+            Text(error)
+                .font(.caption)
+                .foregroundStyle(Color.red)
+                .accessibilityIdentifier("\(id)-Error")
         }
-        .padding(.vertical, 14)
-        Divider()
     }
 }
 

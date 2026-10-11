@@ -102,6 +102,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (BankState.exitBankToApp) {
+            BankState.exitBankToApp = false
+            BankState.closeBankFlow = false
+            binding.bottomNav.visibility = View.VISIBLE
+            selectTab(R.id.tabHome)
+            return
+        }
         // Refresh account/shop gate after returning from login/catalog
         if (currentTab == R.id.tabAccount || currentTab == R.id.tabShop || currentTab == R.id.tabBank) {
             showTab(currentTab)
@@ -188,6 +195,16 @@ class MainActivity : AppCompatActivity() {
             } else {
                 View.VISIBLE
             }
+        // Bank uses its own footer — hide the main app tab bar while inside bank.
+        binding.bottomNav.visibility =
+            if (id == R.id.tabBank && ShopState.isLoggedIn) View.GONE else View.VISIBLE
+    }
+
+    private fun exitBankToApp() {
+        BankState.exitBankToApp = false
+        BankState.closeBankFlow = false
+        binding.bottomNav.visibility = View.VISIBLE
+        selectTab(R.id.tabHome)
     }
 
     private fun showHome() {
@@ -282,6 +299,7 @@ class MainActivity : AppCompatActivity() {
 
     private var bankShowPromo = true
     private var bankTopTab = "Accounts"
+    private var bankFooterTab = "Accounts"
 
     private fun showBank() {
         val tab = TabBankBinding.inflate(layoutInflater, binding.tabContainer, true)
@@ -293,25 +311,40 @@ class MainActivity : AppCompatActivity() {
         }
         tab.bankGate.visibility = View.GONE
         tab.bankDashboard.visibility = View.VISIBLE
-        tab.bankRoot.contentDescription = if (BankState.isManager()) "test-ManagerHome" else "test-BankHome"
-        tab.bankDashboard.contentDescription = if (BankState.isManager()) "test-ManagerHome" else "test-BankHome"
+        tab.bankRoot.contentDescription = "test-BankHome"
+        tab.bankDashboard.contentDescription = "test-BankHome"
 
+        tab.bankExitBank.setOnClickListener { exitBankToApp() }
         tab.bankMenu.setOnClickListener { BankActivity.open(this, "menu") }
         tab.bankInbox.setOnClickListener { BankActivity.open(this, "inbox") }
         tab.bankProducts.setOnClickListener { BankActivity.open(this, "products") }
         tab.bankLogOut.setOnClickListener {
             ShopState.resetSession()
             BankState.endSession()
+            binding.bottomNav.visibility = View.VISIBLE
             selectTab(R.id.tabAccount)
         }
         tab.bankFooterPayTransfer.setOnClickListener {
+            bankFooterTab = "Pay & Transfer"
+            paintBankFooter(tab)
             BankState.refreshPayDates()
             BankActivity.open(this, "payTransfer")
         }
-        tab.bankFooterDeposit.setOnClickListener { BankActivity.open(this, "deposit") }
-        tab.bankFooterInvest.setOnClickListener { BankActivity.open(this, "invest") }
+        tab.bankFooterDeposit.setOnClickListener {
+            bankFooterTab = "Deposit Checks"
+            paintBankFooter(tab)
+            BankActivity.open(this, "deposit")
+        }
+        tab.bankFooterInvest.setOnClickListener {
+            bankFooterTab = "Invest"
+            paintBankFooter(tab)
+            BankActivity.open(this, "invest")
+        }
         tab.bankFooterAccounts.setOnClickListener {
+            bankFooterTab = "Accounts"
             bankTopTab = "Accounts"
+            paintBankFooter(tab)
+            paintBankTopTabs(tab)
             paintBankCenter(tab)
         }
         tab.bankTopTabAccounts.setOnClickListener {
@@ -325,19 +358,47 @@ class MainActivity : AppCompatActivity() {
             paintBankCenter(tab)
         }
         paintBankTopTabs(tab)
+        paintBankFooter(tab)
         paintBankCenter(tab)
     }
 
     private fun paintBankTopTabs(tab: TabBankBinding) {
         val accounts = bankTopTab == "Accounts"
-        tab.bankTopTabAccountsLabel.setTextColor(getColor(if (accounts) R.color.lebyy_danger else R.color.lebyy_muted))
-        tab.bankTopTabDashboardLabel.setTextColor(getColor(if (accounts) R.color.lebyy_muted else R.color.lebyy_danger))
+        val selected = getColor(R.color.bank_tab_selected)
+        val unselected = getColor(R.color.bank_tab_unselected)
+        tab.bankTopTabAccountsLabel.setTextColor(if (accounts) selected else unselected)
+        tab.bankTopTabDashboardLabel.setTextColor(if (accounts) unselected else selected)
+        tab.bankTopTabAccountsLabel.setTypeface(null, android.graphics.Typeface.BOLD)
+        tab.bankTopTabDashboardLabel.setTypeface(null, android.graphics.Typeface.BOLD)
         tab.bankTopTabAccountsUnderline.setBackgroundColor(
-            if (accounts) getColor(R.color.lebyy_danger) else android.graphics.Color.TRANSPARENT,
+            if (accounts) selected else android.graphics.Color.TRANSPARENT,
         )
         tab.bankTopTabDashboardUnderline.setBackgroundColor(
-            if (accounts) android.graphics.Color.TRANSPARENT else getColor(R.color.lebyy_danger),
+            if (accounts) android.graphics.Color.TRANSPARENT else selected,
         )
+    }
+
+    private fun paintBankFooter(tab: TabBankBinding) {
+        fun colorize(row: android.widget.LinearLayout, accentRes: Int, selected: Boolean) {
+            val accent = getColor(accentRes)
+            val label = if (selected) accent else getColor(R.color.bank_tab_unselected)
+            val style = if (selected) android.graphics.Typeface.BOLD else android.graphics.Typeface.BOLD
+            row.setBackgroundColor(
+                if (selected) android.graphics.Color.argb(30, android.graphics.Color.red(accent), android.graphics.Color.green(accent), android.graphics.Color.blue(accent))
+                else android.graphics.Color.TRANSPARENT,
+            )
+            for (i in 0 until row.childCount) {
+                (row.getChildAt(i) as? TextView)?.apply {
+                    // Icon line keeps accent; label dark when idle, accent when selected.
+                    setTextColor(if (i == 0) accent else label)
+                    setTypeface(null, style)
+                }
+            }
+        }
+        colorize(tab.bankFooterAccounts, R.color.bank_footer_accounts, bankFooterTab == "Accounts")
+        colorize(tab.bankFooterPayTransfer, R.color.bank_footer_pay, bankFooterTab == "Pay & Transfer")
+        colorize(tab.bankFooterDeposit, R.color.bank_footer_deposit, bankFooterTab == "Deposit Checks")
+        colorize(tab.bankFooterInvest, R.color.bank_footer_invest, bankFooterTab == "Invest")
     }
 
     private fun paintBankCenter(tab: TabBankBinding) {
@@ -353,23 +414,8 @@ class MainActivity : AppCompatActivity() {
         root.addView(bankAssistantBar())
         root.addView(bankGreetingBlock())
         root.addView(bankRewardsRow())
-        if (BankState.isManager()) {
-            addBankInk(root, "Pending: ${BankState.pendingTransfers().size}", "test-PendingCount")
-            addBankInk(root, "Customers: ${BankState.customers().size}", "test-CustomerCount")
-            addBankAction(root, "Pending queue", "test-Bank-Pending") { BankActivity.open(this, "pending") }
-            addBankAction(root, "Customers", "test-Bank-Customers") { BankActivity.open(this, "customers") }
-            addBankAction(root, "Decision history", "test-Bank-Decisions") { BankActivity.open(this, "decisions") }
-        } else {
-            root.addView(bankBankingSection())
-            root.addView(bankCardsSection())
-            addBankInk(root, "Quick actions", "test-BankQuickActionsTitle")
-            addBankAction(root, "Transfer", "test-Bank-Transfer") { BankActivity.open(this, "transfer") }
-            addBankAction(root, "Payees", "test-Bank-Payees") { BankActivity.open(this, "payees") }
-            addBankAction(root, "Pay a bill", "test-Bank-Bills") { BankActivity.open(this, "bills") }
-            addBankAction(root, "Cards", "test-Bank-Cards") { BankActivity.open(this, "cards") }
-            addBankAction(root, "Activity", "test-Bank-Activity") { BankActivity.open(this, "activity") }
-        }
-        addBankInk(root, "Role: ${if (BankState.isManager()) "Manager" else "Customer"}", "test-BankRole")
+        root.addView(bankBankingSection())
+        root.addView(bankCardsSection())
     }
 
     private fun paintBankDashboardPanel(root: android.widget.LinearLayout) {
@@ -378,9 +424,6 @@ class MainActivity : AppCompatActivity() {
         addBankInk(root, "This month spent  ₹12,450.00", "test-Dash-Spent")
         addBankInk(root, "Rewards points  2,480", "test-Dash-Points")
         addBankInk(root, "Upcoming bills  2", "test-Dash-Bills")
-        if (!BankState.isManager()) {
-            addBankAction(root, "View activity", "test-Dash-Activity") { BankActivity.open(this, "activity") }
-        }
         root.contentDescription = "test-BankDashboardPanel"
     }
 
@@ -442,14 +485,30 @@ class MainActivity : AppCompatActivity() {
             setHintTextColor(0xFF6B7280.toInt())
             layoutParams = android.widget.LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         })
-        row.addView(android.widget.TextView(this).apply {
-            text = "L 6"
+        val badge = android.widget.FrameLayout(this)
+        badge.addView(android.widget.TextView(this).apply {
+            text = "L"
             contentDescription = "test-BankAssistantOpen"
             setTextColor(0xFFFFFFFF.toInt())
             setBackgroundColor(0xFFDB2626.toInt())
             setPadding(dp(10), dp(8), dp(10), dp(8))
             setOnClickListener { BankActivity.open(this@MainActivity, "assistant") }
         })
+        badge.addView(android.widget.TextView(this).apply {
+            text = "6"
+            contentDescription = "test-BankAssistantBadge"
+            setTextColor(0xFFFFFFFF.toInt())
+            setBackgroundColor(0xFF0D66D9.toInt())
+            textSize = 10f
+            setPadding(dp(4), dp(2), dp(4), dp(2))
+            layoutParams = android.widget.FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                gravity = android.view.Gravity.TOP or android.view.Gravity.END
+            }
+        })
+        row.addView(badge)
         return row
     }
 
@@ -460,7 +519,7 @@ class MainActivity : AppCompatActivity() {
             setPadding(0, dp(12), 0, dp(4))
             setOnClickListener { BankActivity.open(this@MainActivity, "profile") }
         }
-        val full = if (BankState.isManager()) BankState.MANAGER_NAME else BankState.sessionDisplayName()
+        val full = BankState.sessionDisplayName()
         val first = full.split(" ").firstOrNull().orEmpty()
         col.addView(android.widget.TextView(this).apply {
             text = "Hello, $first"
@@ -470,9 +529,15 @@ class MainActivity : AppCompatActivity() {
         })
         col.addView(android.widget.TextView(this).apply {
             text = full
-            contentDescription = if (BankState.isManager()) "test-ManagerName" else "test-BankCustomerName"
+            contentDescription = "test-BankCustomerName"
             setTextColor(0xFF6B7280.toInt())
             textSize = 12f
+        })
+        col.addView(android.widget.TextView(this).apply {
+            text = "Role: Customer"
+            contentDescription = "test-BankRole"
+            setTextColor(0xFF6B7280.toInt())
+            textSize = 11f
         })
         col.addView(android.widget.TextView(this).apply {
             text = "Lebyy Rewards member"
@@ -514,12 +579,22 @@ class MainActivity : AppCompatActivity() {
             setTypeface(typeface, android.graphics.Typeface.BOLD)
             setPadding(dp(14), dp(12), dp(14), dp(8))
         })
-        box.addView(android.widget.TextView(this).apply {
-            text = "Lebyy Bank  FDIC"
+        val brand = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
             contentDescription = "test-BankBrand"
-            setTextColor(0xFF6B7280.toInt())
             setPadding(dp(14), 0, dp(14), dp(8))
+        }
+        brand.addView(android.widget.TextView(this).apply {
+            text = "Lebyy Bank  "
+            setTextColor(0xFF6B7280.toInt())
         })
+        brand.addView(android.widget.TextView(this).apply {
+            text = "FDIC"
+            contentDescription = "test-BankFdic"
+            setTextColor(0xFF6B7280.toInt())
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        })
+        box.addView(brand)
         BankState.currentCustomer()?.accounts?.forEach { account ->
             val line = "${account.name} ${account.masked} · ${BankState.money(account.balance)}"
             box.addView(android.widget.TextView(this).apply {
@@ -716,10 +791,8 @@ class MainActivity : AppCompatActivity() {
         if (pendingHost != null) {
             ShopState.pendingDeepLinkHost = null
             navigateForDeepLinkHost(pendingHost)
-        } else if (role == "manager") {
-            selectTab(R.id.tabBank)
         } else {
-            selectTab(R.id.tabShop)
+            selectTab(R.id.tabBank)
         }
     }
 

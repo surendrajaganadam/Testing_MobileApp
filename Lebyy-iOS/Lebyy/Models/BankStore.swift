@@ -372,7 +372,12 @@ final class BankStore: ObservableObject {
             displayName: displayName,
             builtIn: builtIn,
             accounts: [
-                BankAccount(id: "checking", name: "Checking", number: "10010001", balance: checkingBalance),
+                BankAccount(
+                    id: "checking",
+                    name: builtIn ? "Adv SafeBalance Banking" : "Checking",
+                    number: builtIn ? "10001362" : "10010001",
+                    balance: checkingBalance
+                ),
                 BankAccount(id: "savings", name: "Savings", number: "10010002", balance: builtIn ? 12_000 : 0),
             ],
             payees: [
@@ -417,11 +422,17 @@ final class BankStore: ObservableObject {
             ),
         ]
         billPayees = [
-            BillPayee(id: "bp-amex", name: "American Express - 1005", nickname: "muraliamaxco", kind: "company"),
-            BillPayee(id: "bp-chase", name: "Chase Credit Cards - 5059", nickname: "amazoncreditcard", kind: "company"),
-            BillPayee(id: "bp-citi", name: "Citi Cards - 3318", nickname: "kittucitibankcreditcard", kind: "company"),
-            BillPayee(id: "bp-macys", name: "Macy's - 8770", nickname: "muralimacy", kind: "company"),
-            BillPayee(id: "bp-lebyy", name: "Lebyy Visa - 4242", nickname: "lebyycard", kind: "company"),
+            BillPayee(
+                id: "bp-boa",
+                name: "BankAmericard Platinum Plus Mastercard - 4683",
+                nickname: "",
+                kind: "company",
+                section: "Bank of America"
+            ),
+            BillPayee(id: "bp-amex", name: "American Express - 1005", nickname: "muraliamaxco", kind: "company", section: "Other payees"),
+            BillPayee(id: "bp-chase", name: "Chase Credit Cards - 5059", nickname: "amazoncreditcard", kind: "company", section: "Other payees"),
+            BillPayee(id: "bp-citi", name: "Citi Cards - 3318", nickname: "kittucitibankcreditcard", kind: "company", section: "Other payees"),
+            BillPayee(id: "bp-macys", name: "Macy's - 8770", nickname: "muralimacy", kind: "company", section: "Other payees"),
         ]
         refreshPayDates()
         bpDeliverBy = defaultDeliverBy()
@@ -585,15 +596,21 @@ final class BankStore: ObservableObject {
         return value
     }
 
-    static let usStates: [String] = [
-        "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware",
-        "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
-        "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
-        "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico",
-        "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
-        "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
-        "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming", "District of Columbia",
+    static let usStateEntries: [(name: String, code: String)] = [
+        ("Alabama", "AL"), ("Alaska", "AK"), ("Arizona", "AZ"), ("Arkansas", "AR"), ("California", "CA"),
+        ("Colorado", "CO"), ("Connecticut", "CT"), ("Delaware", "DE"), ("Florida", "FL"), ("Georgia", "GA"),
+        ("Hawaii", "HI"), ("Idaho", "ID"), ("Illinois", "IL"), ("Indiana", "IN"), ("Iowa", "IA"),
+        ("Kansas", "KS"), ("Kentucky", "KY"), ("Louisiana", "LA"), ("Maine", "ME"), ("Maryland", "MD"),
+        ("Massachusetts", "MA"), ("Michigan", "MI"), ("Minnesota", "MN"), ("Mississippi", "MS"),
+        ("Missouri", "MO"), ("Montana", "MT"), ("Nebraska", "NE"), ("Nevada", "NV"), ("New Hampshire", "NH"),
+        ("New Jersey", "NJ"), ("New Mexico", "NM"), ("New York", "NY"), ("North Carolina", "NC"),
+        ("North Dakota", "ND"), ("Ohio", "OH"), ("Oklahoma", "OK"), ("Oregon", "OR"), ("Pennsylvania", "PA"),
+        ("Rhode Island", "RI"), ("South Carolina", "SC"), ("South Dakota", "SD"), ("Tennessee", "TN"),
+        ("Texas", "TX"), ("Utah", "UT"), ("Vermont", "VT"), ("Virginia", "VA"), ("Washington", "WA"),
+        ("West Virginia", "WV"), ("Wisconsin", "WI"), ("Wyoming", "WY"), ("District of Columbia", "DC"),
     ]
+
+    static var usStates: [String] { usStateEntries.map(\.name) }
 
     static let countries: [String] = [
         "United States", "Canada", "United Kingdom", "India", "Australia", "Germany", "France", "Japan",
@@ -605,7 +622,14 @@ final class BankStore: ObservableObject {
         "Hungary", "Romania", "Ukraine",
     ]
 
-    static var regions: [String] { usStates + countries }
+    static func stateCode(for name: String) -> String {
+        usStateEntries.first { $0.name == name }?.code ?? name
+    }
+
+    static func stateName(for codeOrName: String) -> String {
+        if let byCode = usStateEntries.first(where: { $0.code == codeOrName })?.name { return byCode }
+        return codeOrName
+    }
 
     static let frequencies = [
         "One Time", "Weekly", "Every 2 Weeks", "Every 4 Weeks", "Twice a Month", "Monthly",
@@ -674,6 +698,7 @@ final class BankStore: ObservableObject {
                 name: full,
                 nickname: bpNickname,
                 kind: "person",
+                section: "Other payees",
                 address: bpAddress,
                 city: bpCity,
                 state: bpState,
@@ -808,6 +833,7 @@ struct BillPayee: Identifiable, Hashable {
     var name: String
     var nickname: String
     var kind: String
+    var section: String = "Other payees"
     var address: String = ""
     var city: String = ""
     var state: String = ""

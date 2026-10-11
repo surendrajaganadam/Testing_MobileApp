@@ -40,16 +40,23 @@ class BankActivity : AppCompatActivity() {
             finish()
             return
         }
-        if (BankState.closeToBillPay && screen != "payBills") {
+        if (BankState.closeToBillPay && screen != "billPayList" && screen != "payBills") {
             finish()
             return
         }
         if (BankState.closeToBillPay && screen == "payBills") {
+            // After add-payee success, jump from Recipients stack into Bill Pay list
+            BankState.closeToBillPay = false
+            open("billPayList")
+            return
+        }
+        if (BankState.closeToBillPay && screen == "billPayList") {
             BankState.closeToBillPay = false
         }
         if (screen in listOf(
                 "payees", "pending", "customers", "decisions", "activity", "cards", "bills",
                 "acctTransfer", "payBills", "payTransfer", "billPayAddress", "billPayPayment",
+                "billPayList",
             )
         ) {
             render()
@@ -79,7 +86,8 @@ class BankActivity : AppCompatActivity() {
             "acctTransfer" -> renderAcctTransfer(root)
             "acctTransferReview" -> renderAcctTransferReview(root)
             "acctTransferSuccess" -> renderPaySuccess(root, "Your transfer is confirmed", "test-AcctTransferSuccessScreen", account = true)
-            "payBills" -> renderBillPayHome(root)
+            "payBills" -> renderRecipients(root)
+            "billPayList" -> renderBillPayList(root)
             "billPayAddWho" -> renderBillPayAddWho(root)
             "billPayPerson" -> renderBillPayPerson(root)
             "billPayAddress" -> renderBillPayAddress(root)
@@ -210,7 +218,35 @@ class BankActivity : AppCompatActivity() {
         resultLine()
     }
 
-    private fun renderBillPayHome(root: LinearLayout) {
+    private fun renderRecipients(root: LinearLayout) {
+        title("Recipients", "test-RecipientsScreen")
+        text("Recipients", "test-RecipientsTitle")
+        root.addView(button("Close", "test-Recipients-Close") { finish() })
+        text("Bank of America", "test-Recipients-Section-BankofAmerica")
+        BankState.billPayees().filter { it.section == "Bank of America" }.forEach { payee ->
+            text(
+                "${payee.name}\nNo recent payments available",
+                "test-Recipients-Payee-${payee.id}",
+            )
+        }
+        text("Other payees", "test-Recipients-Section-Otherpayees")
+        BankState.billPayees().filter { it.section != "Bank of America" }.forEach { payee ->
+            text(
+                "${payee.name}\nNo recent payments available",
+                "test-Recipients-Payee-${payee.id}",
+            )
+        }
+        root.addView(button("Add a new payee", "test-Recipients-AddPayee") {
+            BankState.resetBillPayeeDraft()
+            open("billPayAddWho")
+        })
+        root.addView(button("Go to Bill Pay", "test-Recipients-GoBillPay") {
+            open("billPayList")
+        })
+        resultLine()
+    }
+
+    private fun renderBillPayList(root: LinearLayout) {
         title("Bill Pay", "test-BillPayScreen")
         text("Bill Pay", "test-BillPayTitle")
         text("Hi, I'm Erica. How can I help?", "test-BillPay-Assistant")
@@ -234,7 +270,6 @@ class BankActivity : AppCompatActivity() {
                 render()
             })
         }
-        root.addView(button("CANCEL", "test-BillPay-Cancel") { finish() })
         root.addView(button("PAY", "test-BillPay-Pay") {
             if (BankState.bpSelectedPayeeId.isBlank()) {
                 BankState.lastResult = "Result: Select a payee"
@@ -244,7 +279,6 @@ class BankActivity : AppCompatActivity() {
                 open("billPayPayment")
             }
         })
-        legal(root)
         resultLine()
     }
 
@@ -255,21 +289,22 @@ class BankActivity : AppCompatActivity() {
             BankState.lastResult = "Result: Company add is not in this practice path — use Bill Pay person"
             render()
         })
+        text("Person", "test-AddPayee-PersonLabel")
         root.addView(button(
-            "Pay them with Zelle\nSend money quickly using their US mobile # / email.",
+            "Pay them with Zelle®\nSend money quickly using their US mobile # / email",
             "test-AddPayee-Zelle",
         ) {
             BankState.lastResult = "Result: Use Bill Pay for this practice path"
             render()
         })
         root.addView(button(
-            "Pay them with Bill Pay\nMail a check to their US address in 4-7 days.",
+            "Pay them with Bill Pay\nMail a check to their US address in 4-7 days",
             "test-AddPayee-BillPayPerson",
         ) {
             BankState.resetBillPayeeDraft()
             open("billPayPerson")
         })
-        text("Learn when to use Zelle vs. Bill Pay.", "test-AddPayee-LearnLink")
+        text("Learn when to use Zelle vs. Bill Pay", "test-AddPayee-LearnLink")
         legal(root)
         resultLine()
     }
@@ -321,36 +356,41 @@ class BankActivity : AppCompatActivity() {
 
     private fun renderBillPayAddress(root: LinearLayout) {
         title("Add Payee", "test-AddPayeeAddressScreen")
-        text("City ${BankState.bpCity}", "test-AddPayee-CityValue")
+        val city = field("City", "test-AddPayee-CityValue", InputType.TYPE_CLASS_TEXT)
+        city.setText(BankState.bpCity)
+        root.addView(city)
         root.addView(button(
             "State ${BankState.bpState.ifBlank { "Select" }}",
             "test-AddPayee-State",
-        ) { open("billPaySelectState") })
+        ) {
+            BankState.bpCity = city.text.toString()
+            open("billPaySelectState")
+        })
         val zip = field("ZIP Code", "test-AddPayee-Zip", InputType.TYPE_CLASS_TEXT)
         zip.setText(BankState.bpZip)
         root.addView(zip)
         val phone = field("Phone Number", "test-AddPayee-Phone", InputType.TYPE_CLASS_PHONE)
         phone.setText(BankState.bpPhone)
         root.addView(phone)
-        text("Terms & Conditions", "test-AddPayee-TermsTitle")
+        text("Legal info and disclosures", "test-AddPayee-TermsTitle")
         val termsScroll = ScrollView(this).apply {
             contentDescription = "test-AddPayee-TermsScroll"
             layoutParams = LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(180),
+                dp(160),
             )
             isFillViewport = false
             val inner = LinearLayout(this@BankActivity).apply {
                 orientation = LinearLayout.VERTICAL
                 setPadding(dp(8))
                 addView(TextView(this@BankActivity).apply {
-                    text = BILL_PAY_TERMS
+                    text = BILL_PAY_LEGAL
                     contentDescription = "test-AddPayee-TermsBody"
-                    setTextColor(getColor(R.color.lebyy_text))
+                    setTextColor(getColor(R.color.lebyy_muted))
                     textSize = 12f
                 })
                 addView(TextView(this@BankActivity).apply {
-                    text = "— End of Terms —"
+                    text = "— End of disclosures —"
                     contentDescription = "test-AddPayee-TermsEnd"
                     setTextColor(getColor(R.color.lebyy_muted))
                     textSize = 12f
@@ -363,7 +403,7 @@ class BankActivity : AppCompatActivity() {
                 val atEnd = scrollY + height >= child.height - dp(8)
                 if (atEnd && !BankState.bpTermsScrolledToEnd) {
                     BankState.bpTermsScrolledToEnd = true
-                    BankState.lastResult = "Result: Terms scrolled to end — Save enabled"
+                    BankState.lastResult = "Result: Disclosures scrolled to end — Save enabled"
                     (root.findViewWithTag("termsStatus") as? TextView)?.text = BankState.lastResult
                     (root.findViewWithTag("saveBtn") as? Button)?.isEnabled = true
                 }
@@ -373,17 +413,17 @@ class BankActivity : AppCompatActivity() {
         root.addView(TextView(this).apply {
             tag = "termsStatus"
             text = if (BankState.bpTermsScrolledToEnd) {
-                "Result: Terms scrolled to end — Save enabled"
+                "Result: Disclosures scrolled to end — Save enabled"
             } else {
-                "Result: Scroll terms to the end to enable Save"
+                "Result: Scroll disclosures to the end to enable Save"
             }
             contentDescription = "test-AddPayee-TermsStatus"
             setTextColor(getColor(R.color.lebyy_muted))
             textSize = 12f
         })
-        legal(root)
         root.addView(button("CANCEL", "test-AddPayee-AddressCancel") { finish() })
         val save = button("SAVE", "test-AddPayee-Save") {
+            BankState.bpCity = city.text.toString()
             BankState.bpZip = zip.text.toString()
             BankState.bpPhone = phone.text.toString()
             val message = BankState.saveBillPayee()
@@ -399,11 +439,10 @@ class BankActivity : AppCompatActivity() {
     private fun renderBillPaySelectState(root: LinearLayout) {
         title("Select State", "test-SelectStateScreen")
         text("Select State", "test-SelectStateTitle")
-        text("US States", "test-SelectState-USStates")
-        BankState.usStates.forEach { region ->
-            val mark = if (BankState.bpState == region) " ✓" else ""
-            root.addView(button("$region$mark", "test-SelectState-${region.replace(" ", "")}") {
-                BankState.bpState = region
+        BankState.usStateEntries.forEach { (name, code) ->
+            val mark = if (BankState.bpState == code || BankState.bpState == name) " ✓" else ""
+            root.addView(button("$name$mark", "test-SelectState-${name.replace(" ", "")}") {
+                BankState.bpState = code
                 finish()
             })
         }
@@ -1032,24 +1071,20 @@ class BankActivity : AppCompatActivity() {
         const val EXTRA_FILTER = "filter"
         const val EXTRA_CHOOSE = "choose"
 
-        private const val BILL_PAY_TERMS = """
-Bill Pay Terms & Conditions
+        private const val BILL_PAY_LEGAL = """
+Investment, insurance and annuity products:
+• Are Not FDIC Insured
+• Are Not Bank Guaranteed
+• May Lose Value
+• Are Not Deposits
+• Are Not Insured by Any Federal Government Agency
+• Are Not a Condition to Any Banking Service or Activity
 
-1. By adding a payee, you authorize Lebyy Bank to mail checks or send electronic payments to the address you provide.
+Investing involves risk. There is always the potential of losing money when you invest in securities. Asset allocation, diversification, and rebalancing do not ensure a profit or protect against loss in declining markets.
 
-2. Payments may take 4–7 business days for delivery when sent by check. You are responsible for ensuring sufficient funds remain available until the check is cashed.
+By continuing you acknowledge these disclosures. Scroll to the end to enable Save.
 
-3. You agree to verify payee name and mailing address. Incorrect information may delay or prevent delivery.
-
-4. Lebyy Bank is not responsible for delays caused by the postal service or the payee.
-
-5. You may cancel a scheduled payment before the processing cut-off shown in Activity.
-
-6. Fees may apply for rush delivery or returned checks as described in your account agreement.
-
-7. These terms are for practice automation. Scroll to the end to acknowledge and enable Save.
-
-8. End of Terms & Conditions — acknowledgement complete when this line is visible.
+Additional practice terms: payments by check may take 4–7 business days. You are responsible for accurate payee mailing information.
 """
 
         fun customerLine(customer: BankCustomer): String =

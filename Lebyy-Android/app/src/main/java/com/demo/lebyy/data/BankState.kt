@@ -73,15 +73,21 @@ object BankState {
     var bpMemo = ""
     var closeToBillPay = false
 
-    val usStates: List<String> = listOf(
-        "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware",
-        "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
-        "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
-        "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico",
-        "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
-        "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
-        "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming", "District of Columbia",
+    val usStateEntries: List<Pair<String, String>> = listOf(
+        "Alabama" to "AL", "Alaska" to "AK", "Arizona" to "AZ", "Arkansas" to "AR", "California" to "CA",
+        "Colorado" to "CO", "Connecticut" to "CT", "Delaware" to "DE", "Florida" to "FL", "Georgia" to "GA",
+        "Hawaii" to "HI", "Idaho" to "ID", "Illinois" to "IL", "Indiana" to "IN", "Iowa" to "IA",
+        "Kansas" to "KS", "Kentucky" to "KY", "Louisiana" to "LA", "Maine" to "ME", "Maryland" to "MD",
+        "Massachusetts" to "MA", "Michigan" to "MI", "Minnesota" to "MN", "Mississippi" to "MS",
+        "Missouri" to "MO", "Montana" to "MT", "Nebraska" to "NE", "Nevada" to "NV", "New Hampshire" to "NH",
+        "New Jersey" to "NJ", "New Mexico" to "NM", "New York" to "NY", "North Carolina" to "NC",
+        "North Dakota" to "ND", "Ohio" to "OH", "Oklahoma" to "OK", "Oregon" to "OR", "Pennsylvania" to "PA",
+        "Rhode Island" to "RI", "South Carolina" to "SC", "South Dakota" to "SD", "Tennessee" to "TN",
+        "Texas" to "TX", "Utah" to "UT", "Vermont" to "VT", "Virginia" to "VA", "Washington" to "WA",
+        "West Virginia" to "WV", "Wisconsin" to "WI", "Wyoming" to "WY", "District of Columbia" to "DC",
     )
+
+    val usStates: List<String> get() = usStateEntries.map { it.first }
 
     val countries: List<String> = listOf(
         "United States", "Canada", "United Kingdom", "India", "Australia", "Germany", "France", "Japan",
@@ -389,7 +395,12 @@ object BankState {
             displayName = displayName,
             builtIn = builtIn,
             accounts = mutableListOf(
-                BankAccount("checking", "Checking", "10010001", checkingBalance),
+                BankAccount(
+                    "checking",
+                    if (builtIn) "Adv SafeBalance Banking" else "Checking",
+                    if (builtIn) "10001362" else "10010001",
+                    checkingBalance,
+                ),
                 BankAccount("savings", "Savings", "10010002", if (builtIn) 12_000.0 else 0.0),
             ),
             payees = mutableListOf(
@@ -438,11 +449,17 @@ object BankState {
         billPayees.clear()
         billPayees.addAll(
             listOf(
-                BillPayee("bp-amex", "American Express - 1005", "muraliamaxco", "company"),
-                BillPayee("bp-chase", "Chase Credit Cards - 5059", "amazoncreditcard", "company"),
-                BillPayee("bp-citi", "Citi Cards - 3318", "kittucitibankcreditcard", "company"),
-                BillPayee("bp-macys", "Macy's - 8770", "muralimacy", "company"),
-                BillPayee("bp-lebyy", "Lebyy Visa - 4242", "lebyycard", "company"),
+                BillPayee(
+                    "bp-boa",
+                    "BankAmericard Platinum Plus Mastercard - 4683",
+                    "",
+                    "company",
+                    section = "Bank of America",
+                ),
+                BillPayee("bp-amex", "American Express - 1005", "muraliamaxco", "company", section = "Other payees"),
+                BillPayee("bp-chase", "Chase Credit Cards - 5059", "amazoncreditcard", "company", section = "Other payees"),
+                BillPayee("bp-citi", "Citi Cards - 3318", "kittucitibankcreditcard", "company", section = "Other payees"),
+                BillPayee("bp-macys", "Macy's - 8770", "muralimacy", "company", section = "Other payees"),
             ),
         )
         billPayeeSeq = 1
@@ -647,6 +664,7 @@ object BankState {
                 name = full,
                 nickname = bpNickname,
                 kind = "person",
+                section = "Other payees",
                 address = bpAddress,
                 city = bpCity,
                 state = bpState,
@@ -731,6 +749,7 @@ class BillPayee(
     var name: String,
     var nickname: String,
     var kind: String,
+    var section: String = "Other payees",
     var address: String = "",
     var city: String = "",
     var state: String = "",

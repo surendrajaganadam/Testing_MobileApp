@@ -188,36 +188,36 @@ Open with `test-BankFooter-PayTransfer`. Wait `test-PayTransferScreen`.
 |-------------|----|--------|
 | Transfer | `test-PT-Transfer` | Account transfer form |
 | Zelle | `test-PT-Zelle` | `test-ZelleScreen` |
-| Pay Bills | `test-PT-PayBills` | Bill Pay (payees list / add payee) |
+| Pay Bills | `test-PT-PayBills` | Recipients → Add Payee / Bill Pay |
 | Wire | `test-PT-Wire` | `test-WireScreen` |
 | History row | `test-PT-History-H-1` | Seeded “Sujathapersonal NJ … ₹500.00” |
 | More activity | `test-PT-MoreActivity` | Activity list |
 
-**Bill Pay / Add Payee path (matches the screenshots):**
+**Bill Pay / Add Payee path (screenshot order 1–10):**
 
 ```
-test-PT-PayBills
-→ test-BillPayScreen (PAYEES list)
-→ test-BillPay-AddPayee
-→ test-AddPayeeWhoScreen → test-AddPayee-BillPayPerson
-→ test-AddPayeePersonScreen
-   fill test-AddPayee-FirstName / LastName / Address / City → test-AddPayee-PersonSave
-→ test-AddPayeeAddressScreen
-   test-AddPayee-State → test-SelectStateScreen
-   scroll list; pick e.g. test-SelectState-NorthCarolina (US states + countries)
-   fill test-AddPayee-Zip / test-AddPayee-Phone
-   scroll test-AddPayee-TermsScroll until test-AddPayee-TermsEnd (enables Save)
-   → test-AddPayee-Save
-→ test-AddPayeeSuccessScreen → test-AddPayeeSuccess-Done
-→ back on test-BillPayScreen (new payee visible as test-BillPay-Payee-bp-N)
-→ select payee → test-BillPay-Pay
-→ test-PaymentDetailsScreen
-   amount test-PaymentDetails-Amount, frequency test-PaymentDetails-Frequency
-   → test-PaymentDetails-Pay
-→ test-BillPaySuccessScreen (confirmation test-BillPaySuccess-Confirmation) → test-BillPaySuccess-Done
+1. test-PT-PayBills → test-RecipientsScreen
+   (Bank of America + Other payees; test-Recipients-AddPayee; test-Recipients-GoBillPay)
+2. test-Recipients-AddPayee → test-AddPayeeWhoScreen
+   → test-AddPayee-BillPayPerson
+3. test-AddPayeePersonScreen
+   First Name / Last Name / Nickname / Identifying Info / Address / Address Two / City
+   → test-AddPayee-PersonSave
+4. test-AddPayeeAddressScreen
+   City / State / ZIP / Phone + Legal info and disclosures
+   test-AddPayee-State →
+5. test-SelectStateScreen (US states show full name; value saved as code e.g. NC)
+   + Countries section; pick test-SelectState-NorthCarolina
+   scroll test-AddPayee-TermsScroll until test-AddPayee-TermsEnd → test-AddPayee-Save
+6. test-AddPayeeSuccessScreen → test-AddPayeeSuccess-Done
+7. test-BillPayScreen (PAYEES with new person; radio select)
+   → select test-BillPay-Payee-bp-N → test-BillPay-Pay
+8–9. test-PaymentDetailsScreen
+   Amount / Frequency (expand list) / Deliver by → test-PaymentDetails-Pay
+10. test-BillPaySuccessScreen → test-BillPaySuccess-Done
 ```
 
-Seeded company payees include American Express, Chase, Citi, Macy's, Lebyy Visa. Newly added person payees appear in the same list after DONE.
+Demo checking account displays as `Adv SafeBalance Banking - 1362`. Seeded recipients: BankAmericard (BoA section), Amex, Chase, Citi, Macy's.
 
 **Account Transfer path:**
 

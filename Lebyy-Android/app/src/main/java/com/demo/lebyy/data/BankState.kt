@@ -51,6 +51,51 @@ object BankState {
 
     private val payTransferHistory = mutableListOf<PayTransferHistoryItem>()
     private var confirmSeq = 1
+    private var billPayeeSeq = 1
+
+    private val billPayees = mutableListOf<BillPayee>()
+    var bpFirstName = ""
+    var bpLastName = ""
+    var bpNickname = ""
+    var bpIdentifying = ""
+    var bpAddress = ""
+    var bpAddress2 = ""
+    var bpCity = ""
+    var bpState = ""
+    var bpZip = ""
+    var bpPhone = ""
+    var bpTermsScrolledToEnd = false
+    var bpSelectedPayeeId = ""
+    var bpPayAmountText = ""
+    var bpFrequency = "One Time"
+    var bpDeliverBy = ""
+    var bpMemoOn = false
+    var bpMemo = ""
+    var closeToBillPay = false
+
+    val usStates: List<String> = listOf(
+        "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware",
+        "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+        "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+        "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico",
+        "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
+        "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+        "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming", "District of Columbia",
+    )
+
+    val countries: List<String> = listOf(
+        "United States", "Canada", "United Kingdom", "India", "Australia", "Germany", "France", "Japan",
+        "Mexico", "Brazil", "China", "Singapore", "United Arab Emirates", "South Africa", "Italy", "Spain",
+        "Netherlands", "Sweden", "Switzerland", "New Zealand", "Ireland", "Philippines", "Pakistan",
+        "Bangladesh", "Nigeria", "Kenya", "Egypt", "Argentina", "Chile", "Colombia", "South Korea",
+        "Indonesia", "Malaysia", "Thailand", "Vietnam", "Poland", "Portugal", "Greece", "Turkey",
+        "Saudi Arabia", "Israel", "Norway", "Denmark", "Finland", "Austria", "Belgium", "Czech Republic",
+        "Hungary", "Romania", "Ukraine",
+    )
+
+    val frequencies: List<String> = listOf(
+        "One Time", "Weekly", "Every 2 Weeks", "Every 4 Weeks", "Twice a Month", "Monthly",
+    )
 
     init {
         resetPracticeData()
@@ -390,7 +435,19 @@ object BankState {
                 status = "You paid",
             ),
         )
+        billPayees.clear()
+        billPayees.addAll(
+            listOf(
+                BillPayee("bp-amex", "American Express - 1005", "muraliamaxco", "company"),
+                BillPayee("bp-chase", "Chase Credit Cards - 5059", "amazoncreditcard", "company"),
+                BillPayee("bp-citi", "Citi Cards - 3318", "kittucitibankcreditcard", "company"),
+                BillPayee("bp-macys", "Macy's - 8770", "muralimacy", "company"),
+                BillPayee("bp-lebyy", "Lebyy Visa - 4242", "lebyycard", "company"),
+            ),
+        )
+        billPayeeSeq = 1
         refreshPayDates()
+        bpDeliverBy = defaultDeliverBy()
     }
 
     fun payTransferHistory(): List<PayTransferHistoryItem> = payTransferHistory.toList()
@@ -526,6 +583,105 @@ object BankState {
         confirmSeq += 1
         return value
     }
+
+    fun billPayees(): List<BillPayee> = billPayees.toList()
+
+    fun resetBillPayeeDraft() {
+        bpFirstName = ""
+        bpLastName = ""
+        bpNickname = ""
+        bpIdentifying = ""
+        bpAddress = ""
+        bpAddress2 = ""
+        bpCity = ""
+        bpState = ""
+        bpZip = ""
+        bpPhone = ""
+        bpTermsScrolledToEnd = false
+        lastResult = ""
+    }
+
+    fun resetBillPaymentDraft() {
+        bpPayAmountText = ""
+        bpFrequency = "One Time"
+        bpDeliverBy = defaultDeliverBy()
+        bpMemoOn = false
+        bpMemo = ""
+        lastResult = ""
+    }
+
+    fun defaultDeliverBy(): String {
+        val cal = java.util.Calendar.getInstance()
+        cal.add(java.util.Calendar.DAY_OF_YEAR, 8)
+        return java.text.SimpleDateFormat("MMM d", Locale.US).format(cal.time)
+    }
+
+    fun validateBillPayeeStep2(): String {
+        if (bpFirstName.trim().isEmpty()) return "Result: First name is required"
+        if (bpLastName.trim().isEmpty()) return "Result: Last name is required"
+        if (bpAddress.trim().isEmpty()) return "Result: Address is required"
+        if (bpCity.trim().isEmpty()) return "Result: City is required"
+        return ""
+    }
+
+    fun validateBillPayeeStep3(): String {
+        if (bpState.isEmpty()) return "Result: State is required"
+        if (bpZip.trim().isEmpty()) return "Result: ZIP Code is required"
+        if (bpPhone.trim().isEmpty()) return "Result: Phone Number is required"
+        if (!bpTermsScrolledToEnd) return "Result: Scroll terms to the end"
+        return ""
+    }
+
+    fun saveBillPayee(): String {
+        val message = validateBillPayeeStep3()
+        if (message.isNotEmpty()) {
+            lastResult = message
+            return message
+        }
+        val full = "${bpFirstName.trim()} ${bpLastName.trim()}"
+        val id = "bp-$billPayeeSeq"
+        billPayeeSeq += 1
+        billPayees.add(
+            BillPayee(
+                id = id,
+                name = full,
+                nickname = bpNickname,
+                kind = "person",
+                address = bpAddress,
+                city = bpCity,
+                state = bpState,
+                zip = bpZip,
+                phone = bpPhone,
+            ),
+        )
+        bpSelectedPayeeId = id
+        lastResult = "Result: Payee added"
+        return lastResult
+    }
+
+    fun selectedBillPayee(): BillPayee? = billPayees.firstOrNull { it.id == bpSelectedPayeeId }
+
+    fun confirmBillPayment(): String {
+        val customer = currentCustomer() ?: return "Result: Not signed in"
+        val payee = selectedBillPayee() ?: return "Result: Select a payee"
+        val amount = bpPayAmountText.trim().toDoubleOrNull()
+        if (amount == null || amount <= 0.0) return "Result: Enter amount"
+        val from = customer.accounts.firstOrNull { it.id == "checking" } ?: return "Result: Select From account"
+        if (amount > from.balance) return "Result: Insufficient funds"
+        from.balance = roundMoney(from.balance - amount)
+        val conf = "Z3PSN-" + String.format(Locale.US, "%05X", confirmSeq)
+        confirmSeq += 1
+        lastConfirmation = conf
+        val id = nextTxnId()
+        customer.activity.add(0, BankTxn(id, "Bill Pay ${payee.name}", amount, "Debit", "Completed"))
+        payTransferHistory.add(
+            0,
+            PayTransferHistoryItem(conf, payee.name, bpFrequency, bpDeliverBy, amount, "You paid"),
+        )
+        lastReceipt = "Receipt: Payment scheduled $conf"
+        lastResult = lastReceipt
+        return lastReceipt
+    }
 }
 
 class BankCustomer(
@@ -568,6 +724,18 @@ class PayTransferHistoryItem(
     val date: String,
     val amount: Double,
     val status: String,
+)
+
+class BillPayee(
+    val id: String,
+    var name: String,
+    var nickname: String,
+    var kind: String,
+    var address: String = "",
+    var city: String = "",
+    var state: String = "",
+    var zip: String = "",
+    var phone: String = "",
 )
 
 class BankTxn(

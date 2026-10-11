@@ -23,6 +23,7 @@
 		B4A100000000000000000003 /* BankViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A100000000000000000004 /* BankViews.swift */; };
 		B4A100000000000000000005 /* BankDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A100000000000000000006 /* BankDashboard.swift */; };
 		B4A100000000000000000007 /* PayTransferFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A100000000000000000008 /* PayTransferFlow.swift */; };
+		B4A100000000000000000009 /* BillPayFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A10000000000000000000A /* BillPayFlow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,7 @@
 		B4A100000000000000000004 /* BankViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankViews.swift; sourceTree = "<group>"; };
 		B4A100000000000000000006 /* BankDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankDashboard.swift; sourceTree = "<group>"; };
 		B4A100000000000000000008 /* PayTransferFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayTransferFlow.swift; sourceTree = "<group>"; };
+		B4A10000000000000000000A /* BillPayFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillPayFlow.swift; sourceTree = "<group>"; };
 		89EEB56EC384BC4BBA8F48A1 /* MainShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainShellView.swift; sourceTree = "<group>"; };
 		8C3746305994F2A46B984661 /* Lebyy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lebyy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A07D6AD11DFB50DC88024020 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 				AC833B95292247CF24972399 /* RootView.swift */,
 				B4A100000000000000000006 /* BankDashboard.swift */,
 				B4A100000000000000000008 /* PayTransferFlow.swift */,
+				B4A10000000000000000000A /* BillPayFlow.swift */,
 				B4A100000000000000000004 /* BankViews.swift */,
 				7201755A9F8120B26BB61281 /* ShopViews.swift */,
 				08C08C6B75C819D361673A1F /* TabRootView.swift */,
@@ -187,6 +190,7 @@
 				B4A100000000000000000003 /* BankViews.swift in Sources */,
 				B4A100000000000000000005 /* BankDashboard.swift in Sources */,
 				B4A100000000000000000007 /* PayTransferFlow.swift in Sources */,
+				B4A100000000000000000009 /* BillPayFlow.swift in Sources */,
 				DC10BB35DE24F37D420F7483 /* TabRootView.swift in Sources */,
 				D48C0222473EB9BF1B397322 /* Theme.swift in Sources */,
 			);

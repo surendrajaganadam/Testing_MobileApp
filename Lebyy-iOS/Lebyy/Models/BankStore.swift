@@ -43,11 +43,32 @@ final class BankStore: ObservableObject {
     var acctDateDetail = ""
 
     @Published var payTransferHistory: [PayTransferHistoryItem] = []
+    @Published var billPayees: [BillPayee] = []
+
+    // Add Payee draft
+    var bpFirstName = ""
+    var bpLastName = ""
+    var bpNickname = ""
+    var bpIdentifying = ""
+    var bpAddress = ""
+    var bpAddress2 = ""
+    var bpCity = ""
+    var bpState = ""
+    var bpZip = ""
+    var bpPhone = ""
+    var bpTermsScrolledToEnd = false
+    var bpSelectedPayeeId = ""
+    var bpPayAmountText = ""
+    var bpFrequency = "One Time"
+    var bpDeliverBy = ""
+    var bpMemoOn = false
+    var bpMemo = ""
 
     private var txnSeq = 1001
     private var decisionSeq = 1
     private var payeeSeq = 1
     private var confirmSeq = 1
+    private var billPayeeSeq = 1
 
     init() {
         seed()
@@ -395,7 +416,15 @@ final class BankStore: ObservableObject {
                 status: "You paid"
             ),
         ]
+        billPayees = [
+            BillPayee(id: "bp-amex", name: "American Express - 1005", nickname: "muraliamaxco", kind: "company"),
+            BillPayee(id: "bp-chase", name: "Chase Credit Cards - 5059", nickname: "amazoncreditcard", kind: "company"),
+            BillPayee(id: "bp-citi", name: "Citi Cards - 3318", nickname: "kittucitibankcreditcard", kind: "company"),
+            BillPayee(id: "bp-macys", name: "Macy's - 8770", nickname: "muralimacy", kind: "company"),
+            BillPayee(id: "bp-lebyy", name: "Lebyy Visa - 4242", nickname: "lebyycard", kind: "company"),
+        ]
         refreshPayDates()
+        bpDeliverBy = defaultDeliverBy()
     }
 
     func refreshPayDates() {
@@ -555,6 +584,147 @@ final class BankStore: ObservableObject {
         confirmSeq += 1
         return value
     }
+
+    static let usStates: [String] = [
+        "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware",
+        "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+        "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+        "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico",
+        "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
+        "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+        "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming", "District of Columbia",
+    ]
+
+    static let countries: [String] = [
+        "United States", "Canada", "United Kingdom", "India", "Australia", "Germany", "France", "Japan",
+        "Mexico", "Brazil", "China", "Singapore", "United Arab Emirates", "South Africa", "Italy", "Spain",
+        "Netherlands", "Sweden", "Switzerland", "New Zealand", "Ireland", "Philippines", "Pakistan",
+        "Bangladesh", "Nigeria", "Kenya", "Egypt", "Argentina", "Chile", "Colombia", "South Korea",
+        "Indonesia", "Malaysia", "Thailand", "Vietnam", "Poland", "Portugal", "Greece", "Turkey",
+        "Saudi Arabia", "Israel", "Norway", "Denmark", "Finland", "Austria", "Belgium", "Czech Republic",
+        "Hungary", "Romania", "Ukraine",
+    ]
+
+    static var regions: [String] { usStates + countries }
+
+    static let frequencies = [
+        "One Time", "Weekly", "Every 2 Weeks", "Every 4 Weeks", "Twice a Month", "Monthly",
+    ]
+
+    func resetBillPayeeDraft() {
+        bpFirstName = ""
+        bpLastName = ""
+        bpNickname = ""
+        bpIdentifying = ""
+        bpAddress = ""
+        bpAddress2 = ""
+        bpCity = ""
+        bpState = ""
+        bpZip = ""
+        bpPhone = ""
+        bpTermsScrolledToEnd = false
+        lastResult = ""
+    }
+
+    func resetBillPaymentDraft() {
+        bpPayAmountText = ""
+        bpFrequency = "One Time"
+        bpDeliverBy = defaultDeliverBy()
+        bpMemoOn = false
+        bpMemo = ""
+        lastResult = ""
+    }
+
+    func defaultDeliverBy() -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US")
+        formatter.dateFormat = "MMM d"
+        return formatter.string(from: Calendar.current.date(byAdding: .day, value: 8, to: Date()) ?? Date())
+    }
+
+    func validateBillPayeeStep2() -> String {
+        if bpFirstName.trimmingCharacters(in: .whitespaces).isEmpty { return "Result: First name is required" }
+        if bpLastName.trimmingCharacters(in: .whitespaces).isEmpty { return "Result: Last name is required" }
+        if bpAddress.trimmingCharacters(in: .whitespaces).isEmpty { return "Result: Address is required" }
+        if bpCity.trimmingCharacters(in: .whitespaces).isEmpty { return "Result: City is required" }
+        return ""
+    }
+
+    func validateBillPayeeStep3() -> String {
+        if bpState.isEmpty { return "Result: State is required" }
+        if bpZip.trimmingCharacters(in: .whitespaces).isEmpty { return "Result: ZIP Code is required" }
+        if bpPhone.trimmingCharacters(in: .whitespaces).isEmpty { return "Result: Phone Number is required" }
+        if !bpTermsScrolledToEnd { return "Result: Scroll terms to the end" }
+        return ""
+    }
+
+    func saveBillPayee() -> String {
+        let message = validateBillPayeeStep3()
+        if !message.isEmpty {
+            lastResult = message
+            return message
+        }
+        let full = "\(bpFirstName.trimmingCharacters(in: .whitespaces)) \(bpLastName.trimmingCharacters(in: .whitespaces))"
+        let id = "bp-\(billPayeeSeq)"
+        billPayeeSeq += 1
+        objectWillChange.send()
+        billPayees.append(
+            BillPayee(
+                id: id,
+                name: full,
+                nickname: bpNickname,
+                kind: "person",
+                address: bpAddress,
+                city: bpCity,
+                state: bpState,
+                zip: bpZip,
+                phone: bpPhone
+            )
+        )
+        bpSelectedPayeeId = id
+        lastResult = "Result: Payee added"
+        return lastResult
+    }
+
+    func selectedBillPayee() -> BillPayee? {
+        billPayees.first { $0.id == bpSelectedPayeeId }
+    }
+
+    func confirmBillPayment() -> String {
+        guard let customer = currentCustomer() else { return "Result: Not signed in" }
+        guard let payee = selectedBillPayee() else { return "Result: Select a payee" }
+        guard let amount = Double(bpPayAmountText.trimmingCharacters(in: .whitespaces)), amount > 0 else {
+            return "Result: Enter amount"
+        }
+        guard let from = customer.accounts.first(where: { $0.id == "checking" }) else {
+            return "Result: Select From account"
+        }
+        if amount > from.balance { return "Result: Insufficient funds" }
+        objectWillChange.send()
+        from.balance = roundMoney(from.balance - amount)
+        let conf = "Z3PSN-" + String(format: "%05X", confirmSeq)
+        confirmSeq += 1
+        lastConfirmation = conf
+        let id = nextTxnId()
+        customer.activity.insert(
+            BankTxn(id: id, title: "Bill Pay \(payee.name)", amount: amount, kind: "Debit", status: "Completed"),
+            at: 0
+        )
+        payTransferHistory.insert(
+            PayTransferHistoryItem(
+                id: conf,
+                title: payee.name,
+                subtitle: bpFrequency,
+                date: bpDeliverBy,
+                amount: amount,
+                status: "You paid"
+            ),
+            at: 0
+        )
+        lastReceipt = "Receipt: Payment scheduled \(conf)"
+        lastResult = lastReceipt
+        return lastReceipt
+    }
 }
 
 final class BankCustomer {
@@ -631,6 +801,18 @@ struct PayTransferHistoryItem: Identifiable {
     let date: String
     let amount: Double
     let status: String
+}
+
+struct BillPayee: Identifiable, Hashable {
+    let id: String
+    var name: String
+    var nickname: String
+    var kind: String
+    var address: String = ""
+    var city: String = ""
+    var state: String = ""
+    var zip: String = ""
+    var phone: String = ""
 }
 
 final class BankTxn: Identifiable {

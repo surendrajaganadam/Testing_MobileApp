@@ -188,24 +188,36 @@ Open with `test-BankFooter-PayTransfer`. Wait `test-PayTransferScreen`.
 |-------------|----|--------|
 | Transfer | `test-PT-Transfer` | Account transfer form |
 | Zelle | `test-PT-Zelle` | `test-ZelleScreen` |
-| Pay Bills | `test-PT-PayBills` | Card pay form |
+| Pay Bills | `test-PT-PayBills` | Bill Pay (payees list / add payee) |
 | Wire | `test-PT-Wire` | `test-WireScreen` |
 | History row | `test-PT-History-H-1` | Seeded “Sujathapersonal NJ … ₹500.00” |
 | More activity | `test-PT-MoreActivity` | Activity list |
 
-**Pay Bills path (matches the screenshots):**
+**Bill Pay / Add Payee path (matches the screenshots):**
 
 ```
 test-PT-PayBills
-→ test-PayBillsScreen (To Lebyy Visa - 4242, From Checking, recurring, Amount)
-→ test-PayBills-Amount → test-ChooseAmountScreen
-   pick test-ChooseAmount-Other, type amount in test-ChooseAmount-Field, test-ChooseAmount-Save
-→ back on Pay with Amount / Date / Note → test-PayBills-Next
-→ test-PayReviewScreen → test-PayReview-Pay
-→ test-PaySuccessScreen (confirmation test-PaySuccess-Confirmation) → test-PaySuccess-Done
+→ test-BillPayScreen (PAYEES list)
+→ test-BillPay-AddPayee
+→ test-AddPayeeWhoScreen → test-AddPayee-BillPayPerson
+→ test-AddPayeePersonScreen
+   fill test-AddPayee-FirstName / LastName / Address / City → test-AddPayee-PersonSave
+→ test-AddPayeeAddressScreen
+   test-AddPayee-State → test-SelectStateScreen
+   scroll list; pick e.g. test-SelectState-NorthCarolina (US states + countries)
+   fill test-AddPayee-Zip / test-AddPayee-Phone
+   scroll test-AddPayee-TermsScroll until test-AddPayee-TermsEnd (enables Save)
+   → test-AddPayee-Save
+→ test-AddPayeeSuccessScreen → test-AddPayeeSuccess-Done
+→ back on test-BillPayScreen (new payee visible as test-BillPay-Payee-bp-N)
+→ select payee → test-BillPay-Pay
+→ test-PaymentDetailsScreen
+   amount test-PaymentDetails-Amount, frequency test-PaymentDetails-Frequency
+   → test-PaymentDetails-Pay
+→ test-BillPaySuccessScreen (confirmation test-BillPaySuccess-Confirmation) → test-BillPaySuccess-Done
 ```
 
-Card starts with current balance `₹7751.46`. Paying `Other amount - ₹1.00` from Checking debits Checking and reduces the card balance.
+Seeded company payees include American Express, Chase, Citi, Macy's, Lebyy Visa. Newly added person payees appear in the same list after DONE.
 
 **Account Transfer path:**
 

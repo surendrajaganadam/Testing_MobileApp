@@ -90,7 +90,8 @@ struct PayTransferHubView: View {
             }
             gridLink("Zelle", "send or receive", "z.circle.fill", "test-PT-Zelle", .zelle)
             gridLink("Pay Bills", "pay now or schedule", "dollarsign.circle", "test-PT-PayBills", .payBills) {
-                store.bank.resetPayDraft()
+                store.bank.bpSelectedPayeeId = ""
+                store.bank.lastResult = ""
             }
             gridLink("Wire", "U.S. or international", "globe", "test-PT-Wire", .wire)
         }

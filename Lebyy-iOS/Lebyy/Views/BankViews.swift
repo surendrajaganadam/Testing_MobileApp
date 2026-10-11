@@ -72,7 +72,7 @@ struct BankTabView: View {
                 case .assistant:
                     BankSimpleScreen(title: "Lebyy Assistant", screenId: "test-BankAssistantScreen", bodyText: "Result: Assistant opened")
                 case .acctTransfer: AcctTransferFormView()
-                case .payBills: PayBillsFormView()
+                case .payBills: BillPayHomeView()
                 case .zelle: ZelleScreen()
                 case .wire: WireScreen()
                 }

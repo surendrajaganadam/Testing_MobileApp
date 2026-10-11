@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.setPadding
@@ -39,9 +40,16 @@ class BankActivity : AppCompatActivity() {
             finish()
             return
         }
+        if (BankState.closeToBillPay && screen != "payBills") {
+            finish()
+            return
+        }
+        if (BankState.closeToBillPay && screen == "payBills") {
+            BankState.closeToBillPay = false
+        }
         if (screen in listOf(
                 "payees", "pending", "customers", "decisions", "activity", "cards", "bills",
-                "acctTransfer", "payBills", "payTransfer",
+                "acctTransfer", "payBills", "payTransfer", "billPayAddress", "billPayPayment",
             )
         ) {
             render()
@@ -71,7 +79,14 @@ class BankActivity : AppCompatActivity() {
             "acctTransfer" -> renderAcctTransfer(root)
             "acctTransferReview" -> renderAcctTransferReview(root)
             "acctTransferSuccess" -> renderPaySuccess(root, "Your transfer is confirmed", "test-AcctTransferSuccessScreen", account = true)
-            "payBills" -> renderPayBills(root)
+            "payBills" -> renderBillPayHome(root)
+            "billPayAddWho" -> renderBillPayAddWho(root)
+            "billPayPerson" -> renderBillPayPerson(root)
+            "billPayAddress" -> renderBillPayAddress(root)
+            "billPaySelectState" -> renderBillPaySelectState(root)
+            "billPayAddSuccess" -> renderBillPayAddSuccess(root)
+            "billPayPayment" -> renderBillPayPayment(root)
+            "billPayPaySuccess" -> renderBillPayPaySuccess(root)
             "chooseAmount" -> renderChooseAmount(root)
             "payReview" -> renderPayReview(root)
             "paySuccess" -> renderPaySuccess(root, "Your payment is confirmed", "test-PaySuccessScreen", account = false)
@@ -105,7 +120,9 @@ class BankActivity : AppCompatActivity() {
         })
         root.addView(button("Zelle\nsend or receive", "test-PT-Zelle") { open("zelle") })
         root.addView(button("Pay Bills\npay now or schedule", "test-PT-PayBills") {
-            BankState.resetPayDraft()
+            BankState.bpSelectedPayeeId = ""
+            BankState.lastResult = ""
+            BankState.closeToBillPay = false
             open("payBills")
         })
         root.addView(button("Wire\nU.S. or international", "test-PT-Wire") { open("wire") })
@@ -193,57 +210,302 @@ class BankActivity : AppCompatActivity() {
         resultLine()
     }
 
-    private fun renderPayBills(root: LinearLayout) {
-        title("Pay", "test-PayBillsScreen")
-        text("Pay", "test-PayBillsHeading")
-        text("* Response required", "test-PayBillsRequired")
-        text("Lebyy deposit products. FDIC Member.", "test-PT-FdicBanner")
-        val card = BankState.currentCustomer()?.card
-        text(
-            "To ${BankState.cardTitle()}\nCurrent balance ${BankState.money(card?.balance ?: 0.0)}",
-            "test-PayBills-To",
-        )
-        root.addView(button(
-            "From * ${BankState.accountTitle(BankState.payFromAccountId)}",
-            "test-PayBills-From",
-        ) {
-            intent.putExtra(EXTRA_CHOOSE, "payFrom")
-            open("chooseAccount")
+    private fun renderBillPayHome(root: LinearLayout) {
+        title("Bill Pay", "test-BillPayScreen")
+        text("Bill Pay", "test-BillPayTitle")
+        text("Hi, I'm Erica. How can I help?", "test-BillPay-Assistant")
+        text("Pay", "test-BillPay-TabPay")
+        text("MY EBILLS & REMINDERS", "test-BillPay-EBillsTitle")
+        text("You don't have any unpaid eBills or reminders right now.", "test-BillPay-EBillsEmpty")
+        text("PAYEES", "test-BillPay-PayeesTitle")
+        root.addView(button("Add Payee +", "test-BillPay-AddPayee") {
+            BankState.resetBillPayeeDraft()
+            open("billPayAddWho")
         })
-        root.addView(button(
-            if (BankState.payRecurring) "Make payment recurring: ON" else "Make payment recurring: OFF",
-            "test-PayBills-Recurring",
-        ) {
-            BankState.payRecurring = !BankState.payRecurring
-            render()
-        })
-        text("How much?", "test-PayBills-HowMuch")
-        val amountLabel = BankState.payAmountDisplay().ifBlank { "Choose amount" }
-        root.addView(button("Amount *  $amountLabel", "test-PayBills-Amount") { open("chooseAmount") })
-        if (BankState.payAmount > 0.0) {
-            text("Date * ${BankState.payDateLabel}\n${BankState.payDateDetail}", "test-PayBills-Date")
-            root.addView(button("Choose date: Today", "test-PayBills-DateToday") {
-                BankState.refreshPayDates()
+        BankState.billPayees().forEach { payee ->
+            val selected = payee.id == BankState.bpSelectedPayeeId
+            val nick = if (payee.nickname.isBlank()) "" else "\n${payee.nickname}"
+            root.addView(button(
+                "${payee.name}$nick\nNo payment in last 60 days${if (selected) "\n✓ selected" else ""}",
+                "test-BillPay-Payee-${payee.id}",
+            ) {
+                BankState.bpSelectedPayeeId = payee.id
+                BankState.lastResult = ""
                 render()
-            })
-            val note = field("Note to self", "test-PayBills-NoteField", InputType.TYPE_CLASS_TEXT)
-            note.setText(BankState.payNote)
-            root.addView(note)
-            text(if (BankState.payNote.isBlank()) "Enter note" else BankState.payNote, "test-PayBills-Note")
-            root.addView(button("Save note", "test-PayBills-NoteSave") {
-                BankState.payNote = note.text.toString().take(140)
-                render()
-            })
-            root.addView(button("NEXT", "test-PayBills-Next") {
-                val message = BankState.validatePayForm()
-                if (message.isEmpty()) open("payReview") else {
-                    BankState.lastResult = message
-                    render()
-                }
             })
         }
+        root.addView(button("CANCEL", "test-BillPay-Cancel") { finish() })
+        root.addView(button("PAY", "test-BillPay-Pay") {
+            if (BankState.bpSelectedPayeeId.isBlank()) {
+                BankState.lastResult = "Result: Select a payee"
+                render()
+            } else {
+                BankState.resetBillPaymentDraft()
+                open("billPayPayment")
+            }
+        })
         legal(root)
         resultLine()
+    }
+
+    private fun renderBillPayAddWho(root: LinearLayout) {
+        title("Add Payee", "test-AddPayeeWhoScreen")
+        text("Who do you want to add?", "test-AddPayee-WhoTitle")
+        root.addView(button("Company", "test-AddPayee-Company") {
+            BankState.lastResult = "Result: Company add is not in this practice path — use Bill Pay person"
+            render()
+        })
+        root.addView(button(
+            "Pay them with Zelle\nSend money quickly using their US mobile # / email.",
+            "test-AddPayee-Zelle",
+        ) {
+            BankState.lastResult = "Result: Use Bill Pay for this practice path"
+            render()
+        })
+        root.addView(button(
+            "Pay them with Bill Pay\nMail a check to their US address in 4-7 days.",
+            "test-AddPayee-BillPayPerson",
+        ) {
+            BankState.resetBillPayeeDraft()
+            open("billPayPerson")
+        })
+        text("Learn when to use Zelle vs. Bill Pay.", "test-AddPayee-LearnLink")
+        legal(root)
+        resultLine()
+    }
+
+    private fun renderBillPayPerson(root: LinearLayout) {
+        title("Add Payee", "test-AddPayeePersonScreen")
+        text("Enter the person's information.", "test-AddPayee-PersonHint")
+        val first = field("First Name", "test-AddPayee-FirstName", InputType.TYPE_CLASS_TEXT)
+        first.setText(BankState.bpFirstName)
+        root.addView(first)
+        val last = field("Last Name", "test-AddPayee-LastName", InputType.TYPE_CLASS_TEXT)
+        last.setText(BankState.bpLastName)
+        root.addView(last)
+        val nick = field("Nickname (Optional)", "test-AddPayee-Nickname", InputType.TYPE_CLASS_TEXT)
+        nick.setText(BankState.bpNickname)
+        root.addView(nick)
+        val ident = field("Identifying Info (Optional)", "test-AddPayee-Identifying", InputType.TYPE_CLASS_TEXT)
+        ident.setText(BankState.bpIdentifying)
+        root.addView(ident)
+        val addr = field("Address", "test-AddPayee-Address", InputType.TYPE_CLASS_TEXT)
+        addr.setText(BankState.bpAddress)
+        root.addView(addr)
+        val addr2 = field("Address Two (Optional)", "test-AddPayee-Address2", InputType.TYPE_CLASS_TEXT)
+        addr2.setText(BankState.bpAddress2)
+        root.addView(addr2)
+        val city = field("City", "test-AddPayee-City", InputType.TYPE_CLASS_TEXT)
+        city.setText(BankState.bpCity)
+        root.addView(city)
+        root.addView(button("CANCEL", "test-AddPayee-PersonCancel") { finish() })
+        root.addView(button("SAVE", "test-AddPayee-PersonSave") {
+            BankState.bpFirstName = first.text.toString()
+            BankState.bpLastName = last.text.toString()
+            BankState.bpNickname = nick.text.toString()
+            BankState.bpIdentifying = ident.text.toString()
+            BankState.bpAddress = addr.text.toString()
+            BankState.bpAddress2 = addr2.text.toString()
+            BankState.bpCity = city.text.toString()
+            val message = BankState.validateBillPayeeStep2()
+            if (message.isEmpty()) {
+                BankState.lastResult = ""
+                open("billPayAddress")
+            } else {
+                BankState.lastResult = message
+                render()
+            }
+        })
+        resultLine()
+    }
+
+    private fun renderBillPayAddress(root: LinearLayout) {
+        title("Add Payee", "test-AddPayeeAddressScreen")
+        text("City ${BankState.bpCity}", "test-AddPayee-CityValue")
+        root.addView(button(
+            "State ${BankState.bpState.ifBlank { "Select" }}",
+            "test-AddPayee-State",
+        ) { open("billPaySelectState") })
+        val zip = field("ZIP Code", "test-AddPayee-Zip", InputType.TYPE_CLASS_TEXT)
+        zip.setText(BankState.bpZip)
+        root.addView(zip)
+        val phone = field("Phone Number", "test-AddPayee-Phone", InputType.TYPE_CLASS_PHONE)
+        phone.setText(BankState.bpPhone)
+        root.addView(phone)
+        text("Terms & Conditions", "test-AddPayee-TermsTitle")
+        val termsScroll = ScrollView(this).apply {
+            contentDescription = "test-AddPayee-TermsScroll"
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(180),
+            )
+            isFillViewport = false
+            val inner = LinearLayout(this@BankActivity).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(dp(8))
+                addView(TextView(this@BankActivity).apply {
+                    text = BILL_PAY_TERMS
+                    contentDescription = "test-AddPayee-TermsBody"
+                    setTextColor(getColor(R.color.lebyy_text))
+                    textSize = 12f
+                })
+                addView(TextView(this@BankActivity).apply {
+                    text = "— End of Terms —"
+                    contentDescription = "test-AddPayee-TermsEnd"
+                    setTextColor(getColor(R.color.lebyy_muted))
+                    textSize = 12f
+                    setPadding(0, dp(24), 0, 0)
+                })
+            }
+            addView(inner)
+            viewTreeObserver.addOnScrollChangedListener {
+                val child = getChildAt(0) ?: return@addOnScrollChangedListener
+                val atEnd = scrollY + height >= child.height - dp(8)
+                if (atEnd && !BankState.bpTermsScrolledToEnd) {
+                    BankState.bpTermsScrolledToEnd = true
+                    BankState.lastResult = "Result: Terms scrolled to end — Save enabled"
+                    (root.findViewWithTag("termsStatus") as? TextView)?.text = BankState.lastResult
+                    (root.findViewWithTag("saveBtn") as? Button)?.isEnabled = true
+                }
+            }
+        }
+        root.addView(termsScroll)
+        root.addView(TextView(this).apply {
+            tag = "termsStatus"
+            text = if (BankState.bpTermsScrolledToEnd) {
+                "Result: Terms scrolled to end — Save enabled"
+            } else {
+                "Result: Scroll terms to the end to enable Save"
+            }
+            contentDescription = "test-AddPayee-TermsStatus"
+            setTextColor(getColor(R.color.lebyy_muted))
+            textSize = 12f
+        })
+        legal(root)
+        root.addView(button("CANCEL", "test-AddPayee-AddressCancel") { finish() })
+        val save = button("SAVE", "test-AddPayee-Save") {
+            BankState.bpZip = zip.text.toString()
+            BankState.bpPhone = phone.text.toString()
+            val message = BankState.saveBillPayee()
+            if (message == "Result: Payee added") open("billPayAddSuccess") else render()
+        }.apply {
+            tag = "saveBtn"
+            isEnabled = BankState.bpTermsScrolledToEnd
+        }
+        root.addView(save)
+        resultLine()
+    }
+
+    private fun renderBillPaySelectState(root: LinearLayout) {
+        title("Select State", "test-SelectStateScreen")
+        text("Select State", "test-SelectStateTitle")
+        text("US States", "test-SelectState-USStates")
+        BankState.usStates.forEach { region ->
+            val mark = if (BankState.bpState == region) " ✓" else ""
+            root.addView(button("$region$mark", "test-SelectState-${region.replace(" ", "")}") {
+                BankState.bpState = region
+                finish()
+            })
+        }
+        text("Countries", "test-SelectState-Countries")
+        BankState.countries.forEach { region ->
+            val mark = if (BankState.bpState == region) " ✓" else ""
+            root.addView(button("$region$mark", "test-SelectState-${region.replace(" ", "")}") {
+                BankState.bpState = region
+                finish()
+            })
+        }
+    }
+
+    private fun renderBillPayAddSuccess(root: LinearLayout) {
+        title("Success", "test-AddPayeeSuccessScreen")
+        text("Success", "test-AddPayeeSuccessTitle")
+        val payee = BankState.selectedBillPayee()
+        text("${payee?.name ?: "Payee"} was added.", "test-AddPayeeSuccessMessage")
+        text("Name ${payee?.name.orEmpty()}", "test-AddPayeeSuccess-Name")
+        text("Address ${payee?.address.orEmpty()}", "test-AddPayeeSuccess-Address")
+        text("City ${payee?.city.orEmpty()}", "test-AddPayeeSuccess-City")
+        text("State ${payee?.state.orEmpty()}", "test-AddPayeeSuccess-State")
+        text("ZIP Code ${payee?.zip.orEmpty()}", "test-AddPayeeSuccess-Zip")
+        root.addView(button("DONE", "test-AddPayeeSuccess-Done") {
+            BankState.closeToBillPay = true
+            finish()
+        })
+    }
+
+    private fun renderBillPayPayment(root: LinearLayout) {
+        title("Payment Details", "test-PaymentDetailsScreen")
+        text("Payment Details", "test-PaymentDetailsTitle")
+        text("Investment products are not FDIC-insured.", "test-PaymentDetails-FDIC")
+        val payee = BankState.selectedBillPayee()
+        text(payee?.name.orEmpty(), "test-PaymentDetails-Payee")
+        val checking = BankState.currentCustomer()?.accounts?.firstOrNull { it.id == "checking" }
+        text(
+            "Pay From ${BankState.accountTitle("checking")}\nAvailable balance ${BankState.money(checking?.balance ?: 0.0)}",
+            "test-PaymentDetails-PayFrom",
+        )
+        val amount = field("Enter amount", "test-PaymentDetails-Amount", InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+        amount.setText(BankState.bpPayAmountText)
+        root.addView(amount)
+        text("Frequency ${BankState.bpFrequency}", "test-PaymentDetails-Frequency")
+        BankState.frequencies.forEach { freq ->
+            root.addView(button(freq, "test-PaymentDetails-Freq-${freq.replace(" ", "")}") {
+                BankState.bpFrequency = freq
+                render()
+            })
+        }
+        text(
+            "Estimated Deliver by Date ${BankState.bpDeliverBy}\nEarliest Deliver by Date: ${BankState.bpDeliverBy}",
+            "test-PaymentDetails-DeliverBy",
+        )
+        root.addView(button(
+            if (BankState.bpMemoOn) "Add Memo/Note: ON" else "Add Memo/Note: OFF",
+            "test-PaymentDetails-MemoToggle",
+        ) {
+            BankState.bpMemoOn = !BankState.bpMemoOn
+            render()
+        })
+        val memo = field("Memo", "test-PaymentDetails-Memo", InputType.TYPE_CLASS_TEXT)
+        memo.setText(BankState.bpMemo)
+        if (BankState.bpMemoOn) root.addView(memo)
+        text(
+            "This payment will be sent by check. Please make sure you have sufficient funds.",
+            "test-PaymentDetails-Note",
+        )
+        root.addView(button("CANCEL", "test-PaymentDetails-Cancel") { finish() })
+        root.addView(button("PAY", "test-PaymentDetails-Pay") {
+            BankState.bpPayAmountText = amount.text.toString()
+            if (BankState.bpMemoOn) BankState.bpMemo = memo.text.toString()
+            val message = BankState.confirmBillPayment()
+            if (message.startsWith("Receipt:")) open("billPayPaySuccess") else {
+                BankState.lastResult = message
+                render()
+            }
+        })
+        resultLine()
+    }
+
+    private fun renderBillPayPaySuccess(root: LinearLayout) {
+        title("Success", "test-BillPaySuccessScreen")
+        text("Success", "test-BillPaySuccessTitle")
+        text("You've scheduled a payment.", "test-BillPaySuccessMessage")
+        text("SAVE AS PDF", "test-BillPaySuccess-SavePdf")
+        text("PRINT", "test-BillPaySuccess-Print")
+        text("EMAIL", "test-BillPaySuccess-Email")
+        text(BankState.selectedBillPayee()?.name.orEmpty(), "test-BillPaySuccess-Payee")
+        text("Pay From ${BankState.accountTitle("checking")}", "test-BillPaySuccess-PayFrom")
+        text(
+            "Amount ${BankState.money(BankState.bpPayAmountText.toDoubleOrNull() ?: 0.0)}",
+            "test-BillPaySuccess-Amount",
+        )
+        text("Deliver By (Estimated) ${BankState.bpDeliverBy}", "test-BillPaySuccess-DeliverBy")
+        text("Frequency ${BankState.bpFrequency}", "test-BillPaySuccess-Frequency")
+        text("Payment Type Check", "test-BillPaySuccess-Type")
+        text("Confirmation ${BankState.lastConfirmation}", "test-BillPaySuccess-Confirmation")
+        root.addView(button("DONE", "test-BillPaySuccess-Done") {
+            BankState.closeToBillPay = true
+            finish()
+        })
     }
 
     private fun renderChooseAmount(root: LinearLayout) {
@@ -769,6 +1031,26 @@ class BankActivity : AppCompatActivity() {
         const val EXTRA_QUERY = "query"
         const val EXTRA_FILTER = "filter"
         const val EXTRA_CHOOSE = "choose"
+
+        private const val BILL_PAY_TERMS = """
+Bill Pay Terms & Conditions
+
+1. By adding a payee, you authorize Lebyy Bank to mail checks or send electronic payments to the address you provide.
+
+2. Payments may take 4–7 business days for delivery when sent by check. You are responsible for ensuring sufficient funds remain available until the check is cashed.
+
+3. You agree to verify payee name and mailing address. Incorrect information may delay or prevent delivery.
+
+4. Lebyy Bank is not responsible for delays caused by the postal service or the payee.
+
+5. You may cancel a scheduled payment before the processing cut-off shown in Activity.
+
+6. Fees may apply for rush delivery or returned checks as described in your account agreement.
+
+7. These terms are for practice automation. Scroll to the end to acknowledge and enable Save.
+
+8. End of Terms & Conditions — acknowledgement complete when this line is visible.
+"""
 
         fun customerLine(customer: BankCustomer): String =
             "${customer.displayName} · ${customer.username}"

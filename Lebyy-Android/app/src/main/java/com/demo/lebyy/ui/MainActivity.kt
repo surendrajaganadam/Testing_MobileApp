@@ -182,7 +182,12 @@ class MainActivity : AppCompatActivity() {
             R.id.tabBank -> "Bank"
             else -> "Account"
         }
-        binding.mainToolbar.visibility = if (id == R.id.tabHome) View.GONE else View.VISIBLE
+        binding.mainToolbar.visibility =
+            if (id == R.id.tabHome || (id == R.id.tabBank && ShopState.isLoggedIn)) {
+                View.GONE
+            } else {
+                View.VISIBLE
+            }
     }
 
     private fun showHome() {
@@ -275,67 +280,335 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, CatalogActivity::class.java))
     }
 
+    private var bankShowPromo = true
+    private var bankTopTab = "Accounts"
+
     private fun showBank() {
         val tab = TabBankBinding.inflate(layoutInflater, binding.tabContainer, true)
-        val root = tab.bankContent
         if (!ShopState.isLoggedIn) {
-            addBankText(root, "Bank needs login", "test-BankLoginGateTitle")
-            addBankButton(root, "Go to Login", "test-BankGoLogin") { selectTab(R.id.tabAccount) }
+            tab.bankGate.visibility = View.VISIBLE
+            tab.bankDashboard.visibility = View.GONE
+            tab.bankGoLogin.setOnClickListener { selectTab(R.id.tabAccount) }
             return
         }
+        tab.bankGate.visibility = View.GONE
+        tab.bankDashboard.visibility = View.VISIBLE
+        tab.bankRoot.contentDescription = if (BankState.isManager()) "test-ManagerHome" else "test-BankHome"
+        tab.bankDashboard.contentDescription = if (BankState.isManager()) "test-ManagerHome" else "test-BankHome"
+
+        tab.bankMenu.setOnClickListener { BankActivity.open(this, "menu") }
+        tab.bankInbox.setOnClickListener { BankActivity.open(this, "inbox") }
+        tab.bankProducts.setOnClickListener { BankActivity.open(this, "products") }
+        tab.bankLogOut.setOnClickListener {
+            ShopState.resetSession()
+            BankState.endSession()
+            selectTab(R.id.tabAccount)
+        }
+        tab.bankFooterPayTransfer.setOnClickListener { BankActivity.open(this, "payTransfer") }
+        tab.bankFooterDeposit.setOnClickListener { BankActivity.open(this, "deposit") }
+        tab.bankFooterInvest.setOnClickListener { BankActivity.open(this, "invest") }
+        tab.bankFooterAccounts.setOnClickListener {
+            bankTopTab = "Accounts"
+            paintBankCenter(tab)
+        }
+        tab.bankTopTabAccounts.setOnClickListener {
+            bankTopTab = "Accounts"
+            paintBankTopTabs(tab)
+            paintBankCenter(tab)
+        }
+        tab.bankTopTabDashboard.setOnClickListener {
+            bankTopTab = "Dashboard"
+            paintBankTopTabs(tab)
+            paintBankCenter(tab)
+        }
+        paintBankTopTabs(tab)
+        paintBankCenter(tab)
+    }
+
+    private fun paintBankTopTabs(tab: TabBankBinding) {
+        val accounts = bankTopTab == "Accounts"
+        tab.bankTopTabAccountsLabel.setTextColor(getColor(if (accounts) R.color.lebyy_danger else R.color.lebyy_muted))
+        tab.bankTopTabDashboardLabel.setTextColor(getColor(if (accounts) R.color.lebyy_muted else R.color.lebyy_danger))
+        tab.bankTopTabAccountsUnderline.setBackgroundColor(
+            if (accounts) getColor(R.color.lebyy_danger) else android.graphics.Color.TRANSPARENT,
+        )
+        tab.bankTopTabDashboardUnderline.setBackgroundColor(
+            if (accounts) android.graphics.Color.TRANSPARENT else getColor(R.color.lebyy_danger),
+        )
+    }
+
+    private fun paintBankCenter(tab: TabBankBinding) {
+        val root = tab.bankCenter
+        root.removeAllViews()
+        if (bankTopTab == "Dashboard") {
+            paintBankDashboardPanel(root)
+            return
+        }
+        if (bankShowPromo) {
+            root.addView(bankPromoCard())
+        }
+        root.addView(bankAssistantBar())
+        root.addView(bankGreetingBlock())
+        root.addView(bankRewardsRow())
         if (BankState.isManager()) {
-            root.contentDescription = "test-ManagerHome"
-            addBankText(root, BankState.MANAGER_NAME, "test-ManagerName")
-            addBankText(root, "Role: Manager", "test-BankRole")
-            addBankText(root, "Pending: ${BankState.pendingTransfers().size}", "test-PendingCount")
-            addBankText(root, "Customers: ${BankState.customers().size}", "test-CustomerCount")
-            addBankButton(root, "Pending queue", "test-Bank-Pending") { BankActivity.open(this, "pending") }
-            addBankButton(root, "Customers", "test-Bank-Customers") { BankActivity.open(this, "customers") }
-            addBankButton(root, "Decision history", "test-Bank-Decisions") { BankActivity.open(this, "decisions") }
+            addBankInk(root, "Pending: ${BankState.pendingTransfers().size}", "test-PendingCount")
+            addBankInk(root, "Customers: ${BankState.customers().size}", "test-CustomerCount")
+            addBankAction(root, "Pending queue", "test-Bank-Pending") { BankActivity.open(this, "pending") }
+            addBankAction(root, "Customers", "test-Bank-Customers") { BankActivity.open(this, "customers") }
+            addBankAction(root, "Decision history", "test-Bank-Decisions") { BankActivity.open(this, "decisions") }
         } else {
-            root.contentDescription = "test-BankHome"
-            val customer = BankState.currentCustomer()
-            addBankText(root, customer?.displayName.orEmpty(), "test-BankCustomerName")
-            addBankText(root, "Role: Customer", "test-BankRole")
-            customer?.accounts?.forEach { account ->
-                addBankText(
-                    root,
-                    "${account.name} ${account.masked} · ${BankState.money(account.balance)}",
-                    "test-Account-${account.name}",
-                )
+            root.addView(bankBankingSection())
+            root.addView(bankCardsSection())
+            addBankInk(root, "Quick actions", "test-BankQuickActionsTitle")
+            addBankAction(root, "Transfer", "test-Bank-Transfer") { BankActivity.open(this, "transfer") }
+            addBankAction(root, "Payees", "test-Bank-Payees") { BankActivity.open(this, "payees") }
+            addBankAction(root, "Pay a bill", "test-Bank-Bills") { BankActivity.open(this, "bills") }
+            addBankAction(root, "Cards", "test-Bank-Cards") { BankActivity.open(this, "cards") }
+            addBankAction(root, "Activity", "test-Bank-Activity") { BankActivity.open(this, "activity") }
+        }
+        addBankInk(root, "Role: ${if (BankState.isManager()) "Manager" else "Customer"}", "test-BankRole")
+    }
+
+    private fun paintBankDashboardPanel(root: android.widget.LinearLayout) {
+        addBankInk(root, "Dashboard", "test-BankDashboardTitle")
+        addBankInk(root, "Spending snapshot and rewards for practice automation.", "test-BankDashboardBlurb")
+        addBankInk(root, "This month spent  ₹12,450.00", "test-Dash-Spent")
+        addBankInk(root, "Rewards points  2,480", "test-Dash-Points")
+        addBankInk(root, "Upcoming bills  2", "test-Dash-Bills")
+        if (!BankState.isManager()) {
+            addBankAction(root, "View activity", "test-Dash-Activity") { BankActivity.open(this, "activity") }
+        }
+        root.contentDescription = "test-BankDashboardPanel"
+    }
+
+    private fun bankPromoCard(): View {
+        val box = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            setBackgroundColor(0xFFF0F0F1.toInt())
+            setPadding(dp(12), dp(12), dp(12), dp(12))
+            contentDescription = "test-BankPromo"
+        }
+        val textCol = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            layoutParams = android.widget.LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        textCol.addView(android.widget.TextView(this).apply {
+            text = "Open a CD and watch your money grow. Start with as little as ₹1,000 and get a competitive, guaranteed rate of return."
+            contentDescription = "test-BankPromoText"
+            setTextColor(0xFF1A1F29.toInt())
+            textSize = 13f
+        })
+        textCol.addView(android.widget.TextView(this).apply {
+            text = "Compare options"
+            contentDescription = "test-BankPromoCompare"
+            setTextColor(0xFF0D66D9.toInt())
+            textSize = 13f
+            setPadding(0, dp(6), 0, 0)
+            setOnClickListener { BankActivity.open(this@MainActivity, "products") }
+        })
+        box.addView(textCol)
+        box.addView(android.widget.TextView(this).apply {
+            text = "✕"
+            contentDescription = "test-BankPromoDismiss"
+            setTextColor(0xFF6B7280.toInt())
+            setPadding(dp(8), 0, 0, 0)
+            setOnClickListener {
+                bankShowPromo = false
+                selectTab(R.id.tabBank)
             }
-            addBankButton(root, "Transfer", "test-Bank-Transfer") { BankActivity.open(this, "transfer") }
-            addBankButton(root, "Payees", "test-Bank-Payees") { BankActivity.open(this, "payees") }
-            addBankButton(root, "Pay a bill", "test-Bank-Bills") { BankActivity.open(this, "bills") }
-            addBankButton(root, "Cards", "test-Bank-Cards") { BankActivity.open(this, "cards") }
-            addBankButton(root, "Activity", "test-Bank-Activity") { BankActivity.open(this, "activity") }
+        })
+        return box
+    }
+
+    private fun bankAssistantBar(): View {
+        val row = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            setBackgroundColor(0xFFFFFFFF.toInt())
+            setPadding(dp(12), dp(10), dp(12), dp(10))
+            contentDescription = "test-BankAssistantBar"
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(12) }
+        }
+        row.addView(android.widget.EditText(this).apply {
+            hint = "Hi, I'm Lebyy. How can I help?"
+            contentDescription = "test-BankAssistant"
+            setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            setTextColor(0xFF1A1F29.toInt())
+            setHintTextColor(0xFF6B7280.toInt())
+            layoutParams = android.widget.LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+        })
+        row.addView(android.widget.TextView(this).apply {
+            text = "L 6"
+            contentDescription = "test-BankAssistantOpen"
+            setTextColor(0xFFFFFFFF.toInt())
+            setBackgroundColor(0xFFDB2626.toInt())
+            setPadding(dp(10), dp(8), dp(10), dp(8))
+            setOnClickListener { BankActivity.open(this@MainActivity, "assistant") }
+        })
+        return row
+    }
+
+    private fun bankGreetingBlock(): View {
+        val col = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            contentDescription = "test-BankGreeting"
+            setPadding(0, dp(12), 0, dp(4))
+            setOnClickListener { BankActivity.open(this@MainActivity, "profile") }
+        }
+        val full = if (BankState.isManager()) BankState.MANAGER_NAME else BankState.sessionDisplayName()
+        val first = full.split(" ").firstOrNull().orEmpty()
+        col.addView(android.widget.TextView(this).apply {
+            text = "Hello, $first"
+            setTextColor(0xFF1A1F29.toInt())
+            textSize = 22f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+        })
+        col.addView(android.widget.TextView(this).apply {
+            text = full
+            contentDescription = if (BankState.isManager()) "test-ManagerName" else "test-BankCustomerName"
+            setTextColor(0xFF6B7280.toInt())
+            textSize = 12f
+        })
+        col.addView(android.widget.TextView(this).apply {
+            text = "Lebyy Rewards member"
+            contentDescription = "test-BankRewardsMember"
+            setTextColor(0xFF6B7280.toInt())
+            textSize = 14f
+        })
+        return col
+    }
+
+    private fun bankRewardsRow(): View {
+        return android.widget.TextView(this).apply {
+            text = "Lebyy Rewards™  ›"
+            contentDescription = "test-BankRewards"
+            setTextColor(0xFF1A1F29.toInt())
+            textSize = 17f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setPadding(0, dp(8), 0, dp(8))
+            setOnClickListener { BankActivity.open(this@MainActivity, "rewards") }
         }
     }
 
-    private fun addBankText(root: android.widget.LinearLayout, value: String, id: String) {
+    private fun bankBankingSection(): View {
+        val box = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setBackgroundColor(0xFFFFFFFF.toInt())
+            contentDescription = "test-BankingSection"
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(8) }
+        }
+        box.addView(brandStripe())
+        box.addView(android.widget.TextView(this).apply {
+            text = "Banking"
+            contentDescription = "test-BankingToggle"
+            setTextColor(0xFF1A1F29.toInt())
+            textSize = 20f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setPadding(dp(14), dp(12), dp(14), dp(8))
+        })
+        box.addView(android.widget.TextView(this).apply {
+            text = "Lebyy Bank  FDIC"
+            contentDescription = "test-BankBrand"
+            setTextColor(0xFF6B7280.toInt())
+            setPadding(dp(14), 0, dp(14), dp(8))
+        })
+        BankState.currentCustomer()?.accounts?.forEach { account ->
+            val line = "${account.name} ${account.masked} · ${BankState.money(account.balance)}"
+            box.addView(android.widget.TextView(this).apply {
+                text = line
+                contentDescription = "test-Account-${account.name}"
+                setTextColor(0xFF1A1F29.toInt())
+                textSize = 16f
+                setPadding(dp(14), dp(14), dp(14), dp(14))
+                setOnClickListener { BankActivity.open(this@MainActivity, "activity") }
+            })
+        }
+        return box
+    }
+
+    private fun bankCardsSection(): View {
+        val box = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setBackgroundColor(0xFFFFFFFF.toInt())
+            contentDescription = "test-CreditCardsSection"
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ).apply { topMargin = dp(12) }
+        }
+        box.addView(brandStripe())
+        box.addView(android.widget.TextView(this).apply {
+            text = "Credit cards"
+            contentDescription = "test-CreditCardsToggle"
+            setTextColor(0xFF1A1F29.toInt())
+            textSize = 20f
+            setTypeface(typeface, android.graphics.Typeface.BOLD)
+            setPadding(dp(14), dp(12), dp(14), dp(8))
+        })
+        val card = BankState.currentCustomer()?.card
+        if (card != null) {
+            box.addView(android.widget.TextView(this).apply {
+                text = "${card.network} ending ${card.last4}"
+                contentDescription = "test-HomeCard-${card.network}"
+                setTextColor(0xFF1A1F29.toInt())
+                textSize = 16f
+                setPadding(dp(14), dp(14), dp(14), dp(14))
+                setOnClickListener { BankActivity.open(this@MainActivity, "cards") }
+            })
+        }
+        return box
+    }
+
+    private fun brandStripe(): View {
+        val row = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(4),
+            )
+        }
+        row.addView(View(this).apply {
+            layoutParams = android.widget.LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+            setBackgroundColor(0xFFDB2626.toInt())
+        })
+        row.addView(View(this).apply {
+            layoutParams = android.widget.LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+            setBackgroundColor(0xFF0D4DB3.toInt())
+        })
+        return row
+    }
+
+    private fun addBankInk(root: android.widget.LinearLayout, value: String, id: String) {
         root.addView(
             android.widget.TextView(this).apply {
                 text = value
                 contentDescription = id
-                setTextColor(getColor(R.color.lebyy_text))
-                textSize = 16f
-                setPadding(0, 12, 0, 4)
+                setTextColor(0xFF1A1F29.toInt())
+                textSize = 15f
+                setPadding(0, dp(8), 0, dp(4))
             },
         )
     }
 
-    private fun addBankButton(root: android.widget.LinearLayout, label: String, id: String, onClick: () -> Unit) {
+    private fun addBankAction(root: android.widget.LinearLayout, label: String, id: String, onClick: () -> Unit) {
         root.addView(
             android.widget.Button(this).apply {
                 text = label
                 contentDescription = id
                 isAllCaps = false
-                setTextColor(getColor(R.color.lebyy_bg))
-                setBackgroundColor(getColor(R.color.lebyy_accent))
+                setTextColor(0xFFFFFFFF.toInt())
+                setBackgroundColor(0xFF0D66D9.toInt())
                 setOnClickListener { onClick() }
             },
         )
     }
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private fun showAccount() {
         if (ShopState.isLoggedIn) {

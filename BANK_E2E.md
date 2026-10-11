@@ -155,11 +155,30 @@ Deep link `lebyy://bank` while logged out shows the bank gate (or Account, if lo
 
 ## 4. Screen map
 
+After login, Bank is a light **Accounts** dashboard (header / scrollable center / footer), Lebyy-branded.
+
 | Screen | Wait for | How you got here |
 |--------|----------|------------------|
 | Bank gate | `test-BankLoginGateTitle` | `test-Tab-Bank` logged out |
 | Customer home | `test-BankHome` | `test-Tab-Bank` as a customer |
 | Manager home | `test-ManagerHome` | `test-Tab-Bank` as the manager, or immediately after manager login |
+
+### Dashboard chrome (both roles)
+
+| Area | Ids |
+|------|-----|
+| Header | `test-BankHeader`, `test-BankMenu`, `test-BankInbox`, `test-BankProducts`, `test-BankLogOut` |
+| Top tabs | `test-BankTopTabs`, `test-BankTopTab-Accounts`, `test-BankTopTab-Dashboard` |
+| Promo | `test-BankPromo`, `test-BankPromoText`, `test-BankPromoCompare`, `test-BankPromoDismiss` |
+| Assistant | `test-BankAssistantBar`, `test-BankAssistant`, `test-BankAssistantOpen` |
+| Greeting | `test-BankGreeting`, `test-BankCustomerName` / `test-ManagerName`, `test-BankRewardsMember` |
+| Rewards | `test-BankRewards` |
+| Banking | `test-BankingSection`, `test-BankBrand`, `test-Account-Checking`, `test-Account-Savings` |
+| Credit cards | `test-CreditCardsSection`, `test-HomeCard-Visa` (home only; Cards screen still uses `test-Card-Visa`) |
+| Quick actions (customer) | `test-Bank-Transfer`, `test-Bank-Payees`, `test-Bank-Bills`, `test-Bank-Cards`, `test-Bank-Activity` |
+| Footer | `test-BankFooter`, `test-BankFooter-Accounts`, `test-BankFooter-PayTransfer`, `test-BankFooter-Deposit`, `test-BankFooter-Invest` |
+
+Shell screens from chrome: `test-BankMenuScreen`, `test-BankInboxScreen`, `test-BankProductsScreen`, `test-BankRewardsScreen`, `test-BankProfileScreen`, `test-PayTransferScreen`, `test-BankDepositScreen`, `test-BankInvestScreen`, `test-BankAssistantScreen`. Dashboard tab panel: `test-BankDashboardPanel`.
 | Transfer | `test-BankTransferScreen` | `test-Bank-Transfer` |
 | Confirm transfer | `test-BankTransferConfirmScreen` | `test-TransferContinue` when the amount is valid |
 | OTP | `test-BankOtpScreen` | `test-TransferConfirm` when amount `<= 10000` |

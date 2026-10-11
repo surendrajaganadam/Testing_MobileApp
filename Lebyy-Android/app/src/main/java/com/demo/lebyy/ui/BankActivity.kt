@@ -63,8 +63,30 @@ class BankActivity : AppCompatActivity() {
             "customers" -> renderCustomers(root)
             "customerForm" -> renderCustomerForm(root)
             "decisions" -> renderDecisions(root)
+            "payTransfer" -> renderPayTransfer(root)
+            "menu" -> renderShell(root, "Menu", "test-BankMenuScreen", "Result: Menu opened")
+            "inbox" -> renderShell(root, "Inbox", "test-BankInboxScreen", "Result: Inbox opened")
+            "products" -> renderShell(root, "Products", "test-BankProductsScreen", "Result: Products opened")
+            "rewards" -> renderShell(root, "Lebyy Rewards", "test-BankRewardsScreen", "Result: Rewards opened")
+            "profile" -> renderShell(root, "Profile", "test-BankProfileScreen", "Result: Profile opened")
+            "deposit" -> renderShell(root, "Deposit Checks", "test-BankDepositScreen", "Result: Deposit Checks opened")
+            "invest" -> renderShell(root, "Invest", "test-BankInvestScreen", "Result: Invest opened")
+            "assistant" -> renderShell(root, "Lebyy Assistant", "test-BankAssistantScreen", "Result: Assistant opened")
             else -> finish()
         }
+    }
+
+    private fun renderShell(root: LinearLayout, titleText: String, screenId: String, result: String) {
+        title(titleText, screenId)
+        text(result, "test-BankShellResult")
+    }
+
+    private fun renderPayTransfer(root: LinearLayout) {
+        title("Pay & Transfer", "test-PayTransferScreen")
+        text("Pay & Transfer", "test-PayTransferTitle")
+        root.addView(button("Transfer", "test-PayTransfer-Transfer") { open("transfer") })
+        root.addView(button("Payees", "test-PayTransfer-Payees") { open("payees") })
+        root.addView(button("Pay a bill", "test-PayTransfer-Bills") { open("bills") })
     }
 
     private fun renderTransfer(root: LinearLayout) {

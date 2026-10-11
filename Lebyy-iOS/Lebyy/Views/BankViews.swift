@@ -19,6 +19,8 @@ enum BankRoute: Hashable {
     case pending, pendingDetail(String)
     case customers, customerForm(String?)
     case decisions
+    case menu, inbox, products, rewards, profile
+    case payTransfer, deposit, invest, assistant
 }
 
 struct BankTabView: View {
@@ -30,10 +32,8 @@ struct BankTabView: View {
             Group {
                 if !store.isLoggedIn {
                     BankLoginGateView()
-                } else if store.bank.isManager {
-                    ManagerHomeView()
                 } else {
-                    CustomerBankHomeView()
+                    BankAccountsDashboard()
                 }
             }
             .navigationDestination(for: BankRoute.self) { route in
@@ -53,6 +53,23 @@ struct BankTabView: View {
                 case .customers: CustomersView()
                 case .customerForm(let username): CustomerFormView(editingUsername: username)
                 case .decisions: DecisionsView()
+                case .menu:
+                    BankSimpleScreen(title: "Menu", screenId: "test-BankMenuScreen", bodyText: "Result: Menu opened")
+                case .inbox:
+                    BankSimpleScreen(title: "Inbox", screenId: "test-BankInboxScreen", bodyText: "Result: Inbox opened")
+                case .products:
+                    BankSimpleScreen(title: "Products", screenId: "test-BankProductsScreen", bodyText: "Result: Products opened")
+                case .rewards:
+                    BankSimpleScreen(title: "Lebyy Rewards", screenId: "test-BankRewardsScreen", bodyText: "Result: Rewards opened")
+                case .profile:
+                    BankSimpleScreen(title: "Profile", screenId: "test-BankProfileScreen", bodyText: "Result: Profile opened")
+                case .payTransfer: PayTransferHubView()
+                case .deposit:
+                    BankSimpleScreen(title: "Deposit Checks", screenId: "test-BankDepositScreen", bodyText: "Result: Deposit Checks opened")
+                case .invest:
+                    BankSimpleScreen(title: "Invest", screenId: "test-BankInvestScreen", bodyText: "Result: Invest opened")
+                case .assistant:
+                    BankSimpleScreen(title: "Lebyy Assistant", screenId: "test-BankAssistantScreen", bodyText: "Result: Assistant opened")
                 }
             }
         }
@@ -86,74 +103,6 @@ struct BankLoginGateView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(LebyyTheme.bg.ignoresSafeArea())
         .navigationTitle("Bank")
-    }
-}
-
-struct CustomerBankHomeView: View {
-    @EnvironmentObject private var store: AppStore
-
-    var body: some View {
-        let bank = store.bank
-        let customer = bank.currentCustomer()
-        ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                Text(customer?.displayName ?? "")
-                    .font(.title2.bold())
-                    .foregroundStyle(LebyyTheme.text)
-                    .accessibilityIdentifier("test-BankCustomerName")
-                Text("Role: Customer")
-                    .foregroundStyle(LebyyTheme.muted)
-                    .accessibilityIdentifier("test-BankRole")
-                if let customer {
-                    ForEach(customer.accounts, id: \.id) { account in
-                        Text("\(account.name) \(account.masked) · \(bank.money(account.balance))")
-                            .foregroundStyle(LebyyTheme.text)
-                            .accessibilityIdentifier("test-Account-\(account.name)")
-                    }
-                }
-                bankLink("Transfer", "test-Bank-Transfer", .transfer)
-                bankLink("Payees", "test-Bank-Payees", .payees)
-                bankLink("Pay a bill", "test-Bank-Bills", .bills)
-                bankLink("Cards", "test-Bank-Cards", .cards)
-                bankLink("Activity", "test-Bank-Activity", .activity)
-            }
-            .padding(16)
-        }
-        .background(LebyyTheme.bg.ignoresSafeArea())
-        .navigationTitle("Bank")
-        .accessibilityIdentifier("test-BankHome")
-    }
-}
-
-struct ManagerHomeView: View {
-    @EnvironmentObject private var store: AppStore
-
-    var body: some View {
-        let bank = store.bank
-        ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                Text(BankStore.managerName)
-                    .font(.title2.bold())
-                    .foregroundStyle(LebyyTheme.text)
-                    .accessibilityIdentifier("test-ManagerName")
-                Text("Role: Manager")
-                    .foregroundStyle(LebyyTheme.muted)
-                    .accessibilityIdentifier("test-BankRole")
-                Text("Pending: \(bank.pendingTransfers().count)")
-                    .foregroundStyle(LebyyTheme.text)
-                    .accessibilityIdentifier("test-PendingCount")
-                Text("Customers: \(bank.customers.count)")
-                    .foregroundStyle(LebyyTheme.text)
-                    .accessibilityIdentifier("test-CustomerCount")
-                bankLink("Pending queue", "test-Bank-Pending", .pending)
-                bankLink("Customers", "test-Bank-Customers", .customers)
-                bankLink("Decision history", "test-Bank-Decisions", .decisions)
-            }
-            .padding(16)
-        }
-        .background(LebyyTheme.bg.ignoresSafeArea())
-        .navigationTitle("Bank")
-        .accessibilityIdentifier("test-ManagerHome")
     }
 }
 
@@ -777,7 +726,7 @@ struct BankField: View {
 }
 
 @ViewBuilder
-private func bankLink(_ title: String, _ identifier: String, _ route: BankRoute) -> some View {
+func bankLink(_ title: String, _ identifier: String, _ route: BankRoute) -> some View {
     NavigationLink(value: route) {
         Text(title)
             .font(.headline)

@@ -372,7 +372,7 @@ class BankActivity : AppCompatActivity() {
         val phone = field("Phone Number", "test-AddPayee-Phone", InputType.TYPE_CLASS_PHONE)
         phone.setText(BankState.bpPhone)
         root.addView(phone)
-        text("Legal info and disclosures", "test-AddPayee-TermsTitle")
+        text("Terms & Conditions", "test-AddPayee-TermsTitle")
         val termsScroll = ScrollView(this).apply {
             contentDescription = "test-AddPayee-TermsScroll"
             layoutParams = LinearLayout.LayoutParams(
@@ -390,11 +390,11 @@ class BankActivity : AppCompatActivity() {
                     textSize = 12f
                 })
                 addView(TextView(this@BankActivity).apply {
-                    text = "— End of disclosures —"
+                    text = "— End of Terms & Conditions —"
                     contentDescription = "test-AddPayee-TermsEnd"
                     setTextColor(getColor(R.color.lebyy_muted))
                     textSize = 12f
-                    setPadding(0, dp(24), 0, 0)
+                    setPadding(0, dp(28), 0, 0)
                 })
             }
             addView(inner)
@@ -403,7 +403,7 @@ class BankActivity : AppCompatActivity() {
                 val atEnd = scrollY + height >= child.height - dp(8)
                 if (atEnd && !BankState.bpTermsScrolledToEnd) {
                     BankState.bpTermsScrolledToEnd = true
-                    BankState.lastResult = "Result: Disclosures scrolled to end — Save enabled"
+                    BankState.lastResult = "Result: Terms scrolled to end — Save enabled"
                     (root.findViewWithTag("termsStatus") as? TextView)?.text = BankState.lastResult
                     (root.findViewWithTag("saveBtn") as? Button)?.isEnabled = true
                 }
@@ -413,9 +413,9 @@ class BankActivity : AppCompatActivity() {
         root.addView(TextView(this).apply {
             tag = "termsStatus"
             text = if (BankState.bpTermsScrolledToEnd) {
-                "Result: Disclosures scrolled to end — Save enabled"
+                "Result: Terms scrolled to end — Save enabled"
             } else {
-                "Result: Scroll disclosures to the end to enable Save"
+                "Result: Scroll Terms & Conditions to the end to enable Save"
             }
             contentDescription = "test-AddPayee-TermsStatus"
             setTextColor(getColor(R.color.lebyy_muted))
@@ -439,6 +439,7 @@ class BankActivity : AppCompatActivity() {
     private fun renderBillPaySelectState(root: LinearLayout) {
         title("Select State", "test-SelectStateScreen")
         text("Select State", "test-SelectStateTitle")
+        text("US States", "test-SelectState-USStates")
         BankState.usStateEntries.forEach { (name, code) ->
             val mark = if (BankState.bpState == code || BankState.bpState == name) " ✓" else ""
             root.addView(button("$name$mark", "test-SelectState-${name.replace(" ", "")}") {
@@ -1072,6 +1073,8 @@ class BankActivity : AppCompatActivity() {
         const val EXTRA_CHOOSE = "choose"
 
         private const val BILL_PAY_LEGAL = """
+Legal info and disclosures
+
 Investment, insurance and annuity products:
 • Are Not FDIC Insured
 • Are Not Bank Guaranteed
@@ -1082,9 +1085,13 @@ Investment, insurance and annuity products:
 
 Investing involves risk. There is always the potential of losing money when you invest in securities. Asset allocation, diversification, and rebalancing do not ensure a profit or protect against loss in declining markets.
 
-By continuing you acknowledge these disclosures. Scroll to the end to enable Save.
+Bill Pay Terms & Conditions
 
-Additional practice terms: payments by check may take 4–7 business days. You are responsible for accurate payee mailing information.
+1. You authorize Lebyy Bank to mail checks or send payments to the address you provide.
+2. Check payments may take 4–7 business days. Keep sufficient funds until the check is cashed.
+3. You are responsible for accurate payee name and mailing address.
+4. You may cancel a scheduled payment before the processing cut-off in Activity.
+5. Scroll to the end of these Terms & Conditions to enable Save.
 """
 
         fun customerLine(customer: BankCustomer): String =

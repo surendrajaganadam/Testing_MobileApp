@@ -204,11 +204,12 @@ Open with `test-BankFooter-PayTransfer`. Wait `test-PayTransferScreen`.
    First Name / Last Name / Nickname / Identifying Info / Address / Address Two / City
    → test-AddPayee-PersonSave
 4. test-AddPayeeAddressScreen
-   City / State / ZIP / Phone + Legal info and disclosures
+   City / State / ZIP / Phone
    test-AddPayee-State →
-5. test-SelectStateScreen (US states show full name; value saved as code e.g. NC)
-   + Countries section; pick test-SelectState-NorthCarolina
-   scroll test-AddPayee-TermsScroll until test-AddPayee-TermsEnd → test-AddPayee-Save
+5. test-SelectStateScreen — scrollable list of all US States + Countries; pick one
+   (e.g. test-SelectState-NorthCarolina → stores NC)
+   back on address: scroll test-AddPayee-TermsScroll (Terms & Conditions) until
+   test-AddPayee-TermsEnd → Save enables → test-AddPayee-Save
 6. test-AddPayeeSuccessScreen → test-AddPayeeSuccess-Done
 7. test-BillPayScreen (PAYEES with new person; radio select)
    → select test-BillPay-Payee-bp-N → test-BillPay-Pay

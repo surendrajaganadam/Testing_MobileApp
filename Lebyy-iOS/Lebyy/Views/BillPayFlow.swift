@@ -333,14 +333,17 @@ struct BillPayAddressTermsView: View {
                         set: { store.bank.bpPhone = $0; store.bank.objectWillChange.send() }
                     ), id: "test-AddPayee-Phone", keyboard: .phonePad)
 
-                    Text("Legal info and disclosures")
+                    Text("Terms & Conditions")
                         .font(.subheadline.weight(.semibold))
                         .padding(.top, 20)
                         .accessibilityIdentifier("test-AddPayee-TermsTitle")
 
-                    // Scrollable legal — must reach end before Save enables
+                    // Must scroll to the end before Save enables
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 12) {
+                            Text("Legal info and disclosures")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(BankDash.ink)
                             Text(billPayLegalBody)
                                 .font(.caption)
                                 .foregroundStyle(BankDash.muted)
@@ -348,11 +351,14 @@ struct BillPayAddressTermsView: View {
                             Text(billPayLegalExtra)
                                 .font(.caption)
                                 .foregroundStyle(BankDash.muted)
-                            Text("— End of disclosures —")
-                                .font(.caption2)
+                            Text(billPayTermsFooter)
+                                .font(.caption)
+                                .foregroundStyle(BankDash.muted)
+                            Text("— End of Terms & Conditions —")
+                                .font(.caption2.weight(.semibold))
                                 .foregroundStyle(BankDash.muted)
                                 .frame(maxWidth: .infinity)
-                                .padding(.vertical, 20)
+                                .padding(.vertical, 28)
                                 .onAppear {
                                     if !store.bank.bpTermsScrolledToEnd {
                                         store.bank.bpTermsScrolledToEnd = true
@@ -363,11 +369,14 @@ struct BillPayAddressTermsView: View {
                         }
                     }
                     .frame(maxHeight: 160)
+                    .padding(8)
+                    .background(BankDash.canvas)
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(BankDash.line))
                     .accessibilityIdentifier("test-AddPayee-TermsScroll")
 
                     Text(store.bank.bpTermsScrolledToEnd
-                        ? "Result: Disclosures scrolled to end — Save enabled"
-                        : "Result: Scroll disclosures to the end to enable Save")
+                        ? "Result: Terms scrolled to end — Save enabled"
+                        : "Result: Scroll Terms & Conditions to the end to enable Save")
                         .font(.caption)
                         .foregroundStyle(BankDash.muted)
                         .padding(.top, 8)
@@ -429,7 +438,7 @@ struct BillPaySelectRegionView: View {
             .padding(12)
 
             List {
-                Section {
+                Section("US States") {
                     ForEach(BankStore.usStateEntries, id: \.code) { entry in
                         Button {
                             store.bank.bpState = entry.code
@@ -1084,8 +1093,14 @@ Investment, insurance and annuity products:
 
 private let billPayLegalExtra = """
 Investing involves risk. There is always the potential of losing money when you invest in securities. Asset allocation, diversification, and rebalancing do not ensure a profit or protect against loss in declining markets.
+"""
 
-By continuing you acknowledge these disclosures apply to investment products offered through affiliated entities. Scroll to the end to acknowledge.
+private let billPayTermsFooter = """
+Bill Pay Terms & Conditions
 
-Additional practice terms: payments by check may take 4–7 business days. You are responsible for accurate payee mailing information.
+1. You authorize Lebyy Bank to mail checks or send payments to the address you provide.
+2. Check payments may take 4–7 business days. Keep sufficient funds until the check is cashed.
+3. You are responsible for accurate payee name and mailing address.
+4. You may cancel a scheduled payment before the processing cut-off in Activity.
+5. Scroll to the end of these Terms & Conditions to enable Save.
 """

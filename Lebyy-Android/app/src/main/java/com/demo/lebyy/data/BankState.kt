@@ -32,6 +32,26 @@ object BankState {
     var lastResult: String = ""
     var closeBankFlow: Boolean = false
 
+    var payFromAccountId: String = "checking"
+    var payAmountMode: String = "other"
+    var payAmount: Double = 0.0
+    var payAmountText: String = ""
+    var payRecurring: Boolean = false
+    var payNote: String = ""
+    var payDateLabel: String = "Today"
+    var payDateDetail: String = ""
+    var lastConfirmation: String = ""
+
+    var acctFromId: String = ""
+    var acctToId: String = ""
+    var acctAmount: Double = 0.0
+    var acctAmountText: String = ""
+    var acctDateLabel: String = "Today"
+    var acctDateDetail: String = ""
+
+    private val payTransferHistory = mutableListOf<PayTransferHistoryItem>()
+    private var confirmSeq = 1
+
     init {
         resetPracticeData()
     }
@@ -335,7 +355,7 @@ object BankState {
                 Bill("electricity", "Electricity", 850.0),
                 Bill("mobile", "Mobile", 499.0),
             ),
-            card = BankCard("Visa", if (builtIn) "4242" else "1111", frozen = false, limit = 20_000.0),
+            card = BankCard("Visa", if (builtIn) "4242" else "1111", frozen = false, limit = 20_000.0, balance = if (builtIn) 7_751.46 else 0.0),
             activity = mutableListOf(),
         )
     }
@@ -359,6 +379,152 @@ object BankState {
                 status = "Pending",
             ),
         )
+        payTransferHistory.clear()
+        payTransferHistory.add(
+            PayTransferHistoryItem(
+                id = "H-1",
+                title = "Sujathapersonal NJ",
+                subtitle = "Kavya amount",
+                date = "Sep 28, 2026",
+                amount = 500.0,
+                status = "You paid",
+            ),
+        )
+        refreshPayDates()
+    }
+
+    fun payTransferHistory(): List<PayTransferHistoryItem> = payTransferHistory.toList()
+
+    fun refreshPayDates() {
+        val fmt = java.text.SimpleDateFormat("MMM d, yyyy", Locale.US)
+        val detail = fmt.format(java.util.Date())
+        payDateLabel = "Today"
+        payDateDetail = detail
+        acctDateLabel = "Today"
+        acctDateDetail = detail
+    }
+
+    fun resetPayDraft() {
+        payFromAccountId = "checking"
+        payAmountMode = "other"
+        payAmount = 0.0
+        payAmountText = ""
+        payRecurring = false
+        payNote = ""
+        lastResult = ""
+        refreshPayDates()
+    }
+
+    fun resetAcctTransferDraft() {
+        acctFromId = ""
+        acctToId = ""
+        acctAmount = 0.0
+        acctAmountText = ""
+        lastResult = ""
+        refreshPayDates()
+    }
+
+    fun cardTitle(): String {
+        val card = currentCustomer()?.card ?: return "Visa"
+        return "Lebyy ${'$'}{card.network} - ${'$'}{card.last4}"
+    }
+
+    fun accountTitle(id: String): String {
+        val account = currentCustomer()?.accounts?.firstOrNull { it.id == id } ?: return ""
+        return "${'$'}{account.name} - ${'$'}{account.number.takeLast(4)}"
+    }
+
+    fun savePayAmount(mode: String, otherText: String): String {
+        payAmountMode = mode
+        if (mode == "balance") {
+            payAmount = currentCustomer()?.card?.balance ?: 0.0
+            payAmountText = String.format(Locale.US, "%.2f", payAmount)
+            lastResult = "Result: Amount saved"
+            return lastResult
+        }
+        val amount = otherText.trim().toDoubleOrNull()
+        if (amount == null || amount <= 0.0) {
+            lastResult = "Result: Amount is required"
+            return lastResult
+        }
+        payAmount = amount
+        payAmountText = String.format(Locale.US, "%.2f", amount)
+        lastResult = "Result: Amount saved"
+        return lastResult
+    }
+
+    fun payAmountDisplay(): String {
+        if (payAmount <= 0.0) return ""
+        return if (payAmountMode == "balance") {
+            "Current balance - ${'$'}{money(payAmount)}"
+        } else {
+            "Other amount - ${'$'}{money(payAmount)}"
+        }
+    }
+
+    fun validatePayForm(): String {
+        if (currentCustomer() == null) return "Result: Not signed in"
+        if (payFromAccountId.isBlank()) return "Result: Select From account"
+        if (payAmount <= 0.0) return "Result: Choose amount"
+        return ""
+    }
+
+    fun confirmCardPayment(): String {
+        val customer = currentCustomer() ?: return "Result: Not signed in"
+        val from = customer.accounts.firstOrNull { it.id == payFromAccountId }
+            ?: return "Result: Select From account"
+        if (payAmount <= 0.0) return "Result: Choose amount"
+        if (payAmount > from.balance) return "Result: Insufficient funds"
+        from.balance = roundMoney(from.balance - payAmount)
+        customer.card.balance = maxOf(0.0, roundMoney(customer.card.balance - payAmount))
+        val id = nextTxnId()
+        val conf = nextConfirmation()
+        lastConfirmation = conf
+        customer.activity.add(0, BankTxn(id, "Card payment ${'$'}{customer.card.network}", payAmount, "Debit", "Completed"))
+        payTransferHistory.add(
+            0,
+            PayTransferHistoryItem(conf, cardTitle(), if (payNote.isBlank()) "Card payment" else payNote, payDateDetail, payAmount, "You paid"),
+        )
+        lastReceipt = "Receipt: Payment confirmed $conf"
+        lastResult = lastReceipt
+        return lastReceipt
+    }
+
+    fun validateAcctTransfer(): String {
+        if (acctFromId.isBlank() || acctToId.isBlank()) return "Result: Choose account"
+        if (acctFromId == acctToId) return "Result: Accounts must differ"
+        val amount = acctAmountText.trim().toDoubleOrNull()
+        if (amount == null || amount <= 0.0) return "Result: Enter amount"
+        acctAmount = amount
+        return ""
+    }
+
+    fun confirmAcctTransfer(): String {
+        val customer = currentCustomer() ?: return "Result: Not signed in"
+        val message = validateAcctTransfer()
+        if (message.isNotEmpty()) return message
+        val from = customer.accounts.firstOrNull { it.id == acctFromId } ?: return "Result: Choose account"
+        val to = customer.accounts.firstOrNull { it.id == acctToId } ?: return "Result: Choose account"
+        if (acctAmount > from.balance) return "Result: Insufficient funds"
+        from.balance = roundMoney(from.balance - acctAmount)
+        to.balance = roundMoney(to.balance + acctAmount)
+        val id = nextTxnId()
+        val conf = nextConfirmation()
+        lastConfirmation = conf
+        customer.activity.add(0, BankTxn(id, "Transfer to ${'$'}{to.name}", acctAmount, "Debit", "Completed"))
+        payTransferHistory.add(
+            0,
+            PayTransferHistoryItem(conf, "${'$'}{from.name} → ${'$'}{to.name}", "Between my accounts", acctDateDetail, acctAmount, "You transferred"),
+        )
+        lastReceipt = "Receipt: Transfer confirmed $conf"
+        lastResult = lastReceipt
+        return lastReceipt
+    }
+
+    private fun nextConfirmation(): String {
+        val value = String.format(Locale.US, "z%07x", confirmSeq)
+        confirmSeq += 1
+        return value
     }
 }
 
@@ -392,6 +558,16 @@ class BankCard(
     val last4: String,
     var frozen: Boolean,
     var limit: Double,
+    var balance: Double = 0.0,
+)
+
+class PayTransferHistoryItem(
+    val id: String,
+    val title: String,
+    val subtitle: String,
+    val date: String,
+    val amount: Double,
+    val status: String,
 )
 
 class BankTxn(

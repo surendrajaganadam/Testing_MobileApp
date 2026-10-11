@@ -21,6 +21,7 @@ enum BankRoute: Hashable {
     case decisions
     case menu, inbox, products, rewards, profile
     case payTransfer, deposit, invest, assistant
+    case acctTransfer, payBills, zelle, wire
 }
 
 struct BankTabView: View {
@@ -70,6 +71,10 @@ struct BankTabView: View {
                     BankSimpleScreen(title: "Invest", screenId: "test-BankInvestScreen", bodyText: "Result: Invest opened")
                 case .assistant:
                     BankSimpleScreen(title: "Lebyy Assistant", screenId: "test-BankAssistantScreen", bodyText: "Result: Assistant opened")
+                case .acctTransfer: AcctTransferFormView()
+                case .payBills: PayBillsFormView()
+                case .zelle: ZelleScreen()
+                case .wire: WireScreen()
                 }
             }
         }

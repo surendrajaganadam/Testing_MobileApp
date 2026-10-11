@@ -304,7 +304,10 @@ class MainActivity : AppCompatActivity() {
             BankState.endSession()
             selectTab(R.id.tabAccount)
         }
-        tab.bankFooterPayTransfer.setOnClickListener { BankActivity.open(this, "payTransfer") }
+        tab.bankFooterPayTransfer.setOnClickListener {
+            BankState.refreshPayDates()
+            BankActivity.open(this, "payTransfer")
+        }
         tab.bankFooterDeposit.setOnClickListener { BankActivity.open(this, "deposit") }
         tab.bankFooterInvest.setOnClickListener { BankActivity.open(this, "invest") }
         tab.bankFooterAccounts.setOnClickListener {

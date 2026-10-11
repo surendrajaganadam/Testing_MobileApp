@@ -586,23 +586,3 @@ struct BankSimpleScreen: View {
         .accessibilityIdentifier(screenId)
     }
 }
-
-struct PayTransferHubView: View {
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Pay & Transfer")
-                    .font(.title2.bold())
-                    .foregroundStyle(LebyyTheme.text)
-                    .accessibilityIdentifier("test-PayTransferTitle")
-                bankLink("Transfer", "test-PayTransfer-Transfer", .transfer)
-                bankLink("Payees", "test-PayTransfer-Payees", .payees)
-                bankLink("Pay a bill", "test-PayTransfer-Bills", .bills)
-            }
-            .padding(16)
-        }
-        .background(LebyyTheme.bg.ignoresSafeArea())
-        .navigationTitle("Pay & Transfer")
-        .accessibilityIdentifier("test-PayTransferScreen")
-    }
-}

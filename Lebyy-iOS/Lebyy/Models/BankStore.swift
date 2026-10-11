@@ -24,9 +24,30 @@ final class BankStore: ObservableObject {
     var draftBillId = ""
     var closeBankFlow = false
 
+    /// BofA-style Pay Bills / account Transfer drafts
+    var payFromAccountId = "checking"
+    var payAmountMode = "other" // balance | other
+    var payAmount = 0.0
+    var payAmountText = ""
+    var payRecurring = false
+    var payNote = ""
+    var payDateLabel = "Today"
+    var payDateDetail = ""
+    var lastConfirmation = ""
+
+    var acctFromId = ""
+    var acctToId = ""
+    var acctAmount = 0.0
+    var acctAmountText = ""
+    var acctDateLabel = "Today"
+    var acctDateDetail = ""
+
+    @Published var payTransferHistory: [PayTransferHistoryItem] = []
+
     private var txnSeq = 1001
     private var decisionSeq = 1
     private var payeeSeq = 1
+    private var confirmSeq = 1
 
     init() {
         seed()
@@ -341,7 +362,7 @@ final class BankStore: ObservableObject {
                 Bill(id: "electricity", name: "Electricity", amountDue: 850),
                 Bill(id: "mobile", name: "Mobile", amountDue: 499),
             ],
-            card: BankCard(network: "Visa", last4: builtIn ? "4242" : "1111", frozen: false, limit: 20_000),
+            card: BankCard(network: "Visa", last4: builtIn ? "4242" : "1111", frozen: false, limit: 20_000, balance: builtIn ? 7_751.46 : 0),
             activity: []
         )
     }
@@ -364,6 +385,175 @@ final class BankStore: ObservableObject {
                 status: "Pending"
             ),
         ]
+        payTransferHistory = [
+            PayTransferHistoryItem(
+                id: "H-1",
+                title: "Sujathapersonal NJ",
+                subtitle: "Kavya amount",
+                date: "Sep 28, 2026",
+                amount: 500,
+                status: "You paid"
+            ),
+        ]
+        refreshPayDates()
+    }
+
+    func refreshPayDates() {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US")
+        formatter.dateFormat = "MMM d, yyyy"
+        let detail = formatter.string(from: Date())
+        payDateLabel = "Today"
+        payDateDetail = detail
+        acctDateLabel = "Today"
+        acctDateDetail = detail
+    }
+
+    func resetPayDraft() {
+        payFromAccountId = "checking"
+        payAmountMode = "other"
+        payAmount = 0
+        payAmountText = ""
+        payRecurring = false
+        payNote = ""
+        lastResult = ""
+        refreshPayDates()
+    }
+
+    func resetAcctTransferDraft() {
+        acctFromId = ""
+        acctToId = ""
+        acctAmount = 0
+        acctAmountText = ""
+        lastResult = ""
+        refreshPayDates()
+    }
+
+    func cardTitle() -> String {
+        guard let card = currentCustomer()?.card else { return "Visa" }
+        return "Lebyy \(card.network) - \(card.last4)"
+    }
+
+    func accountTitle(_ id: String) -> String {
+        guard let account = currentCustomer()?.accounts.first(where: { $0.id == id }) else { return "" }
+        return "\(account.name) - \(String(account.number.suffix(4)))"
+    }
+
+    func savePayAmount(mode: String, otherText: String) -> String {
+        payAmountMode = mode
+        if mode == "balance" {
+            payAmount = currentCustomer()?.card.balance ?? 0
+            payAmountText = String(format: "%.2f", payAmount)
+            lastResult = "Result: Amount saved"
+            return lastResult
+        }
+        guard let amount = Double(otherText.trimmingCharacters(in: .whitespaces)), amount > 0 else {
+            lastResult = "Result: Amount is required"
+            return lastResult
+        }
+        payAmount = amount
+        payAmountText = String(format: "%.2f", amount)
+        lastResult = "Result: Amount saved"
+        return lastResult
+    }
+
+    func payAmountDisplay() -> String {
+        if payAmount <= 0 { return "" }
+        if payAmountMode == "balance" {
+            return "Current balance - \(money(payAmount))"
+        }
+        return "Other amount - \(money(payAmount))"
+    }
+
+    func validatePayForm() -> String {
+        guard currentCustomer() != nil else { return "Result: Not signed in" }
+        if payFromAccountId.isEmpty { return "Result: Select From account" }
+        if payAmount <= 0 { return "Result: Choose amount" }
+        return ""
+    }
+
+    func confirmCardPayment() -> String {
+        guard let customer = currentCustomer() else { return "Result: Not signed in" }
+        guard let from = customer.accounts.first(where: { $0.id == payFromAccountId }) else {
+            return "Result: Select From account"
+        }
+        if payAmount <= 0 { return "Result: Choose amount" }
+        if payAmount > from.balance { return "Result: Insufficient funds" }
+        objectWillChange.send()
+        from.balance = roundMoney(from.balance - payAmount)
+        customer.card.balance = max(0, roundMoney(customer.card.balance - payAmount))
+        let id = nextTxnId()
+        let conf = nextConfirmation()
+        lastConfirmation = conf
+        customer.activity.insert(
+            BankTxn(id: id, title: "Card payment \(customer.card.network)", amount: payAmount, kind: "Debit", status: "Completed"),
+            at: 0
+        )
+        payTransferHistory.insert(
+            PayTransferHistoryItem(
+                id: conf,
+                title: cardTitle(),
+                subtitle: payNote.isEmpty ? "Card payment" : payNote,
+                date: payDateDetail,
+                amount: payAmount,
+                status: "You paid"
+            ),
+            at: 0
+        )
+        lastReceipt = "Receipt: Payment confirmed \(conf)"
+        lastResult = lastReceipt
+        return lastReceipt
+    }
+
+    func validateAcctTransfer() -> String {
+        if acctFromId.isEmpty || acctToId.isEmpty { return "Result: Choose account" }
+        if acctFromId == acctToId { return "Result: Accounts must differ" }
+        guard let amount = Double(acctAmountText.trimmingCharacters(in: .whitespaces)), amount > 0 else {
+            return "Result: Enter amount"
+        }
+        acctAmount = amount
+        return ""
+    }
+
+    func confirmAcctTransfer() -> String {
+        guard let customer = currentCustomer() else { return "Result: Not signed in" }
+        let message = validateAcctTransfer()
+        if !message.isEmpty { return message }
+        guard let from = customer.accounts.first(where: { $0.id == acctFromId }),
+              let to = customer.accounts.first(where: { $0.id == acctToId }) else {
+            return "Result: Choose account"
+        }
+        if acctAmount > from.balance { return "Result: Insufficient funds" }
+        objectWillChange.send()
+        from.balance = roundMoney(from.balance - acctAmount)
+        to.balance = roundMoney(to.balance + acctAmount)
+        let id = nextTxnId()
+        let conf = nextConfirmation()
+        lastConfirmation = conf
+        customer.activity.insert(
+            BankTxn(id: id, title: "Transfer to \(to.name)", amount: acctAmount, kind: "Debit", status: "Completed"),
+            at: 0
+        )
+        payTransferHistory.insert(
+            PayTransferHistoryItem(
+                id: conf,
+                title: "\(from.name) → \(to.name)",
+                subtitle: "Between my accounts",
+                date: acctDateDetail,
+                amount: acctAmount,
+                status: "You transferred"
+            ),
+            at: 0
+        )
+        lastReceipt = "Receipt: Transfer confirmed \(conf)"
+        lastResult = lastReceipt
+        return lastReceipt
+    }
+
+    private func nextConfirmation() -> String {
+        let value = String(format: "z%07x", confirmSeq)
+        confirmSeq += 1
+        return value
     }
 }
 
@@ -423,13 +613,24 @@ final class BankCard {
     let last4: String
     var frozen: Bool
     var limit: Double
+    var balance: Double
 
-    init(network: String, last4: String, frozen: Bool, limit: Double) {
+    init(network: String, last4: String, frozen: Bool, limit: Double, balance: Double = 0) {
         self.network = network
         self.last4 = last4
         self.frozen = frozen
         self.limit = limit
+        self.balance = balance
     }
+}
+
+struct PayTransferHistoryItem: Identifiable {
+    let id: String
+    let title: String
+    let subtitle: String
+    let date: String
+    let amount: Double
+    let status: String
 }
 
 final class BankTxn: Identifiable {

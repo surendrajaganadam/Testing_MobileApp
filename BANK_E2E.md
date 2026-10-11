@@ -179,6 +179,44 @@ After login, Bank is a light **Accounts** dashboard (header / scrollable center 
 | Footer | `test-BankFooter`, `test-BankFooter-Accounts`, `test-BankFooter-PayTransfer`, `test-BankFooter-Deposit`, `test-BankFooter-Invest` |
 
 Shell screens from chrome: `test-BankMenuScreen`, `test-BankInboxScreen`, `test-BankProductsScreen`, `test-BankRewardsScreen`, `test-BankProfileScreen`, `test-PayTransferScreen`, `test-BankDepositScreen`, `test-BankInvestScreen`, `test-BankAssistantScreen`. Dashboard tab panel: `test-BankDashboardPanel`.
+
+### Pay & Transfer (footer → hub)
+
+Open with `test-BankFooter-PayTransfer`. Wait `test-PayTransferScreen`.
+
+| Hub control | Id | Opens |
+|-------------|----|--------|
+| Transfer | `test-PT-Transfer` | Account transfer form |
+| Zelle | `test-PT-Zelle` | `test-ZelleScreen` |
+| Pay Bills | `test-PT-PayBills` | Card pay form |
+| Wire | `test-PT-Wire` | `test-WireScreen` |
+| History row | `test-PT-History-H-1` | Seeded “Sujathapersonal NJ … ₹500.00” |
+| More activity | `test-PT-MoreActivity` | Activity list |
+
+**Pay Bills path (matches the screenshots):**
+
+```
+test-PT-PayBills
+→ test-PayBillsScreen (To Lebyy Visa - 4242, From Checking, recurring, Amount)
+→ test-PayBills-Amount → test-ChooseAmountScreen
+   pick test-ChooseAmount-Other, type amount in test-ChooseAmount-Field, test-ChooseAmount-Save
+→ back on Pay with Amount / Date / Note → test-PayBills-Next
+→ test-PayReviewScreen → test-PayReview-Pay
+→ test-PaySuccessScreen (confirmation test-PaySuccess-Confirmation) → test-PaySuccess-Done
+```
+
+Card starts with current balance `₹7751.46`. Paying `Other amount - ₹1.00` from Checking debits Checking and reduces the card balance.
+
+**Account Transfer path:**
+
+```
+test-PT-Transfer
+→ test-AcctTransferScreen (From / To / Amount / Date) → test-AcctTransfer-Next
+→ test-AcctTransferReviewScreen → test-AcctTransfer-Confirm
+→ test-AcctTransferSuccessScreen → test-PaySuccess-Done
+```
+
+Choose accounts with `test-ChooseAccount-Checking` / `test-ChooseAccount-Savings`. From and To must differ.
 | Transfer | `test-BankTransferScreen` | `test-Bank-Transfer` |
 | Confirm transfer | `test-BankTransferConfirmScreen` | `test-TransferContinue` when the amount is valid |
 | OTP | `test-BankOtpScreen` | `test-TransferConfirm` when amount `<= 10000` |

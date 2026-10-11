@@ -39,7 +39,11 @@ class BankActivity : AppCompatActivity() {
             finish()
             return
         }
-        if (screen in listOf("payees", "pending", "customers", "decisions", "activity", "cards", "bills")) {
+        if (screen in listOf(
+                "payees", "pending", "customers", "decisions", "activity", "cards", "bills",
+                "acctTransfer", "payBills", "payTransfer",
+            )
+        ) {
             render()
         }
     }
@@ -64,6 +68,16 @@ class BankActivity : AppCompatActivity() {
             "customerForm" -> renderCustomerForm(root)
             "decisions" -> renderDecisions(root)
             "payTransfer" -> renderPayTransfer(root)
+            "acctTransfer" -> renderAcctTransfer(root)
+            "acctTransferReview" -> renderAcctTransferReview(root)
+            "acctTransferSuccess" -> renderPaySuccess(root, "Your transfer is confirmed", "test-AcctTransferSuccessScreen", account = true)
+            "payBills" -> renderPayBills(root)
+            "chooseAmount" -> renderChooseAmount(root)
+            "payReview" -> renderPayReview(root)
+            "paySuccess" -> renderPaySuccess(root, "Your payment is confirmed", "test-PaySuccessScreen", account = false)
+            "chooseAccount" -> renderChooseAccount(root)
+            "zelle" -> renderShell(root, "Zelle", "test-ZelleScreen", "Result: Zelle opened — send or receive practice screen")
+            "wire" -> renderShell(root, "Wire", "test-WireScreen", "Result: Wire opened — U.S. or international practice screen")
             "menu" -> renderShell(root, "Menu", "test-BankMenuScreen", "Result: Menu opened")
             "inbox" -> renderShell(root, "Inbox", "test-BankInboxScreen", "Result: Inbox opened")
             "products" -> renderShell(root, "Products", "test-BankProductsScreen", "Result: Products opened")
@@ -84,9 +98,264 @@ class BankActivity : AppCompatActivity() {
     private fun renderPayTransfer(root: LinearLayout) {
         title("Pay & Transfer", "test-PayTransferScreen")
         text("Pay & Transfer", "test-PayTransferTitle")
-        root.addView(button("Transfer", "test-PayTransfer-Transfer") { open("transfer") })
-        root.addView(button("Payees", "test-PayTransfer-Payees") { open("payees") })
-        root.addView(button("Pay a bill", "test-PayTransfer-Bills") { open("bills") })
+        text("Hi, I'm Lebyy. How can I help?", "test-PT-Assistant")
+        root.addView(button("Transfer\nbetween my accounts", "test-PT-Transfer") {
+            BankState.resetAcctTransferDraft()
+            open("acctTransfer")
+        })
+        root.addView(button("Zelle\nsend or receive", "test-PT-Zelle") { open("zelle") })
+        root.addView(button("Pay Bills\npay now or schedule", "test-PT-PayBills") {
+            BankState.resetPayDraft()
+            open("payBills")
+        })
+        root.addView(button("Wire\nU.S. or international", "test-PT-Wire") { open("wire") })
+        text("Activity", "test-PT-ActivityTitle")
+        text("ACTION NEEDED", "test-PT-ActionNeededTitle")
+        text(
+            "There are no payment requests right now. To manage requests, go to Settings.",
+            "test-PT-ActionNeededBody",
+        )
+        text("HISTORY", "test-PT-HistoryTitle")
+        BankState.payTransferHistory().forEach { item ->
+            text(
+                "${item.title} · ${item.subtitle} · ${item.date} · ${BankState.money(item.amount)} · ${item.status}",
+                "test-PT-History-${item.id}",
+            )
+        }
+        root.addView(button("MORE ACTIVITY", "test-PT-MoreActivity") { open("activity") })
+        text("Legal info and disclosures", "test-PT-LegalLink")
+    }
+
+    private fun renderAcctTransfer(root: LinearLayout) {
+        title("Transfer", "test-AcctTransferScreen")
+        text("Transfer", "test-AcctTransferTitle")
+        text("Lebyy deposit products. FDIC Member. Investment products are not FDIC-insured.", "test-PT-FdicBanner")
+        val fromValue = if (BankState.acctFromId.isBlank()) "Choose account" else BankState.accountTitle(BankState.acctFromId)
+        val toValue = if (BankState.acctToId.isBlank()) "Choose account" else BankState.accountTitle(BankState.acctToId)
+        val amountValue = if (BankState.acctAmount <= 0.0) "Enter amount" else BankState.money(BankState.acctAmount)
+        root.addView(button("From  $fromValue", "test-AcctTransfer-From") {
+            intent.putExtra(EXTRA_CHOOSE, "acctFrom")
+            open("chooseAccount")
+        })
+        root.addView(button("To  $toValue", "test-AcctTransfer-To") {
+            intent.putExtra(EXTRA_CHOOSE, "acctTo")
+            open("chooseAccount")
+        })
+        val amountField = field("Amount", "test-AcctTransfer-AmountField", InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+        amountField.setText(BankState.acctAmountText)
+        root.addView(amountField)
+        text(amountValue, "test-AcctTransfer-Amount")
+        root.addView(button("Save amount", "test-AcctTransfer-AmountSave") {
+            BankState.acctAmountText = amountField.text.toString()
+            val amount = BankState.acctAmountText.trim().toDoubleOrNull()
+            if (amount == null || amount <= 0.0) {
+                BankState.lastResult = "Result: Enter amount"
+            } else {
+                BankState.acctAmount = amount
+                BankState.lastResult = ""
+            }
+            render()
+        })
+        text("${BankState.acctDateLabel}\n${BankState.acctDateDetail}", "test-AcctTransfer-Date")
+        root.addView(button("Choose date: Today", "test-AcctTransfer-DateToday") {
+            BankState.refreshPayDates()
+            render()
+        })
+        root.addView(button("Sending a wire? Start here.", "test-AcctTransfer-WireHint") { open("wire") })
+        legal(root)
+        root.addView(button("CANCEL", "test-AcctTransfer-Cancel") { finish() })
+        root.addView(button("NEXT", "test-AcctTransfer-Next") {
+            BankState.acctAmountText = amountField.text.toString().ifBlank { BankState.acctAmountText }
+            val message = BankState.validateAcctTransfer()
+            if (message.isEmpty()) open("acctTransferReview") else {
+                BankState.lastResult = message
+                render()
+            }
+        })
+        resultLine()
+    }
+
+    private fun renderAcctTransferReview(root: LinearLayout) {
+        title("Review", "test-AcctTransferReviewScreen")
+        text("Review transfer details", "test-AcctTransferReviewHeading")
+        text("From ${BankState.accountTitle(BankState.acctFromId)}", "test-AcctReview-From")
+        text("To ${BankState.accountTitle(BankState.acctToId)}", "test-AcctReview-To")
+        text("Amount ${BankState.money(BankState.acctAmount)}", "test-AcctReview-Amount")
+        text("Date ${BankState.acctDateLabel} ${BankState.acctDateDetail}", "test-AcctReview-Date")
+        root.addView(button("EDIT", "test-AcctTransfer-Edit") { finish() })
+        root.addView(button("TRANSFER", "test-AcctTransfer-Confirm") {
+            val message = BankState.confirmAcctTransfer()
+            if (message.startsWith("Receipt:")) open("acctTransferSuccess") else {
+                BankState.lastResult = message
+                render()
+            }
+        })
+        resultLine()
+    }
+
+    private fun renderPayBills(root: LinearLayout) {
+        title("Pay", "test-PayBillsScreen")
+        text("Pay", "test-PayBillsHeading")
+        text("* Response required", "test-PayBillsRequired")
+        text("Lebyy deposit products. FDIC Member.", "test-PT-FdicBanner")
+        val card = BankState.currentCustomer()?.card
+        text(
+            "To ${BankState.cardTitle()}\nCurrent balance ${BankState.money(card?.balance ?: 0.0)}",
+            "test-PayBills-To",
+        )
+        root.addView(button(
+            "From * ${BankState.accountTitle(BankState.payFromAccountId)}",
+            "test-PayBills-From",
+        ) {
+            intent.putExtra(EXTRA_CHOOSE, "payFrom")
+            open("chooseAccount")
+        })
+        root.addView(button(
+            if (BankState.payRecurring) "Make payment recurring: ON" else "Make payment recurring: OFF",
+            "test-PayBills-Recurring",
+        ) {
+            BankState.payRecurring = !BankState.payRecurring
+            render()
+        })
+        text("How much?", "test-PayBills-HowMuch")
+        val amountLabel = BankState.payAmountDisplay().ifBlank { "Choose amount" }
+        root.addView(button("Amount *  $amountLabel", "test-PayBills-Amount") { open("chooseAmount") })
+        if (BankState.payAmount > 0.0) {
+            text("Date * ${BankState.payDateLabel}\n${BankState.payDateDetail}", "test-PayBills-Date")
+            root.addView(button("Choose date: Today", "test-PayBills-DateToday") {
+                BankState.refreshPayDates()
+                render()
+            })
+            val note = field("Note to self", "test-PayBills-NoteField", InputType.TYPE_CLASS_TEXT)
+            note.setText(BankState.payNote)
+            root.addView(note)
+            text(if (BankState.payNote.isBlank()) "Enter note" else BankState.payNote, "test-PayBills-Note")
+            root.addView(button("Save note", "test-PayBills-NoteSave") {
+                BankState.payNote = note.text.toString().take(140)
+                render()
+            })
+            root.addView(button("NEXT", "test-PayBills-Next") {
+                val message = BankState.validatePayForm()
+                if (message.isEmpty()) open("payReview") else {
+                    BankState.lastResult = message
+                    render()
+                }
+            })
+        }
+        legal(root)
+        resultLine()
+    }
+
+    private fun renderChooseAmount(root: LinearLayout) {
+        title("Choose Amount", "test-ChooseAmountScreen")
+        text("Choose Amount", "test-ChooseAmountTitle")
+        text("No payment due at this time.", "test-ChooseAmount-Banner")
+        text("* Response required", "test-PayBillsRequired")
+        text("How much? *", "test-ChooseAmount-HowMuch")
+        val balance = BankState.currentCustomer()?.card?.balance ?: 0.0
+        root.addView(button(
+            "Current balance - ${BankState.money(balance)}",
+            "test-ChooseAmount-Balance",
+        ) {
+            BankState.payAmountMode = "balance"
+            render()
+        })
+        root.addView(button("Other amount", "test-ChooseAmount-Other") {
+            BankState.payAmountMode = "other"
+            render()
+        })
+        val amount = field("Amount *", "test-ChooseAmount-Field", InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL)
+        amount.setText(BankState.payAmountText.ifBlank { "1.00" })
+        if (BankState.payAmountMode != "balance") root.addView(amount)
+        legal(root)
+        root.addView(button("SAVE", "test-ChooseAmount-Save") {
+            val message = BankState.savePayAmount(
+                BankState.payAmountMode,
+                if (BankState.payAmountMode == "balance") "" else amount.text.toString(),
+            )
+            if (message == "Result: Amount saved") finish() else render()
+        })
+        root.addView(button("Close", "test-ChooseAmount-Close") { finish() })
+        resultLine()
+    }
+
+    private fun renderPayReview(root: LinearLayout) {
+        title("Review", "test-PayReviewScreen")
+        text("Review payment details", "test-PayReviewHeading")
+        val card = BankState.currentCustomer()?.card
+        text(
+            "To ${BankState.cardTitle()}\nCurrent balance ${BankState.money(card?.balance ?: 0.0)}",
+            "test-PayReview-To",
+        )
+        text("From ${BankState.accountTitle(BankState.payFromAccountId)}", "test-PayReview-From")
+        text("Amount ${BankState.payAmountDisplay()}", "test-PayReview-Amount")
+        text("Date ${BankState.payDateLabel}\n${BankState.payDateDetail}", "test-PayReview-Date")
+        root.addView(button("EDIT", "test-PayReview-Edit") { finish() })
+        text(
+            "Make sure your payment is made by the due date and that you have sufficient funds in the From account.",
+            "test-PayReview-Disclaimer",
+        )
+        root.addView(button("PAY", "test-PayReview-Pay") {
+            val message = BankState.confirmCardPayment()
+            if (message.startsWith("Receipt:")) open("paySuccess") else {
+                BankState.lastResult = message
+                render()
+            }
+        })
+        resultLine()
+    }
+
+    private fun renderPaySuccess(root: LinearLayout, heading: String, screenId: String, account: Boolean) {
+        title("Success", screenId)
+        text("Success", "test-PaySuccessTitle")
+        text(heading, "test-PaySuccessHeading")
+        root.addView(button("Print or Save", "test-PaySuccess-Print") {})
+        if (account) {
+            text("From ${BankState.accountTitle(BankState.acctFromId)}", "test-PaySuccess-From")
+            text("To ${BankState.accountTitle(BankState.acctToId)}", "test-PaySuccess-To")
+            text("Amount ${BankState.money(BankState.acctAmount)}", "test-PaySuccess-Amount")
+            text("Date ${BankState.acctDateLabel}\n${BankState.acctDateDetail}", "test-PaySuccess-Date")
+        } else {
+            val card = BankState.currentCustomer()?.card
+            text(
+                "To ${BankState.cardTitle()}\nCurrent balance ${BankState.money(card?.balance ?: 0.0)}",
+                "test-PaySuccess-To",
+            )
+            text("From ${BankState.accountTitle(BankState.payFromAccountId)}", "test-PaySuccess-From")
+            text("Amount ${BankState.payAmountDisplay()}", "test-PaySuccess-Amount")
+            text("Date ${BankState.payDateLabel}\n${BankState.payDateDetail}", "test-PaySuccess-Date")
+        }
+        text("Confirmation number ${BankState.lastConfirmation}", "test-PaySuccess-Confirmation")
+        root.addView(button("DONE", "test-PaySuccess-Done") {
+            BankState.closeBankFlow = true
+            finish()
+        })
+    }
+
+    private fun renderChooseAccount(root: LinearLayout) {
+        title("Choose account", "test-ChooseAccountScreen")
+        val mode = intent.getStringExtra(EXTRA_CHOOSE).orEmpty()
+        BankState.currentCustomer()?.accounts?.forEach { account ->
+            root.addView(button(
+                "${account.name} - ${account.number.takeLast(4)} · ${BankState.money(account.balance)}",
+                "test-ChooseAccount-${account.name}",
+            ) {
+                when (mode) {
+                    "acctFrom" -> BankState.acctFromId = account.id
+                    "acctTo" -> BankState.acctToId = account.id
+                    "payFrom" -> BankState.payFromAccountId = account.id
+                }
+                finish()
+            })
+        }
+        root.addView(button("Close", "test-ChooseClose") { finish() })
+    }
+
+    private fun legal(root: LinearLayout) {
+        text("Legal info and disclosures", "test-PT-Legal")
+        text("Are Not FDIC Insured", "test-PT-Legal-1")
+        text("Are Not Bank Guaranteed", "test-PT-Legal-2")
+        text("May Lose Value", "test-PT-Legal-3")
     }
 
     private fun renderTransfer(root: LinearLayout) {
@@ -484,9 +753,12 @@ class BankActivity : AppCompatActivity() {
             Intent(this, BankActivity::class.java).apply {
                 putExtra(EXTRA_SCREEN, next)
                 putExtra(EXTRA_ID, intent.getStringExtra(EXTRA_ID))
+                putExtra(EXTRA_CHOOSE, intent.getStringExtra(EXTRA_CHOOSE))
             },
         )
-        if (next == "receipt") finish()
+        if (next == "receipt" || next == "paySuccess" || next == "acctTransferSuccess") {
+            // leave prior form in back stack except when closing the whole flow via DONE
+        }
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
@@ -496,6 +768,7 @@ class BankActivity : AppCompatActivity() {
         const val EXTRA_ID = "id"
         const val EXTRA_QUERY = "query"
         const val EXTRA_FILTER = "filter"
+        const val EXTRA_CHOOSE = "choose"
 
         fun customerLine(customer: BankCustomer): String =
             "${customer.displayName} · ${customer.username}"

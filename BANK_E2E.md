@@ -243,13 +243,32 @@ Alternate entry from Recipients: `test-AddPayee-Zelle` → `test-ZelleWhoScreen`
    scroll test-AddPayee-TermsScroll until test-AddPayee-TermsEnd
    → test-AddPayee-Save
    Validation: missing fields show red border + red caption (`test-AddPayee-*-Error`)
-4. test-AddPayeeSuccessScreen → test-AddPayeeSuccess-Done
-5. test-BillPayScreen (PAYEES with new person; radio select)
-   → select test-BillPay-Payee-bp-N → test-BillPay-Pay
-6–7. test-PaymentDetailsScreen
-   Amount / Frequency (expand list) / Deliver by → test-PaymentDetails-Pay
-8. test-BillPaySuccessScreen → test-BillPaySuccess-Done
+4. test-AddPayeeSuccessScreen
+   → test-AddPayeeSuccess-Pay (optional; opens payment) or test-AddPayeeSuccess-Done
+5. test-BillPayScreen (PAYEES; tap a row to select)
+   test-Recipients-Payee-{id} also selects and opens this list
+   → select test-BillPay-Payee-bp-N
+   → test-BillPay-Edit (form) / test-BillPay-Delete (confirm test-BillPay-DeleteConfirm)
+   → test-BillPay-Pay
+6. test-PaymentDetailsScreen
+   Amount / Frequency / Deliver by → test-PaymentDetails-Next
+   (test-PaymentDetails-Pay is an alias for Next)
+7. test-BillPayReviewScreen → test-BillPayReview-Pay
+   → alert “Send this payment?” → test-BillPay-SendConfirm (or test-BillPay-SendCancel)
+8. test-BillPaySuccessScreen (toast test-BillPay-Toast) → test-BillPaySuccess-Done
 ```
+
+**Bank alerts & swipes (in the bank flow, not Components):**
+
+| Gesture / dialog | Where |
+|------------------|--------|
+| Send confirm alert | Bill Pay Review PAY, Zelle Review PAY, Transfer TRANSFER |
+| Delete confirm alert | Bill Pay Delete, or swipe payee left |
+| Toast | After Bill Pay send (`test-BillPay-Toast`) |
+| Swipe left on payee | Delete (`test-BillPay-SwipeDelete-{id}` on iOS) |
+| Swipe right on payee | Edit (`test-BillPay-SwipeEdit-{id}` on iOS) |
+| Swipe left / right | Home account carousel `test-BankAccountsCarousel` |
+| Swipe up / down | Bill Pay Activity tab |
 
 Note: Address is no longer a separate page. `test-AddPayeeAddressScreen` remains as a zero-size marker on the person form for older waits.
 
@@ -362,6 +381,33 @@ Shell: `test-MainTabs`. Prefer tabs.
 | `Result: Account number is required` | Blank account |
 | `Result: Payee already exists` | Account number already on the list (`445566`, `778899`) |
 | `Result: Payee saved` | Success. Form closes. The payees screen shows the new row |
+
+### Bill Pay list / payment
+
+| Id | Role |
+|----|------|
+| `test-Recipients-Payee-{id}` | Select payee and open Bill Pay list |
+| `test-BillPay-Payee-{id}` | Select payee on `test-BillPayScreen` |
+| `test-BillPay-Edit` | Needs a selected payee → person form |
+| `test-BillPay-Delete` | Needs a selected payee → confirm |
+| `test-BillPay-DeleteConfirm` / `test-BillPay-DeleteCancel` | Delete dialog |
+| `test-BillPay-Pay` | Opens `test-PaymentDetailsScreen` |
+| `test-PaymentDetails-Next` | Amount required → `test-BillPayReviewScreen` |
+| `test-PaymentDetails-Pay` | Same as Next |
+| `test-BillPayReview-Pay` | Opens Send confirm alert |
+| `test-BillPay-SendConfirm` | Completes payment → `test-BillPaySuccessScreen` |
+| `test-BillPay-SendCancel` | Dismisses send alert |
+| `test-BillPay-Toast` | `Payment scheduled` |
+| `test-AddPayeeSuccess-Pay` | Pay the payee just added |
+| `test-BillPay-SwipeHint` | Swipe right = Edit, left = Delete |
+| `test-BankAccountsCarousel` | Swipe accounts on Bank Home |
+
+| `test-BankResult` / `test-BillPay-Result` | When |
+|------------------------------------------|------|
+| `Result: Select a payee` | Pay / Edit / Delete with none selected |
+| `Result: Enter amount` | Next with blank / 0 amount |
+| `Result: Payee updated` | Edit save |
+| `Result: Payee deleted` | Delete confirm |
 
 ### Bills
 

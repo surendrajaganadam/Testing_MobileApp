@@ -56,7 +56,8 @@ final class BankStore: ObservableObject {
     var bpZip = ""
     var bpPhone = ""
     var bpTermsScrolledToEnd = false
-    var bpSelectedPayeeId = ""
+    @Published var bpSelectedPayeeId = ""
+    var bpEditingPayeeId = ""
     var bpPayAmountText = ""
     var bpFrequency = "One Time"
     var bpDeliverBy = ""
@@ -662,6 +663,7 @@ final class BankStore: ObservableObject {
     ]
 
     func resetBillPayeeDraft() {
+        bpEditingPayeeId = ""
         bpFirstName = ""
         bpLastName = ""
         bpNickname = ""
@@ -674,6 +676,24 @@ final class BankStore: ObservableObject {
         bpPhone = ""
         bpTermsScrolledToEnd = false
         lastResult = ""
+    }
+
+    func loadBillPayeeDraft(_ payee: BillPayee) {
+        bpEditingPayeeId = payee.id
+        let parts = payee.name.split(separator: " ", maxSplits: 1).map(String.init)
+        bpFirstName = parts.first ?? payee.name
+        bpLastName = parts.count > 1 ? parts[1] : ""
+        bpNickname = payee.nickname
+        bpIdentifying = payee.identifying
+        bpAddress = payee.address
+        bpAddress2 = payee.address2
+        bpCity = payee.city
+        bpState = payee.state
+        bpZip = payee.zip
+        bpPhone = payee.phone
+        bpTermsScrolledToEnd = true
+        lastResult = ""
+        objectWillChange.send()
     }
 
     func resetBillPaymentDraft() {
@@ -730,9 +750,23 @@ final class BankStore: ObservableObject {
             return lastResult
         }
         let full = "\(bpFirstName.trimmingCharacters(in: .whitespaces)) \(bpLastName.trimmingCharacters(in: .whitespaces))"
+        objectWillChange.send()
+        if let idx = billPayees.firstIndex(where: { $0.id == bpEditingPayeeId }) {
+            billPayees[idx].name = full
+            billPayees[idx].nickname = bpNickname
+            billPayees[idx].identifying = bpIdentifying
+            billPayees[idx].address = bpAddress
+            billPayees[idx].address2 = bpAddress2
+            billPayees[idx].city = bpCity
+            billPayees[idx].state = bpState
+            billPayees[idx].zip = bpZip
+            billPayees[idx].phone = bpPhone
+            bpSelectedPayeeId = billPayees[idx].id
+            lastResult = "Result: Payee updated"
+            return lastResult
+        }
         let id = "bp-\(billPayeeSeq)"
         billPayeeSeq += 1
-        objectWillChange.send()
         billPayees.append(
             BillPayee(
                 id: id,
@@ -740,7 +774,9 @@ final class BankStore: ObservableObject {
                 nickname: bpNickname,
                 kind: "person",
                 section: "Other payees",
+                identifying: bpIdentifying,
                 address: bpAddress,
+                address2: bpAddress2,
                 city: bpCity,
                 state: bpState,
                 zip: bpZip,
@@ -754,6 +790,28 @@ final class BankStore: ObservableObject {
 
     func selectedBillPayee() -> BillPayee? {
         billPayees.first { $0.id == bpSelectedPayeeId }
+    }
+
+    func deleteSelectedBillPayee() -> String {
+        guard !bpSelectedPayeeId.isEmpty else { return "Result: Select a payee" }
+        let id = bpSelectedPayeeId
+        objectWillChange.send()
+        billPayees.removeAll { $0.id == id }
+        bpSelectedPayeeId = ""
+        lastResult = "Result: Payee deleted"
+        return lastResult
+    }
+
+    func validateBillPayment() -> String {
+        guard selectedBillPayee() != nil else { return "Result: Select a payee" }
+        guard let amount = Double(bpPayAmountText.trimmingCharacters(in: .whitespaces)), amount > 0 else {
+            return "Result: Enter amount"
+        }
+        guard let from = currentCustomer()?.accounts.first(where: { $0.id == "checking" }) else {
+            return "Result: Select From account"
+        }
+        if amount > from.balance { return "Result: Insufficient funds" }
+        return ""
     }
 
     func requestOpenBillPayList() {
@@ -1044,7 +1102,9 @@ struct BillPayee: Identifiable, Hashable {
     var nickname: String
     var kind: String
     var section: String = "Other payees"
+    var identifying: String = ""
     var address: String = ""
+    var address2: String = ""
     var city: String = ""
     var state: String = ""
     var zip: String = ""

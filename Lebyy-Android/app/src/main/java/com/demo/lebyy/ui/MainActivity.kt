@@ -10,6 +10,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -595,6 +596,31 @@ class MainActivity : AppCompatActivity() {
             setTypeface(typeface, android.graphics.Typeface.BOLD)
         })
         box.addView(brand)
+        val carousel = android.widget.HorizontalScrollView(this).apply {
+            contentDescription = "test-BankAccountsCarousel"
+            isHorizontalScrollBarEnabled = true
+        }
+        val carouselRow = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            setPadding(dp(8), dp(8), dp(8), dp(8))
+        }
+        BankState.currentCustomer()?.accounts?.forEach { account ->
+            carouselRow.addView(android.widget.TextView(this).apply {
+                text = "${account.name} - ${account.number.takeLast(4)}\n${BankState.money(account.balance)}\nSwipe left / right"
+                contentDescription = "test-AccountCarousel-${account.name}"
+                setTextColor(0xFF1A1F29.toInt())
+                textSize = 14f
+                setBackgroundColor(0xFFF6F7F9.toInt())
+                setPadding(dp(16), dp(14), dp(16), dp(14))
+                minWidth = dp(220)
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                ).apply { marginEnd = dp(10) }
+            })
+        }
+        carousel.addView(carouselRow)
+        box.addView(carousel)
         BankState.currentCustomer()?.accounts?.forEach { account ->
             val line = "${account.name} ${account.masked} · ${BankState.money(account.balance)}"
             box.addView(android.widget.TextView(this).apply {

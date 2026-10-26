@@ -87,26 +87,35 @@ struct BillPayHomeView: View {
                 .foregroundStyle(BankDash.ink)
                 .accessibilityIdentifier("test-Recipients-Section-\(title.replacingOccurrences(of: " ", with: ""))")
             ForEach(payees) { payee in
-                HStack(spacing: 12) {
-                    Circle()
-                        .fill(Color.gray.opacity(0.15))
-                        .frame(width: 40, height: 40)
-                        .overlay(
-                            Image(systemName: payee.kind == "person" ? "person.fill" : "building.columns.fill")
+                Button {
+                    store.bank.bpSelectedPayeeId = payee.id
+                    store.bank.lastResult = ""
+                    store.bank.objectWillChange.send()
+                    NotificationCenter.default.post(name: .lebyyPushBankRoute, object: BankRoute.billPayList)
+                } label: {
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(Color.gray.opacity(0.15))
+                            .frame(width: 40, height: 40)
+                            .overlay(
+                                Image(systemName: payee.kind == "person" ? "person.fill" : "building.columns.fill")
+                                    .foregroundStyle(BankDash.muted)
+                            )
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(payee.name)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(BankDash.ink)
+                            Text("No recent payments available")
+                                .font(.caption)
                                 .foregroundStyle(BankDash.muted)
-                        )
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(payee.name)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(BankDash.ink)
-                        Text("No recent payments available")
-                            .font(.caption)
-                            .foregroundStyle(BankDash.muted)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right").foregroundStyle(BankDash.muted)
                     }
-                    Spacer()
-                    Image(systemName: "chevron.right").foregroundStyle(BankDash.muted)
+                    .padding(.vertical, 6)
+                    .contentShape(Rectangle())
                 }
-                .padding(.vertical, 6)
+                .buttonStyle(.plain)
                 .accessibilityIdentifier("test-Recipients-Payee-\(payee.id)")
             }
         }
@@ -322,6 +331,9 @@ struct BillPayPersonInfoView: View {
                 if msg == "Result: Payee added" {
                     fieldErrors = [:]
                     NotificationCenter.default.post(name: .lebyyPushBankRoute, object: BankRoute.addPayeeSuccess)
+                } else if msg == "Result: Payee updated" {
+                    fieldErrors = [:]
+                    store.bank.requestOpenBillPayList()
                 } else {
                     store.bank.objectWillChange.send()
                 }
@@ -545,6 +557,21 @@ struct BillPayAddSuccessView: View {
 
             Spacer()
             Button {
+                store.bank.resetBillPaymentDraft()
+                NotificationCenter.default.post(name: .lebyyPushBankRoute, object: BankRoute.billPayPayment)
+            } label: {
+                Text("PAY THIS PAYEE")
+                    .font(.body.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .overlay(RoundedRectangle(cornerRadius: 28).stroke(BankDash.accent, lineWidth: 1.5))
+                    .foregroundStyle(BankDash.accent)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("test-AddPayeeSuccess-Pay")
+            .padding(.horizontal, 16)
+
+            Button {
                 store.bank.requestOpenBillPayList()
             } label: {
                 Text("DONE")
@@ -575,8 +602,7 @@ struct BillPayListView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
     @State private var tab = 0
-    @State private var goAdd = false
-    @State private var goPay = false
+    @State private var confirmDelete = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -618,7 +644,7 @@ struct BillPayListView: View {
                             Spacer()
                             Button {
                                 store.bank.resetBillPayeeDraft()
-                                goAdd = true
+                                NotificationCenter.default.post(name: .lebyyPushBankRoute, object: BankRoute.addPayeeWho)
                             } label: {
                                 HStack(spacing: 6) {
                                     Text("Add Payee").font(.subheadline.weight(.semibold)).foregroundStyle(BankDash.accent)
@@ -628,39 +654,75 @@ struct BillPayListView: View {
                             .accessibilityIdentifier("test-BillPay-AddPayee")
                         }
 
-                        ForEach(store.bank.billPayees) { payee in
-                            Button {
-                                store.bank.bpSelectedPayeeId = payee.id
-                                store.bank.objectWillChange.send()
-                            } label: {
-                                HStack(spacing: 12) {
-                                    Circle()
-                                        .fill(Color.gray.opacity(0.2))
-                                        .frame(width: 40, height: 40)
-                                        .overlay(
-                                            Image(systemName: payee.kind == "person" ? "person.fill" : "building.2.fill")
-                                                .foregroundStyle(BankDash.muted)
-                                        )
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(payee.name)
-                                            .font(.subheadline.weight(.semibold))
-                                            .foregroundStyle(BankDash.accent)
-                                        if !payee.nickname.isEmpty {
-                                            Text(payee.nickname).font(.caption).foregroundStyle(BankDash.muted)
+                        Text("Swipe a payee right to Edit, left to Delete.")
+                            .font(.caption)
+                            .foregroundStyle(BankDash.muted)
+                            .accessibilityIdentifier("test-BillPay-SwipeHint")
+
+                        List {
+                            ForEach(store.bank.billPayees) { payee in
+                                payeeRow(payee)
+                                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                                    .listRowSeparator(.hidden)
+                                    .listRowBackground(BankDash.canvas)
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                        Button(role: .destructive) {
+                                            store.bank.bpSelectedPayeeId = payee.id
+                                            confirmDelete = true
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
                                         }
-                                        Text("No payment in last 60 days")
-                                            .font(.caption2)
-                                            .foregroundStyle(BankDash.muted)
+                                        .accessibilityIdentifier("test-BillPay-SwipeDelete-\(payee.id)")
                                     }
-                                    Spacer()
-                                    Image(systemName: store.bank.bpSelectedPayeeId == payee.id ? "checkmark.circle.fill" : "circle")
-                                        .foregroundStyle(store.bank.bpSelectedPayeeId == payee.id ? BankDash.accent : BankDash.muted)
-                                }
-                                .padding(.vertical, 8)
+                                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                                        Button {
+                                            store.bank.bpSelectedPayeeId = payee.id
+                                            store.bank.loadBillPayeeDraft(payee)
+                                            NotificationCenter.default.post(name: .lebyyPushBankRoute, object: BankRoute.editPayee)
+                                        } label: {
+                                            Label("Edit", systemImage: "pencil")
+                                        }
+                                        .tint(BankDash.accent)
+                                        .accessibilityIdentifier("test-BillPay-SwipeEdit-\(payee.id)")
+                                    }
                             }
-                            .buttonStyle(.plain)
-                            .accessibilityIdentifier("test-BillPay-Payee-\(payee.id)")
                         }
+                        .listStyle(.plain)
+                        .scrollDisabled(true)
+                        .frame(height: CGFloat(max(store.bank.billPayees.count, 1)) * 78)
+                        .accessibilityIdentifier("test-BillPay-PayeeList")
+
+                        HStack(spacing: 10) {
+                            Button("EDIT") {
+                                guard let payee = store.bank.selectedBillPayee() else {
+                                    store.bank.lastResult = "Result: Select a payee"
+                                    store.bank.objectWillChange.send()
+                                    return
+                                }
+                                store.bank.loadBillPayeeDraft(payee)
+                                NotificationCenter.default.post(name: .lebyyPushBankRoute, object: BankRoute.editPayee)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .overlay(RoundedRectangle(cornerRadius: 28).stroke(BankDash.accent, lineWidth: 1.5))
+                            .foregroundStyle(BankDash.accent)
+                            .accessibilityIdentifier("test-BillPay-Edit")
+
+                            Button("DELETE") {
+                                if store.bank.bpSelectedPayeeId.isEmpty {
+                                    store.bank.lastResult = "Result: Select a payee"
+                                    store.bank.objectWillChange.send()
+                                } else {
+                                    confirmDelete = true
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .overlay(RoundedRectangle(cornerRadius: 28).stroke(BankDash.brandRed, lineWidth: 1.5))
+                            .foregroundStyle(BankDash.brandRed)
+                            .accessibilityIdentifier("test-BillPay-Delete")
+                        }
+                        .padding(.top, 8)
 
                         Button("PAY") {
                             if store.bank.bpSelectedPayeeId.isEmpty {
@@ -668,7 +730,7 @@ struct BillPayListView: View {
                                 store.bank.objectWillChange.send()
                             } else {
                                 store.bank.resetBillPaymentDraft()
-                                goPay = true
+                                NotificationCenter.default.post(name: .lebyyPushBankRoute, object: BankRoute.billPayPayment)
                             }
                         }
                         .frame(maxWidth: .infinity)
@@ -686,10 +748,30 @@ struct BillPayListView: View {
                                 .accessibilityIdentifier("test-BillPay-Result")
                         }
                     } else {
-                        Text("No recent bill pay activity.")
-                            .font(.subheadline)
+                        Text("Swipe up / down to browse payment activity.")
+                            .font(.caption)
                             .foregroundStyle(BankDash.muted)
-                            .accessibilityIdentifier("test-BillPay-ActivityEmpty")
+                            .accessibilityIdentifier("test-BillPay-ActivitySwipeHint")
+                        if store.bank.payTransferHistory.isEmpty {
+                            Text("No recent bill pay activity.")
+                                .font(.subheadline)
+                                .foregroundStyle(BankDash.muted)
+                                .accessibilityIdentifier("test-BillPay-ActivityEmpty")
+                        } else {
+                            ForEach(store.bank.payTransferHistory) { item in
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(item.title).font(.subheadline.weight(.semibold))
+                                    Text("\(item.date) · \(store.bank.money(item.amount)) · \(item.status)")
+                                        .font(.caption)
+                                        .foregroundStyle(BankDash.muted)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(10)
+                                .background(BankDash.paper)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .accessibilityIdentifier("test-BillPay-Activity-\(item.id)")
+                            }
+                        }
                     }
                 }
                 .padding(16)
@@ -699,18 +781,50 @@ struct BillPayListView: View {
         .background(BankDash.paper.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("test-BillPayScreen")
-        .environment(\.popToBillPayList, {
-            store.bank.requestCloseBillPayPayment()
-        })
-        .onChange(of: store.bank.closeBillPayPayment) { _, close in
-            guard close else { return }
-            store.bank.closeBillPayPayment = false
-            store.bank.lastResult = ""
-            goAdd = false
-            goPay = false
+        .alert("Delete payee?", isPresented: $confirmDelete) {
+            Button("Delete", role: .destructive) {
+                _ = store.bank.deleteSelectedBillPayee()
+            }
+            .accessibilityIdentifier("test-BillPay-DeleteConfirm")
+            Button("Cancel", role: .cancel) {}
+                .accessibilityIdentifier("test-BillPay-DeleteCancel")
+        } message: {
+            Text(store.bank.selectedBillPayee()?.name ?? "This payee")
         }
-        .navigationDestination(isPresented: $goAdd) { BillPayAddWhoView() }
-        .navigationDestination(isPresented: $goPay) { BillPayPaymentDetailsView() }
+    }
+
+    private func payeeRow(_ payee: BillPayee) -> some View {
+        Button {
+            store.bank.bpSelectedPayeeId = payee.id
+            store.bank.objectWillChange.send()
+        } label: {
+            HStack(spacing: 12) {
+                Circle()
+                    .fill(Color.gray.opacity(0.2))
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        Image(systemName: payee.kind == "person" ? "person.fill" : "building.2.fill")
+                            .foregroundStyle(BankDash.muted)
+                    )
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(payee.name)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(BankDash.accent)
+                    if !payee.nickname.isEmpty {
+                        Text(payee.nickname).font(.caption).foregroundStyle(BankDash.muted)
+                    }
+                    Text("No payment in last 60 days")
+                        .font(.caption2)
+                        .foregroundStyle(BankDash.muted)
+                }
+                Spacer()
+                Image(systemName: store.bank.bpSelectedPayeeId == payee.id ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(store.bank.bpSelectedPayeeId == payee.id ? BankDash.accent : BankDash.muted)
+            }
+            .padding(.vertical, 8)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("test-BillPay-Payee-\(payee.id)")
     }
 
     private var assistantBar: some View {
@@ -768,7 +882,6 @@ struct BillPayPaymentDetailsView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
     @State private var showFreq = false
-    @State private var goSuccess = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -897,27 +1010,126 @@ struct BillPayPaymentDetailsView: View {
                 .padding(16)
             }
 
-            cancelSaveBar(
-                cancelId: "test-PaymentDetails-Cancel",
-                saveId: "test-PaymentDetails-Pay",
-                saveEnabled: true,
-                saveTitle: "PAY"
-            ) {
-                dismiss()
-            } onSave: {
+            VStack(spacing: 10) {
+                Button("NEXT") { goNext() }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(BankDash.accent)
+                    .foregroundStyle(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 28))
+                    .accessibilityIdentifier("test-PaymentDetails-Next")
+                Button("PAY") { goNext() }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .overlay(RoundedRectangle(cornerRadius: 28).stroke(BankDash.accent, lineWidth: 1.5))
+                    .foregroundStyle(BankDash.accent)
+                    .accessibilityIdentifier("test-PaymentDetails-Pay")
+                Button("CANCEL") { dismiss() }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .foregroundStyle(BankDash.muted)
+                    .accessibilityIdentifier("test-PaymentDetails-Cancel")
+            }
+            .padding(16)
+        }
+        .background(BankDash.paper.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
+        .accessibilityIdentifier("test-PaymentDetailsScreen")
+    }
+
+    private func goNext() {
+        let msg = store.bank.validateBillPayment()
+        if msg.isEmpty {
+            store.bank.lastResult = ""
+            store.bank.objectWillChange.send()
+            NotificationCenter.default.post(name: .lebyyPushBankRoute, object: BankRoute.billPayReview)
+        } else {
+            store.bank.lastResult = msg
+            store.bank.objectWillChange.send()
+        }
+    }
+}
+
+// MARK: - 9b. Payment review
+
+struct BillPayPaymentReviewView: View {
+    @EnvironmentObject private var store: AppStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var confirmSend = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.left").foregroundStyle(BankDash.ink)
+                }
+                .accessibilityIdentifier("test-BillPayReview-Back")
+                Spacer()
+                Text("Review")
+                    .font(.headline)
+                    .accessibilityIdentifier("test-BillPayReviewTitle")
+                Spacer()
+                Color.clear.frame(width: 24)
+            }
+            .padding(12)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Review payment details")
+                        .font(.title3.bold())
+                        .accessibilityIdentifier("test-BillPayReview-Heading")
+                    if let payee = store.bank.selectedBillPayee() {
+                        detailRow("Payee", payee.name, "test-BillPayReview-Payee")
+                    }
+                    detailRow("Pay From", store.bank.accountTitle("checking"), "test-BillPayReview-PayFrom")
+                    detailRow(
+                        "Amount",
+                        store.bank.money(Double(store.bank.bpPayAmountText) ?? 0),
+                        "test-BillPayReview-Amount"
+                    )
+                    detailRow("Frequency", store.bank.bpFrequency, "test-BillPayReview-Frequency")
+                    detailRow("Deliver By", store.bank.bpDeliverBy, "test-BillPayReview-DeliverBy")
+                    if store.bank.bpMemoOn && !store.bank.bpMemo.isEmpty {
+                        detailRow("Memo", store.bank.bpMemo, "test-BillPayReview-Memo")
+                    }
+                    if !store.bank.lastResult.isEmpty {
+                        Text(store.bank.lastResult)
+                            .font(.caption)
+                            .foregroundStyle(Color.red)
+                            .accessibilityIdentifier("test-BillPayReview-Result")
+                    }
+                }
+                .padding(16)
+            }
+
+            Button("PAY") { confirmSend = true }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(BankDash.accent)
+            .foregroundStyle(.white)
+            .clipShape(RoundedRectangle(cornerRadius: 28))
+            .padding(16)
+            .accessibilityIdentifier("test-BillPayReview-Pay")
+        }
+        .background(BankDash.paper.ignoresSafeArea())
+        .toolbar(.hidden, for: .navigationBar)
+        .accessibilityIdentifier("test-BillPayReviewScreen")
+        .alert("Send this payment?", isPresented: $confirmSend) {
+            Button("Send") {
                 let msg = store.bank.confirmBillPayment()
                 if msg.hasPrefix("Receipt:") {
-                    goSuccess = true
+                    NotificationCenter.default.post(name: .lebyyPushBankRoute, object: BankRoute.billPayPaySuccess)
                 } else {
                     store.bank.lastResult = msg
                     store.bank.objectWillChange.send()
                 }
             }
+            .accessibilityIdentifier("test-BillPay-SendConfirm")
+            Button("Cancel", role: .cancel) {}
+                .accessibilityIdentifier("test-BillPay-SendCancel")
+        } message: {
+            Text("\(store.bank.selectedBillPayee()?.name ?? "Payee")  \(store.bank.money(Double(store.bank.bpPayAmountText) ?? 0))")
         }
-        .background(BankDash.paper.ignoresSafeArea())
-        .toolbar(.hidden, for: .navigationBar)
-        .accessibilityIdentifier("test-PaymentDetailsScreen")
-        .navigationDestination(isPresented: $goSuccess) { BillPayPaymentSuccessView() }
     }
 }
 
@@ -925,8 +1137,10 @@ struct BillPayPaymentDetailsView: View {
 
 struct BillPayPaymentSuccessView: View {
     @EnvironmentObject private var store: AppStore
+    @State private var showToast = true
 
     var body: some View {
+        ZStack(alignment: .top) {
         ScrollView {
             VStack(spacing: 16) {
                 Text("Success")
@@ -969,9 +1183,26 @@ struct BillPayPaymentSuccessView: View {
             }
             .padding(16)
         }
+        if showToast {
+            Text("Payment scheduled")
+                .font(.subheadline.weight(.semibold))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(BankDash.ink)
+                .foregroundStyle(.white)
+                .clipShape(Capsule())
+                .padding(.top, 12)
+                .accessibilityIdentifier("test-BillPay-Toast")
+        }
+        }
         .background(BankDash.paper.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("test-BillPaySuccessScreen")
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                showToast = false
+            }
+        }
     }
 
     private func pill(_ title: String, _ id: String) -> some View {

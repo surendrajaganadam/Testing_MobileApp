@@ -359,6 +359,31 @@ struct BankAccountsDashboard: View {
                 .accessibilityIdentifier("test-BankBrand")
 
                 if let customer = store.bank.currentCustomer() {
+                    TabView {
+                        ForEach(customer.accounts, id: \.id) { account in
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("\(account.name) - \(String(account.number.suffix(4)))")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(BankDash.ink)
+                                Text(store.bank.money(account.balance))
+                                    .font(.title3.bold())
+                                    .foregroundStyle(BankDash.ink)
+                                Text("Swipe left / right for other accounts")
+                                    .font(.caption2)
+                                    .foregroundStyle(BankDash.muted)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(14)
+                            .background(BankDash.canvas)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .padding(.horizontal, 14)
+                            .accessibilityIdentifier("test-AccountCarousel-\(account.name)")
+                        }
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .automatic))
+                    .frame(height: 120)
+                    .accessibilityIdentifier("test-BankAccountsCarousel")
+
                     ForEach(customer.accounts, id: \.id) { account in
                         let line = "\(account.name) \(account.masked) · \(store.bank.money(account.balance))"
                         NavigationLink(value: BankRoute.activity) {
@@ -542,6 +567,27 @@ struct BankAccountsDashboard: View {
 }
 
 // MARK: - Secondary shell screens
+
+struct BankMenuView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Result: Menu opened")
+                .foregroundStyle(LebyyTheme.text)
+                .accessibilityIdentifier("test-BankShellResult")
+            Text("Send a Bill Pay or Zelle payment to get a Send confirm alert. Swipe a payee left to delete or right to edit. Swipe accounts left/right on Home.")
+                .font(.caption)
+                .foregroundStyle(LebyyTheme.muted)
+                .accessibilityIdentifier("test-BankMenu-Hint")
+            Spacer()
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(LebyyTheme.bg.ignoresSafeArea())
+        .navigationTitle("Menu")
+        .navigationBarTitleDisplayMode(.inline)
+        .accessibilityIdentifier("test-BankMenuScreen")
+    }
+}
 
 struct BankSimpleScreen: View {
     let title: String

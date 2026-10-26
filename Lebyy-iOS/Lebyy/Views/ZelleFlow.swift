@@ -816,6 +816,7 @@ struct ZellePaymentDetailsView: View {
 struct ZelleReviewPaymentView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
+    @State private var confirmSend = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -872,18 +873,7 @@ struct ZelleReviewPaymentView: View {
                 }
                 .padding(16)
             }
-            Button("PAY") {
-                let msg = store.bank.confirmZellePayment()
-                if msg.hasPrefix("Receipt:") {
-                    NotificationCenter.default.post(
-                        name: .lebyyPushBankRoute,
-                        object: BankRoute.zellePaySuccess
-                    )
-                } else {
-                    store.bank.lastResult = msg
-                    store.bank.objectWillChange.send()
-                }
-            }
+            Button("PAY") { confirmSend = true }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
             .background(BankDash.accent)
@@ -895,6 +885,25 @@ struct ZelleReviewPaymentView: View {
         .background(BankDash.paper.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("test-ZellePayReviewScreen")
+        .alert("Send this Zelle® payment?", isPresented: $confirmSend) {
+            Button("Send") {
+                let msg = store.bank.confirmZellePayment()
+                if msg.hasPrefix("Receipt:") {
+                    NotificationCenter.default.post(
+                        name: .lebyyPushBankRoute,
+                        object: BankRoute.zellePaySuccess
+                    )
+                } else {
+                    store.bank.lastResult = msg
+                    store.bank.objectWillChange.send()
+                }
+            }
+            .accessibilityIdentifier("test-Zelle-SendConfirm")
+            Button("Cancel", role: .cancel) {}
+                .accessibilityIdentifier("test-Zelle-SendCancel")
+        } message: {
+            Text("\(store.bank.selectedZelleRecipient()?.displayName ?? "Recipient")  \(store.bank.money(Double(store.bank.zelleAmountText) ?? 0))")
+        }
     }
 
     private func detail(_ label: String, _ value: String, _ id: String) -> some View {

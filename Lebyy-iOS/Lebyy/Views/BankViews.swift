@@ -21,6 +21,7 @@ enum BankRoute: Hashable {
     case menu, inbox, products, rewards, profile
     case payTransfer, deposit, invest, assistant, activity
     case acctTransfer, payBills, billPayList, addPayeeWho, addPayeeForm, addPayeeSuccess
+    case billPayPayment, billPayReview, billPayPaySuccess, editPayee
     case zelle, zellePay, zellePayDetails, zellePayReview, zellePaySuccess, wire
 }
 
@@ -43,7 +44,7 @@ struct BankTabView: View {
                 .navigationDestination(for: BankRoute.self) { route in
                     switch route {
                     case .menu:
-                        BankSimpleScreen(title: "Menu", screenId: "test-BankMenuScreen", bodyText: "Result: Menu opened")
+                        BankMenuView()
                     case .inbox:
                         BankSimpleScreen(title: "Inbox", screenId: "test-BankInboxScreen", bodyText: "Result: Inbox opened")
                     case .products:
@@ -65,6 +66,10 @@ struct BankTabView: View {
                     case .addPayeeWho: BillPayAddWhoView()
                     case .addPayeeForm: BillPayPersonInfoView()
                     case .addPayeeSuccess: BillPayAddSuccessView()
+                    case .billPayPayment: BillPayPaymentDetailsView()
+                    case .billPayReview: BillPayPaymentReviewView()
+                    case .billPayPaySuccess: BillPayPaymentSuccessView()
+                    case .editPayee: BillPayPersonInfoView()
                     case .zelle: ZelleScreen()
                     case .zellePay: ZellePayScreen()
                     case .zellePayDetails: ZellePaymentDetailsView()
@@ -99,6 +104,13 @@ struct BankTabView: View {
         .onReceive(NotificationCenter.default.publisher(for: .lebyyPushBankRoute)) { note in
             guard let route = note.object as? BankRoute else { return }
             path.append(route)
+        }
+        .onChange(of: store.bank.closeBillPayPayment) { _, close in
+            guard close else { return }
+            store.bank.closeBillPayPayment = false
+            store.bank.lastResult = ""
+            path = NavigationPath()
+            path.append(BankRoute.billPayList)
         }
         .tint(LebyyTheme.primary)
         .accessibilityIdentifier("test-BankTab")

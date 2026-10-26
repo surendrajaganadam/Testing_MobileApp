@@ -66,6 +66,7 @@ object BankState {
     var bpPhone = ""
     var bpTermsScrolledToEnd = false
     var bpSelectedPayeeId = ""
+    var bpEditingPayeeId = ""
     var bpPayAmountText = ""
     var bpFrequency = "One Time"
     var bpDeliverBy = ""
@@ -638,6 +639,7 @@ object BankState {
     fun billPayees(): List<BillPayee> = billPayees.toList()
 
     fun resetBillPayeeDraft() {
+        bpEditingPayeeId = ""
         bpFirstName = ""
         bpLastName = ""
         bpNickname = ""
@@ -649,6 +651,23 @@ object BankState {
         bpZip = ""
         bpPhone = ""
         bpTermsScrolledToEnd = false
+        lastResult = ""
+    }
+
+    fun loadBillPayeeDraft(payee: BillPayee) {
+        bpEditingPayeeId = payee.id
+        val parts = payee.name.trim().split(" ", limit = 2)
+        bpFirstName = parts.getOrNull(0).orEmpty()
+        bpLastName = parts.getOrNull(1).orEmpty()
+        bpNickname = payee.nickname
+        bpIdentifying = payee.identifying
+        bpAddress = payee.address
+        bpAddress2 = payee.address2
+        bpCity = payee.city
+        bpState = payee.state
+        bpZip = payee.zip
+        bpPhone = payee.phone
+        bpTermsScrolledToEnd = true
         lastResult = ""
     }
 
@@ -703,6 +722,21 @@ object BankState {
             return lastResult
         }
         val full = "${bpFirstName.trim()} ${bpLastName.trim()}"
+        val existing = billPayees.firstOrNull { it.id == bpEditingPayeeId }
+        if (existing != null) {
+            existing.name = full
+            existing.nickname = bpNickname
+            existing.identifying = bpIdentifying
+            existing.address = bpAddress
+            existing.address2 = bpAddress2
+            existing.city = bpCity
+            existing.state = bpState
+            existing.zip = bpZip
+            existing.phone = bpPhone
+            bpSelectedPayeeId = existing.id
+            lastResult = "Result: Payee updated"
+            return lastResult
+        }
         val id = "bp-$billPayeeSeq"
         billPayeeSeq += 1
         billPayees.add(
@@ -712,7 +746,9 @@ object BankState {
                 nickname = bpNickname,
                 kind = "person",
                 section = "Other payees",
+                identifying = bpIdentifying,
                 address = bpAddress,
+                address2 = bpAddress2,
                 city = bpCity,
                 state = bpState,
                 zip = bpZip,
@@ -725,6 +761,25 @@ object BankState {
     }
 
     fun selectedBillPayee(): BillPayee? = billPayees.firstOrNull { it.id == bpSelectedPayeeId }
+
+    fun deleteSelectedBillPayee(): String {
+        if (bpSelectedPayeeId.isBlank()) return "Result: Select a payee"
+        val id = bpSelectedPayeeId
+        billPayees.removeAll { it.id == id }
+        bpSelectedPayeeId = ""
+        lastResult = "Result: Payee deleted"
+        return lastResult
+    }
+
+    fun validateBillPayment(): String {
+        selectedBillPayee() ?: return "Result: Select a payee"
+        val amount = bpPayAmountText.trim().toDoubleOrNull()
+        if (amount == null || amount <= 0.0) return "Result: Enter amount"
+        val from = currentCustomer()?.accounts?.firstOrNull { it.id == "checking" }
+            ?: return "Result: Select From account"
+        if (amount > from.balance) return "Result: Insufficient funds"
+        return ""
+    }
 
     fun resetDepositDraft() {
         depositAccountId = ""
@@ -925,7 +980,9 @@ class BillPayee(
     var nickname: String,
     var kind: String,
     var section: String = "Other payees",
+    var identifying: String = "",
     var address: String = "",
+    var address2: String = "",
     var city: String = "",
     var state: String = "",
     var zip: String = "",

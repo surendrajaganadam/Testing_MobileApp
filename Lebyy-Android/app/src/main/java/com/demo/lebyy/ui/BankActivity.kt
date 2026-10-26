@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -14,6 +15,8 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
+import kotlin.math.abs
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.setPadding
@@ -105,7 +108,7 @@ class BankActivity : AppCompatActivity() {
         if (screen in listOf(
                 "payees", "pending", "customers", "decisions", "activity", "cards", "bills",
                 "acctTransfer", "payBills", "payTransfer", "billPayAddress", "billPayPayment",
-                "billPayList",
+                "billPayList", "billPayReview",
             )
         ) {
             render()
@@ -143,6 +146,7 @@ class BankActivity : AppCompatActivity() {
             "billPaySelectState" -> renderBillPaySelectState(root)
             "billPayAddSuccess" -> renderBillPayAddSuccess(root)
             "billPayPayment" -> renderBillPayPayment(root)
+            "billPayReview" -> renderBillPayReview(root)
             "billPayPaySuccess" -> renderBillPayPaySuccess(root)
             "chooseAmount" -> renderChooseAmount(root)
             "payReview" -> renderPayReview(root)
@@ -161,7 +165,7 @@ class BankActivity : AppCompatActivity() {
             "zellePayReview" -> renderZellePayReview(root)
             "zelleSuccess" -> renderZelleSuccess(root)
             "wire" -> renderShell(root, "Wire", "test-WireScreen", "Result: Wire opened — U.S. or international practice screen")
-            "menu" -> renderShell(root, "Menu", "test-BankMenuScreen", "Result: Menu opened")
+            "menu" -> renderBankMenu(root)
             "inbox" -> renderShell(root, "Inbox", "test-BankInboxScreen", "Result: Inbox opened")
             "products" -> renderShell(root, "Products", "test-BankProductsScreen", "Result: Products opened")
             "rewards" -> renderShell(root, "Lebyy Rewards", "test-BankRewardsScreen", "Result: Rewards opened")
@@ -172,6 +176,15 @@ class BankActivity : AppCompatActivity() {
             "assistant" -> renderShell(root, "Lebyy Assistant", "test-BankAssistantScreen", "Result: Assistant opened")
             else -> finish()
         }
+    }
+
+    private fun renderBankMenu(root: LinearLayout) {
+        title("Menu", "test-BankMenuScreen")
+        text("Result: Menu opened", "test-BankShellResult")
+        text(
+            "Send a Bill Pay or Zelle payment to get a Send confirm alert. Swipe a payee left to delete or right to edit. Swipe accounts left/right on Home.",
+            "test-BankMenu-Hint",
+        )
     }
 
     private fun renderShell(root: LinearLayout, titleText: String, screenId: String, result: String) {
@@ -516,12 +529,20 @@ class BankActivity : AppCompatActivity() {
         text("Today", "test-ZellePayReview-Date")
         root.addView(button("Edit", "test-ZellePayReview-Edit") { finish() })
         root.addView(button("Pay", "test-ZellePayReview-Pay") {
-            val msg = BankState.confirmZellePayment()
-            if (msg.startsWith("Receipt:")) {
-                open("zelleSuccess")
-            } else {
-                BankState.lastResult = msg
-                render()
+            confirmSend(
+                title = "Send this Zelle® payment?",
+                message = "${recipient?.displayName.orEmpty()}  ${BankState.money(BankState.zelleAmountText.toDoubleOrNull() ?: 0.0)}",
+                confirmId = "test-Zelle-SendConfirm",
+                cancelId = "test-Zelle-SendCancel",
+            ) {
+                val msg = BankState.confirmZellePayment()
+                if (msg.startsWith("Receipt:")) {
+                    Toast.makeText(this, "Zelle payment sent", Toast.LENGTH_SHORT).show()
+                    open("zelleSuccess")
+                } else {
+                    BankState.lastResult = msg
+                    render()
+                }
             }
         })
         root.addView(button("Close", "test-ZellePayReview-Close") {
@@ -859,10 +880,19 @@ class BankActivity : AppCompatActivity() {
         text("Date ${BankState.acctDateLabel} ${BankState.acctDateDetail}", "test-AcctReview-Date")
         root.addView(button("EDIT", "test-AcctTransfer-Edit") { finish() })
         root.addView(button("TRANSFER", "test-AcctTransfer-Confirm") {
-            val message = BankState.confirmAcctTransfer()
-            if (message.startsWith("Receipt:")) open("acctTransferSuccess") else {
-                BankState.lastResult = message
-                render()
+            confirmSend(
+                title = "Send this transfer?",
+                message = "${BankState.money(BankState.acctAmount)} to ${BankState.accountTitle(BankState.acctToId)}",
+                confirmId = "test-AcctTransfer-SendConfirm",
+                cancelId = "test-AcctTransfer-SendCancel",
+            ) {
+                val message = BankState.confirmAcctTransfer()
+                if (message.startsWith("Receipt:")) {
+                    open("acctTransferSuccess")
+                } else {
+                    BankState.lastResult = message
+                    render()
+                }
             }
         })
         resultLine()
@@ -874,17 +904,25 @@ class BankActivity : AppCompatActivity() {
         root.addView(button("Close", "test-Recipients-Close") { finish() })
         text("Bank of America", "test-Recipients-Section-BankofAmerica")
         BankState.billPayees().filter { it.section == "Bank of America" }.forEach { payee ->
-            text(
+            root.addView(button(
                 "${payee.name}\nNo recent payments available",
                 "test-Recipients-Payee-${payee.id}",
-            )
+            ) {
+                BankState.bpSelectedPayeeId = payee.id
+                BankState.lastResult = ""
+                open("billPayList")
+            })
         }
         text("Other payees", "test-Recipients-Section-Otherpayees")
         BankState.billPayees().filter { it.section != "Bank of America" }.forEach { payee ->
-            text(
+            root.addView(button(
                 "${payee.name}\nNo recent payments available",
                 "test-Recipients-Payee-${payee.id}",
-            )
+            ) {
+                BankState.bpSelectedPayeeId = payee.id
+                BankState.lastResult = ""
+                open("billPayList")
+            })
         }
         root.addView(button("Add a new payee", "test-Recipients-AddPayee") {
             BankState.resetBillPayeeDraft()
@@ -911,13 +949,25 @@ class BankActivity : AppCompatActivity() {
             render()
         })
         if (tab == "Activity") {
-            text("No recent Bill Pay activity.", "test-BillPay-ActivityEmpty")
+            text("Swipe up / down to browse payment activity.", "test-BillPay-ActivitySwipeHint")
+            val history = BankState.payTransferHistory()
+            if (history.isEmpty()) {
+                text("No recent Bill Pay activity.", "test-BillPay-ActivityEmpty")
+            } else {
+                history.forEach { item ->
+                    text(
+                        "${item.title}\n${item.date} · ${BankState.money(item.amount)} · ${item.status}",
+                        "test-BillPay-Activity-${item.id}",
+                    )
+                }
+            }
             resultLine("test-BillPay-Result")
             return
         }
         text("MY EBILLS & REMINDERS", "test-BillPay-EBillsTitle")
         text("You don't have any unpaid eBills or reminders right now.", "test-BillPay-EBillsEmpty")
         text("PAYEES", "test-BillPay-PayeesTitle")
+        text("Swipe a payee right to Edit, left to Delete.", "test-BillPay-SwipeHint")
         root.addView(button("Add Payee +", "test-BillPay-AddPayee") {
             BankState.resetBillPayeeDraft()
             open("billPayAddWho")
@@ -925,15 +975,51 @@ class BankActivity : AppCompatActivity() {
         BankState.billPayees().forEach { payee ->
             val selected = payee.id == BankState.bpSelectedPayeeId
             val nick = if (payee.nickname.isBlank()) "" else "\n${payee.nickname}"
-            root.addView(button(
+            val row = button(
                 "${payee.name}$nick\nNo payment in last 60 days${if (selected) "\n✓ selected" else ""}",
                 "test-BillPay-Payee-${payee.id}",
             ) {
                 BankState.bpSelectedPayeeId = payee.id
                 BankState.lastResult = ""
                 render()
-            })
+            }
+            attachPayeeSwipe(row, payee)
+            root.addView(row)
         }
+        root.addView(button("EDIT", "test-BillPay-Edit") {
+            val payee = BankState.selectedBillPayee()
+            if (payee == null) {
+                BankState.lastResult = "Result: Select a payee"
+                render()
+            } else {
+                BankState.loadBillPayeeDraft(payee)
+                open("billPayPerson")
+            }
+        })
+        root.addView(button("DELETE", "test-BillPay-Delete") {
+            if (BankState.bpSelectedPayeeId.isBlank()) {
+                BankState.lastResult = "Result: Select a payee"
+                render()
+            } else {
+                val name = BankState.selectedBillPayee()?.name ?: "this payee"
+                val dialog = MaterialAlertDialogBuilder(this)
+                    .setTitle("Delete payee?")
+                    .setMessage(name)
+                    .setPositiveButton("Delete") { _, _ ->
+                        BankState.deleteSelectedBillPayee()
+                        render()
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .create()
+                dialog.setOnShowListener {
+                    dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
+                        .contentDescription = "test-BillPay-DeleteConfirm"
+                    dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE)
+                        .contentDescription = "test-BillPay-DeleteCancel"
+                }
+                dialog.show()
+            }
+        })
         root.addView(button("PAY", "test-BillPay-Pay") {
             if (BankState.bpSelectedPayeeId.isBlank()) {
                 BankState.lastResult = "Result: Select a payee"
@@ -1086,7 +1172,7 @@ class BankActivity : AppCompatActivity() {
         // Page ScrollView: mark terms complete when the end marker is visible.
         val pageScroll = root.parent as? ScrollView
         pageScroll?.viewTreeObserver?.addOnScrollChangedListener {
-            val end = root.findViewWithTag("termsEnd") ?: return@addOnScrollChangedListener
+            val end = root.findViewWithTag<View>("termsEnd") ?: return@addOnScrollChangedListener
             val visible = android.graphics.Rect()
             val shown = end.getGlobalVisibleRect(visible)
             if (shown && !BankState.bpTermsScrolledToEnd) {
@@ -1114,7 +1200,20 @@ class BankActivity : AppCompatActivity() {
         root.addView(button("SAVE", "test-AddPayee-Save") {
             persistPersonDraft(first, last, nick, ident, addr, addr2, city, zip, phone)
             val message = BankState.saveBillPayee()
-            if (message == "Result: Payee added") open("billPayAddSuccess") else render()
+            when (message) {
+                "Result: Payee added" -> open("billPayAddSuccess")
+                "Result: Payee updated" -> {
+                    BankState.closeToBillPay = true
+                    startActivity(
+                        Intent(this, BankActivity::class.java).apply {
+                            putExtra(EXTRA_SCREEN, "billPayList")
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                        },
+                    )
+                    finish()
+                }
+                else -> render()
+            }
         })
         // Alias for older scripts
         root.addView(View(this).apply {
@@ -1218,6 +1317,10 @@ class BankActivity : AppCompatActivity() {
         text("City ${payee?.city.orEmpty()}", "test-AddPayeeSuccess-City")
         text("State ${payee?.state.orEmpty()}", "test-AddPayeeSuccess-State")
         text("ZIP Code ${payee?.zip.orEmpty()}", "test-AddPayeeSuccess-Zip")
+        root.addView(button("PAY THIS PAYEE", "test-AddPayeeSuccess-Pay") {
+            BankState.resetBillPaymentDraft()
+            open("billPayPayment")
+        })
         root.addView(button("DONE", "test-AddPayeeSuccess-Done") {
             BankState.closeToBillPay = true
             // Land on Bill Pay list (shows newly added payee); cascade-finish add stack via onResume
@@ -1272,16 +1375,70 @@ class BankActivity : AppCompatActivity() {
             "test-PaymentDetails-Note",
         )
         root.addView(button("CANCEL", "test-PaymentDetails-Cancel") { finish() })
-        root.addView(button("PAY", "test-PaymentDetails-Pay") {
+        val persistDraft = {
             BankState.bpPayAmountText = amount.text.toString()
             if (BankState.bpMemoOn) BankState.bpMemo = memo.text.toString()
-            val message = BankState.confirmBillPayment()
-            if (message.startsWith("Receipt:")) open("billPayPaySuccess") else {
+        }
+        root.addView(button("NEXT", "test-PaymentDetails-Next") {
+            persistDraft()
+            val message = BankState.validateBillPayment()
+            if (message.isEmpty()) {
+                BankState.lastResult = ""
+                open("billPayReview")
+            } else {
+                BankState.lastResult = message
+                render()
+            }
+        })
+        root.addView(button("PAY", "test-PaymentDetails-Pay") {
+            persistDraft()
+            val message = BankState.validateBillPayment()
+            if (message.isEmpty()) {
+                BankState.lastResult = ""
+                open("billPayReview")
+            } else {
                 BankState.lastResult = message
                 render()
             }
         })
         resultLine("test-PaymentDetails-Result")
+    }
+
+    private fun renderBillPayReview(root: LinearLayout) {
+        title("Review", "test-BillPayReviewScreen")
+        root.addView(button("Back", "test-BillPayReview-Back") { finish() })
+        text("Review", "test-BillPayReviewTitle")
+        text("Review payment details", "test-BillPayReview-Heading")
+        val payee = BankState.selectedBillPayee()
+        text("Payee ${payee?.name.orEmpty()}", "test-BillPayReview-Payee")
+        text("Pay From ${BankState.accountTitle("checking")}", "test-BillPayReview-PayFrom")
+        text(
+            "Amount ${BankState.money(BankState.bpPayAmountText.toDoubleOrNull() ?: 0.0)}",
+            "test-BillPayReview-Amount",
+        )
+        text("Frequency ${BankState.bpFrequency}", "test-BillPayReview-Frequency")
+        text("Deliver By ${BankState.bpDeliverBy}", "test-BillPayReview-DeliverBy")
+        if (BankState.bpMemoOn && BankState.bpMemo.isNotBlank()) {
+            text("Memo ${BankState.bpMemo}", "test-BillPayReview-Memo")
+        }
+        root.addView(button("PAY", "test-BillPayReview-Pay") {
+            confirmSend(
+                title = "Send this payment?",
+                message = "${payee?.name.orEmpty()}  ${BankState.money(BankState.bpPayAmountText.toDoubleOrNull() ?: 0.0)}",
+                confirmId = "test-BillPay-SendConfirm",
+                cancelId = "test-BillPay-SendCancel",
+            ) {
+                val message = BankState.confirmBillPayment()
+                if (message.startsWith("Receipt:")) {
+                    Toast.makeText(this, "Payment scheduled", Toast.LENGTH_SHORT).show()
+                    open("billPayPaySuccess")
+                } else {
+                    BankState.lastResult = message
+                    render()
+                }
+            }
+        })
+        resultLine("test-BillPayReview-Result")
     }
 
     private fun renderBillPayPaySuccess(root: LinearLayout) {
@@ -1301,6 +1458,7 @@ class BankActivity : AppCompatActivity() {
         text("Frequency ${BankState.bpFrequency}", "test-BillPaySuccess-Frequency")
         text("Payment Type Check", "test-BillPaySuccess-Type")
         text("Confirmation ${BankState.lastConfirmation}", "test-BillPaySuccess-Confirmation")
+        text("Payment scheduled", "test-BillPay-Toast")
         root.addView(button("DONE", "test-BillPaySuccess-Done") {
             BankState.closeToBillPay = true
             finish()
@@ -1812,6 +1970,7 @@ class BankActivity : AppCompatActivity() {
             "test-ZellePayScreen" -> "test-ZellePay-Back"
             "test-BillPayScreen" -> "test-BillPay-Back"
             "test-PaymentDetailsScreen" -> "test-PaymentDetails-Back"
+            "test-BillPayReviewScreen" -> "test-BillPayReview-Back"
             "test-SelectStateScreen" -> "test-SelectState-Back"
             "test-AddPayeeWhoScreen", "test-AddPayeePersonScreen", "test-AddPayeeAddressScreen" -> "test-AddPayee-Back"
             "test-BankDepositScreen" -> "test-Deposit-Cancel"
@@ -1866,6 +2025,73 @@ class BankActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
             ).apply { topMargin = dp(8) }
+        }
+    }
+
+    private fun confirmSend(
+        title: String,
+        message: String,
+        confirmId: String,
+        cancelId: String,
+        onSend: () -> Unit,
+    ) {
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("Send") { _, _ -> onSend() }
+            .setNegativeButton("Cancel", null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).contentDescription = confirmId
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE).contentDescription = cancelId
+        }
+        dialog.show()
+    }
+
+    private fun attachPayeeSwipe(view: View, payee: com.demo.lebyy.data.BillPayee) {
+        var startX = 0f
+        var startY = 0f
+        view.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    startX = event.x
+                    startY = event.y
+                    false
+                }
+                MotionEvent.ACTION_UP -> {
+                    val dx = event.x - startX
+                    val dy = event.y - startY
+                    if (abs(dx) > 80 && abs(dx) > abs(dy)) {
+                        BankState.bpSelectedPayeeId = payee.id
+                        if (dx < 0) {
+                            val name = payee.name
+                            val dialog = MaterialAlertDialogBuilder(this)
+                                .setTitle("Delete payee?")
+                                .setMessage(name)
+                                .setPositiveButton("Delete") { _, _ ->
+                                    BankState.deleteSelectedBillPayee()
+                                    render()
+                                }
+                                .setNegativeButton("Cancel", null)
+                                .create()
+                            dialog.setOnShowListener {
+                                dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
+                                    .contentDescription = "test-BillPay-DeleteConfirm"
+                                dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE)
+                                    .contentDescription = "test-BillPay-DeleteCancel"
+                            }
+                            dialog.show()
+                        } else {
+                            BankState.loadBillPayeeDraft(payee)
+                            open("billPayPerson")
+                        }
+                        true
+                    } else {
+                        false
+                    }
+                }
+                else -> false
+            }
         }
     }
 

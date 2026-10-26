@@ -442,6 +442,7 @@ private struct PickSheet: Identifiable {
 struct AcctTransferReviewView: View {
     @EnvironmentObject private var store: AppStore
     @Environment(\.dismiss) private var dismiss
+    @State private var confirmSend = false
     @State private var goSuccess = false
 
     var body: some View {
@@ -469,10 +470,7 @@ struct AcctTransferReviewView: View {
                 }
                 .padding(16)
             }
-            Button("TRANSFER") {
-                let message = store.bank.confirmAcctTransfer()
-                if message.hasPrefix("Receipt:") { goSuccess = true }
-            }
+            Button("TRANSFER") { confirmSend = true }
             .frame(maxWidth: .infinity)
             .padding()
             .background(BankDash.brandBlue)
@@ -484,6 +482,17 @@ struct AcctTransferReviewView: View {
         .background(BankDash.paper.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .accessibilityIdentifier("test-AcctTransferReviewScreen")
+        .alert("Send this transfer?", isPresented: $confirmSend) {
+            Button("Send") {
+                let message = store.bank.confirmAcctTransfer()
+                if message.hasPrefix("Receipt:") { goSuccess = true }
+            }
+            .accessibilityIdentifier("test-AcctTransfer-SendConfirm")
+            Button("Cancel", role: .cancel) {}
+                .accessibilityIdentifier("test-AcctTransfer-SendCancel")
+        } message: {
+            Text("\(store.bank.money(store.bank.acctAmount)) to \(store.bank.accountTitle(store.bank.acctToId))")
+        }
         .navigationDestination(isPresented: $goSuccess) {
             PaymentSuccessView(
                 title: "Your transfer is confirmed",

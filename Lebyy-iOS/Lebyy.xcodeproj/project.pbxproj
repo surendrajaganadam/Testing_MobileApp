@@ -15,10 +15,6 @@
 		9467528320E9F7A207CEBF6F /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC833B95292247CF24972399 /* RootView.swift */; };
 		9B4279E97D9D870AE4CC5EE2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4B10BF9EB589EB1BB0A7C31E /* Assets.xcassets */; };
 		A309E06ECDCAF6EF0A22B126 /* LebyyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 310A775A370973FDAFAD6329 /* LebyyApp.swift */; };
-		C44A890B88A6A45F9130F063 /* ExtraPracticeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA89D986F1D2CA48E917AB91 /* ExtraPracticeViews.swift */; };
-		D48C0222473EB9BF1B397322 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07D6AD11DFB50DC88024020 /* Theme.swift */; };
-		DC10BB35DE24F37D420F7483 /* TabRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08C08C6B75C819D361673A1F /* TabRootView.swift */; };
-		F2E5742141BA83C0DFEE4F97 /* ShopViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7201755A9F8120B26BB61281 /* ShopViews.swift */; };
 		B4A100000000000000000001 /* BankStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A100000000000000000002 /* BankStore.swift */; };
 		B4A100000000000000000003 /* BankViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A100000000000000000004 /* BankViews.swift */; };
 		B4A100000000000000000005 /* BankDashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A100000000000000000006 /* BankDashboard.swift */; };
@@ -26,6 +22,10 @@
 		B4A100000000000000000009 /* BillPayFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A10000000000000000000A /* BillPayFlow.swift */; };
 		B4A10000000000000000000B /* DepositChecksFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A10000000000000000000C /* DepositChecksFlow.swift */; };
 		B4A10000000000000000000D /* ZelleFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4A10000000000000000000E /* ZelleFlow.swift */; };
+		C44A890B88A6A45F9130F063 /* ExtraPracticeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA89D986F1D2CA48E917AB91 /* ExtraPracticeViews.swift */; };
+		D48C0222473EB9BF1B397322 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07D6AD11DFB50DC88024020 /* Theme.swift */; };
+		DC10BB35DE24F37D420F7483 /* TabRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08C08C6B75C819D361673A1F /* TabRootView.swift */; };
+		F2E5742141BA83C0DFEE4F97 /* ShopViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7201755A9F8120B26BB61281 /* ShopViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +36,10 @@
 		4B10BF9EB589EB1BB0A7C31E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		523461CA336F8EE39416B52F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7201755A9F8120B26BB61281 /* ShopViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShopViews.swift; sourceTree = "<group>"; };
+		89EEB56EC384BC4BBA8F48A1 /* MainShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainShellView.swift; sourceTree = "<group>"; };
+		8C3746305994F2A46B984661 /* Lebyy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lebyy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A07D6AD11DFB50DC88024020 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		AC833B95292247CF24972399 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		B4A100000000000000000002 /* BankStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankStore.swift; sourceTree = "<group>"; };
 		B4A100000000000000000004 /* BankViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankViews.swift; sourceTree = "<group>"; };
 		B4A100000000000000000006 /* BankDashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankDashboard.swift; sourceTree = "<group>"; };
@@ -43,10 +47,6 @@
 		B4A10000000000000000000A /* BillPayFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BillPayFlow.swift; sourceTree = "<group>"; };
 		B4A10000000000000000000C /* DepositChecksFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositChecksFlow.swift; sourceTree = "<group>"; };
 		B4A10000000000000000000E /* ZelleFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZelleFlow.swift; sourceTree = "<group>"; };
-		89EEB56EC384BC4BBA8F48A1 /* MainShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainShellView.swift; sourceTree = "<group>"; };
-		8C3746305994F2A46B984661 /* Lebyy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lebyy.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A07D6AD11DFB50DC88024020 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		AC833B95292247CF24972399 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		B96A1FBAC26F96F6903B14BD /* PracticeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeViews.swift; sourceTree = "<group>"; };
 		CA89D986F1D2CA48E917AB91 /* ExtraPracticeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtraPracticeViews.swift; sourceTree = "<group>"; };
 		DFE1EA48CA9FA73B91EB4710 /* FormControlsCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormControlsCatalog.swift; sourceTree = "<group>"; };
